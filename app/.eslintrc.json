@@ -18,11 +18,8 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "comma-dangle": [
-            "error": {
-                "arrays": "always-multiline",
-                "objects": "always-multiline",
-            },
-        ]
+        "comma-dangle": ["error", "always" ],
+        "array-bracket-spacing": ["error", "always"]
     }
 }
+
