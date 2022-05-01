@@ -1,25 +1,27 @@
 {
-    "env": {
-        "browser": true,
-        "es2021": true,
-        "node": true
-    },
-    "extends": [
-        "plugin:vue/essential",
-        "airbnb-base"
-    ],
-    "parserOptions": {
-        "ecmaVersion": "latest",
-        "parser": "@typescript-eslint/parser",
-        "sourceType": "module"
-    },
-    "plugins": [
-        "vue",
-        "@typescript-eslint"
-    ],
-    "rules": {
-        "comma-dangle": ["error", "always" ],
-        "array-bracket-spacing": ["error", "always"]
-    }
+  "root": true,
+  "env": {
+      "browser": true,
+      "es2021": true,
+      "node": true,
+      "mocha": true
+  },
+  "extends": [
+    "plugin:vue/essential",
+    "airbnb-base"
+  ],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [
+    "vue"
+  ],
+  "rules": {
+    "array-bracket-spacing": ["error", "always"],
+    "comma-dangle": ["error", "only-multiline"],
+    "linebreak-style": "off",
+    "no-console": "off"
+  }
 }
 
