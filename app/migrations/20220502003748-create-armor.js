@@ -18,8 +18,9 @@ module.exports = {
       baseAC: {
         type: Sequelize.INTEGER
       },
-      stealthDisadvantage: {
-        type: Sequelize.BOOLEAN
+      disadvantage: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,

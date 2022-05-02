@@ -21,7 +21,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     type: DataTypes.STRING,
     baseAC: DataTypes.INTEGER,
-    stealthDisadvantage: DataTypes.BOOLEAN
+    disadvantage: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
   }, {
     sequelize,
     modelName: 'Armor',
