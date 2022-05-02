@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Spell.belongsToMany(models.CreatureType, { through: 'CreatureTypeSpell' });
     }
   }
   Spell.init({
