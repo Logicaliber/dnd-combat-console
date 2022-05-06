@@ -12,29 +12,35 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true,
       },
+      damage: {
+        type: Sequelize.JSON
+      },
       properties: {
         type: Sequelize.JSON
       },
       normalRange: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       longRange: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       attackShape: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        defaultValue: null,
       },
       save: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       saveType: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
+        defaultValue: null,
       },
       saveHalf: {
-        type: Sequelize.BOOLEAN
-      },
-      damage: {
-        type: Sequelize.JSON
+        type: Sequelize.BOOLEAN,
+        defaultValue: null,
       },
       createdAt: {
         allowNull: false,

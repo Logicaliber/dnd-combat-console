@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Weapon.belongsToMany(models.CreatureType, { through: 'CreatureTypeWeapon' });
     }
   }
   Weapon.init({
@@ -18,14 +19,32 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
+    damage: DataTypes.JSON,
     properties: DataTypes.JSON,
-    normalRange: DataTypes.INTEGER,
-    longRange: DataTypes.INTEGER,
-    attackShape: DataTypes.STRING,
-    save: DataTypes.INTEGER,
-    saveType: DataTypes.STRING,
-    saveHalf: DataTypes.BOOLEAN,
-    damage: DataTypes.JSON
+    normalRange: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    longRange: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    attackShape: {
+      type: Sequelize.STRING,
+      defaultValue: null,
+    },
+    save: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    saveType: {
+      type: Sequelize.STRING,
+      defaultValue: null,
+    },
+    saveHalf: {
+      type: Sequelize.STRING,
+      defaultValue: null,
+    },
   }, {
     sequelize,
     modelName: 'Weapon',

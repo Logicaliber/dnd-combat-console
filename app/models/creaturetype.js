@@ -11,9 +11,11 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      CreatureType.hasOne(models.Armor);
       CreatureType.hasMany(models.Creature);
       CreatureType.belongsTo(models.Armor); // "belonging" to an armor seems a bit odd, but this is just a semantic definition
       CreatureType.belongsToMany(models.Spell, { through: 'CreatureTypeSpell' });
+      CreatureType.belongsToMany(models.Weapon, { through: 'CreatureTypeWeapon' });
       // We could potentially use a many-to-many relationship like this for innate spells or even weapons as well; look into later
     }
   }
