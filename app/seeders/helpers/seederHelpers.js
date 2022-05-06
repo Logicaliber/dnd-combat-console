@@ -3,6 +3,13 @@ const moment = require('moment');
 const ts = moment().utc().format('YYYY-MM-DD HH:mm:ss');
 
 module.exports = {
+  normalizedCR: (crString) => {
+    if (crString === '0') return -3;
+    if (crString === '1/8') return -2;
+    if (crString === '1/4') return -1;
+    if (crString === '1/2') return 0;
+    return parseInt(crString, 10);
+  },
   ranges: {
     fiveFifteen: {
       normalRange: 5,
@@ -142,5 +149,13 @@ module.exports = {
         ...module.exports.timeStamps,
       };
     });
-  }
+  },
+  withIdAndTs: (array) => {
+    return module.exports.withTs(array.map((obj, i) => {
+      return {
+        id: i + 1,
+        ...obj,
+      }
+    }));
+  },
 }

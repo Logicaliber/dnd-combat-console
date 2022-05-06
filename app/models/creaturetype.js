@@ -60,7 +60,7 @@ module.exports = (sequelize, DataTypes) => {
     legendaryActions: DataTypes.JSON,
     legendaryResistances: DataTypes.INTEGER,
     lairActions: DataTypes.JSON,
-    regionalEffects: DataTypes.JSON
+    regionalEffects: DataTypes.JSON,
   }, {
     sequelize,
     modelName: 'CreatureType',
