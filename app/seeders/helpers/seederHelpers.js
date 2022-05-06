@@ -3,6 +3,36 @@ const moment = require('moment');
 const ts = moment().utc().format('YYYY-MM-DD HH:mm:ss');
 
 module.exports = {
+  ranges: {
+    fiveFifteen: {
+      normalRange: 5,
+      longRange: 15,
+    },
+    twentySixty: {
+      normalRange: 20,
+      longRange: 60,
+    },
+    twentyFiveOneHundred: {
+      normalRange: 25,
+      longRange: 100,
+    },
+    thirtyOneTwenty: {
+      normalRange: 30,
+      longRange: 120,
+    },
+    eightyThreeTwenty: {
+      normalRange: 80,
+      longRange: 320,
+    },
+    oneHundredFourHundred: {
+      normalRange: 100,
+      longRange: 400,
+    },
+    oneFiftySixHundred: {
+      normalRange: 150,
+      longRange: 600,
+    },
+  },
   timeStamps: {
     createdAt: ts,
     updatedAt: ts,
@@ -105,34 +135,12 @@ module.exports = {
       slashing: '[{"num":2,"die":12,"type":"slashing"}]',
     },
   },
-  ranges: {
-    fiveFifteen: {
-      normalRange: 5,
-      longRange: 15,
-    },
-    twentySixty: {
-      normalRange: 20,
-      longRange: 60,
-    },
-    twentyFiveOneHundred: {
-      normalRange: 25,
-      longRange: 100,
-    },
-    thirtyOneTwenty: {
-      normalRange: 30,
-      longRange: 120,
-    },
-    eightyThreeTwenty: {
-      normalRange: 80,
-      longRange: 320,
-    },
-    oneHundredFourHundred: {
-      normalRange: 100,
-      longRange: 400,
-    },
-    oneFiftySixHundred: {
-      normalRange: 150,
-      longRange: 600,
-    },
-  },
+  withTs: (array) => {
+    return array.map((obj) => {
+      return {
+        ...obj,
+        ...module.exports.timeStamps,
+      };
+    });
+  }
 }
