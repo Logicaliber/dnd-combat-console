@@ -1,5 +1,5 @@
 app/dbinstance
 app/node_modules
 app/.env
-app/.vscode
+.vscode
 

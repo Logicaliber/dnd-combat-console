@@ -6,59 +6,62 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       name: {
         type: Sequelize.STRING,
         unique: true,
       },
+      creatureTypeId: {
+        type: Sequelize.INTEGER,
+      },
       maxHP: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       currentHP: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsFirst: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsSecond: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsThird: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsFourth: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsFifth: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsSixth: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsSeventh: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsEigth: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       slotsNinth: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       currentLegendaryResistances: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Creatures');
-  }
+  },
 };

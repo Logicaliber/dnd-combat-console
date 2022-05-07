@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Creature.init({
     name: DataTypes.STRING,
+    creatureTypeID: DataTypes.INTEGER,
     maxHP: DataTypes.INTEGER,
     currentHP: DataTypes.INTEGER,
     slotsFirst: DataTypes.INTEGER,
