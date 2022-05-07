@@ -82,12 +82,10 @@ module.exports = (sequelize, DataTypes) => {
     },
     savingThrows: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     skills: DataTypes.JSON,
     resistances: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     senses: DataTypes.JSON,
     passivePerception: {
@@ -106,36 +104,28 @@ module.exports = (sequelize, DataTypes) => {
     },
     specialAbilities: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     spellcasting: {
       type: DataTypes.STRING,
-      defaultValue: null,
     },
     spellSlots: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     innateSpells: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     actionPatterns: DataTypes.JSON,
     legendaryActions: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     reactions: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     lairActions: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
     regionalEffects: {
       type: DataTypes.JSON,
-      defaultValue: null,
     },
   }, {
     sequelize,

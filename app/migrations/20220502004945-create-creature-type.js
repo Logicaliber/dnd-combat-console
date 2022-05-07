@@ -89,15 +89,12 @@ module.exports = {
       },
       savingThrows: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       skills: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       resistances: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       senses: {
         type: Sequelize.JSON,
@@ -122,38 +119,30 @@ module.exports = {
       },
       specialAbilities: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       spellcasting: {
         type: Sequelize.STRING,
-        defaultValue: null,
       },
       spellSlots: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       innateSpells: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       actionPatterns: {
         type: Sequelize.JSON,
       },
       legendaryActions: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       reactions: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       lairActions: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       regionalEffects: {
         type: Sequelize.JSON,
-        defaultValue: null,
       },
       createdAt: {
         allowNull: false,

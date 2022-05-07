@@ -27,7 +27,6 @@ module.exports = {
       },
       attackShape: {
         type: Sequelize.STRING,
-        defaultValue: null,
       },
       save: {
         type: Sequelize.INTEGER,
@@ -35,7 +34,6 @@ module.exports = {
       },
       saveType: {
         type: Sequelize.STRING,
-        defaultValue: null,
       },
       saveStillHalf: {
         type: Sequelize.BOOLEAN,

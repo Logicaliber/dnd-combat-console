@@ -29,7 +29,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     attackShape: {
       type: DataTypes.STRING,
-      defaultValue: null,
     },
     save: {
       type: DataTypes.INTEGER,
@@ -37,7 +36,6 @@ module.exports = (sequelize, DataTypes) => {
     },
     saveType: {
       type: DataTypes.STRING,
-      defaultValue: null,
     },
     saveStillHalf: {
       type: DataTypes.BOOLEAN,
