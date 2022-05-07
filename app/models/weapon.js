@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {
     /**
@@ -30,7 +28,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0,
     },
     attackShape: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       defaultValue: null,
     },
     save: {
@@ -38,12 +36,12 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 0,
     },
     saveType: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       defaultValue: null,
     },
     saveStillHalf: {
-      type: Sequelize.STRING,
-      defaultValue: null,
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   }, {
     sequelize,

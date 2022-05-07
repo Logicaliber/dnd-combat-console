@@ -1,10 +1,7 @@
-'use strict';
-
 const { normalizedCR, withTs } = require('./helpers/seederHelpers');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-
     const scimitar = (await queryInterface.sequelize.query('SELECT id from "Weapons" WHERE name = ? ', {
       replacements: ['scimitar'],
       type: queryInterface.sequelize.QueryTypes.SELECT,
@@ -39,7 +36,7 @@ module.exports = {
       languages: '["common","goblin"]',
       challengeRating: normalizedCR('1/4'),
       specialAbilities: '[{"name":"Nimble Escape","value":"The goblin can take the Disengage or Hide action as a bonus action on each of its turns."}]',
-      actionPatterns: `[[{"weaponId":${scimitar.id},"times":1},{"weaponId":${shortbow.id},"times":1}]]`, // Shortbow and Scimitar, respectively 
+      actionPatterns: `[[{"weaponId":${scimitar.id},"times":1},{"weaponId":${shortbow.id},"times":1}]]`,
     }]);
 
     await queryInterface.bulkInsert('CreatureTypes', creatureTypes, {});
@@ -50,12 +47,12 @@ module.exports = {
     }))[0];
 
     const creatureTypeWeapons = withTs([{
-        creatureTypeId: goblin.id,
-        weaponId: scimitar.id,
-      }, {
-        creatureTypeId: goblin.id,
-        weaponId: shortbow.id,
-      }]);
+      creatureTypeId: goblin.id,
+      weaponId: scimitar.id,
+    }, {
+      creatureTypeId: goblin.id,
+      weaponId: shortbow.id,
+    }]);
 
     await queryInterface.bulkInsert('CreatureTypeWeapons', creatureTypeWeapons, {});
   },
@@ -67,5 +64,5 @@ module.exports = {
      * Example:
      * await queryInterface.bulkDelete('People', null, {});
      */
-  }
+  },
 };

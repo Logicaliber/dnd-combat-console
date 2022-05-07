@@ -155,7 +155,7 @@ module.exports = {
       return {
         id: i + 1,
         ...obj,
-      }
+      };
     }));
   },
-}
+};

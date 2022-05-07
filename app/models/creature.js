@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class Creature extends Model {
     /**
@@ -28,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     slotsSeventh: DataTypes.INTEGER,
     slotsEigth: DataTypes.INTEGER,
     slotsNinth: DataTypes.INTEGER,
-    currentLegendaryResistances: DataTypes.INTEGER
+    currentLegendaryResistances: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'Creature',

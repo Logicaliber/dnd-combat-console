@@ -1,10 +1,7 @@
-'use strict';
-
 const { withTs } = require('./helpers/seederHelpers');
 
 module.exports = {
-  async up (queryInterface, Sequelize) {
-
+  up: async (queryInterface, Sequelize) => {
     const spells = withTs([{
       name: 'Acid Splash',
       level: 0,
@@ -21,7 +18,7 @@ module.exports = {
     await queryInterface.bulkInsert('Spells', spells, {});
   },
 
-  async down (queryInterface, Sequelize) {
+  down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('Spells', null, {});
-  }
+  },
 };

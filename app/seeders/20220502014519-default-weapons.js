@@ -1,10 +1,8 @@
-'use strict';
-
 const {
   ranges, // Normal and Long Ranges
   wd, // Weapon Damages
   wp, // Weapon Properties
-  withTs // With Timestamps
+  withTs, // With Timestamps
 } = require('./helpers/seederHelpers');
 
 module.exports = {
@@ -53,12 +51,12 @@ module.exports = {
       damage: wd.d6.slashing,
       name: 'sickle',
       properties: wp.light,
-    },{
+    }, {
       name: 'spear 1h',
       damage: wd.d6.piercing,
       properties: wp.thrownVersatile,
       ...ranges.twentySixty,
-    },{
+    }, {
       name: 'spear 2h',
       damage: wd.d6.piercing,
       properties: wp.thrownVersatileTwoHanded,
@@ -204,5 +202,5 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('Weapons', null, {});
-  }
-}
+  },
+};

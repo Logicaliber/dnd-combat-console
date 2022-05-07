@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+const { Model } = require('sequelize');
+
 module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
     /**
@@ -13,10 +11,9 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       CreatureType.hasOne(models.Armor);
       CreatureType.hasMany(models.Creature);
-      CreatureType.belongsTo(models.Armor); // "belonging" to an armor seems a bit odd, but this is just a semantic definition
+      CreatureType.belongsTo(models.Armor);
       CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell });
       CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon });
-      // We could potentially use a many-to-many relationship like this for innate spells or even weapons as well; look into later
     }
   }
   CreatureType.init({
@@ -26,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     size: {
       type: DataTypes.STRING,
-      defaultValue: 'medium'
+      defaultValue: 'medium',
     },
     type: DataTypes.JSON,
     tags: DataTypes.JSON,

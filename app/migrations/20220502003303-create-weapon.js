@@ -1,4 +1,3 @@
-'use strict';
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Weapons', {
@@ -40,7 +39,7 @@ module.exports = {
       },
       saveStillHalf: {
         type: Sequelize.BOOLEAN,
-        defaultValue: null,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,
