@@ -20,6 +20,18 @@ module.exports = (sequelize, DataTypes) => {
     damage: {
       type: DataTypes.JSON,
       validate: {
+        isArrayOfObjects(damage) {
+          if (typeof damage === 'string') {
+            damage = JSON.parse(damage);
+          }
+          if (!damage.isArray()) throw new Error('damage must be an array');
+          damage.forEach((obj) => {
+            if (typeof obj !== 'object') throw new Error('damage must be an array of objects');
+            Object.values(obj).forEach((value) => {
+              if (typeof value !== 'string' && typeof value !== 'number') throw new Error('damage objects must contain only strings or numbers');
+            });
+          });
+        },
       },
     },
     properties: {
@@ -31,7 +43,6 @@ module.exports = (sequelize, DataTypes) => {
           }
           if (!properties.isArray()) throw new Error('properties must be an array');
           if (properties.length <= 0) throw new Error('properties array should not be length 0');
-          if (properties.length === 1) return;
           let prevLetter = 'a';
           properties.forEach((element) => {
             if (typeof element !== 'string' || !/^ [a_z]$ /.test(element)) throw new Error('properties elements must be strings of lowercase letters');
