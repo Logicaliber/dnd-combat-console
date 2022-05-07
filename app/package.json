@@ -1,22 +1,44 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "",
+  "description": "DnD Combat Console",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon index.js"
+    "db:create": "npx sequelize-cli db:create",
+    "db:hardReset": "npx sequelize-cli db:drop && npm run db:create && npm run db:migrate && npm run db:seed",
+    "db:migrate": "npx sequelize-cli db:migrate",
+    "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
+    "db:seed": "npx sequelize-cli db:seed:all",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "dnd",
+    "5e",
+    "initiative",
+    "creature"
+  ],
+  "author": "Tyler Hanna",
   "license": "ISC",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^5.21.0",
-    "@typescript-eslint/parser": "^5.21.0",
     "eslint": "^8.14.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-vue": "^8.7.1",
-    "nodemon": "^2.0.16"
+    "nodemon": "^2.0.16",
+    "sequelize-cli": "^6.4.1"
+  },
+  "eslintConfig": {
+    "root": true
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.18.1",
+    "moment": "^2.29.3",
+    "pg": "^8.7.3",
+    "sequelize": "^6.19.0"
+  },
+  "engines": {
+    "node": ">=14.19.1"
   }
 }

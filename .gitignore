@@ -1,3 +1,5 @@
-node_modules
-node_modules/*
+app/dbinstance
+app/node_modules
+app/.env
+.vscode
 
