@@ -14,19 +14,77 @@ module.exports = (sequelize, DataTypes) => {
   }
   Creature.init({
     name: DataTypes.STRING,
-    creatureTypeID: DataTypes.INTEGER,
-    maxHP: DataTypes.INTEGER,
+    creatureTypeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    maxHP: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 1,
+      },
+    },
     currentHP: DataTypes.INTEGER,
-    slotsFirst: DataTypes.INTEGER,
-    slotsSecond: DataTypes.INTEGER,
-    slotsThird: DataTypes.INTEGER,
-    slotsFourth: DataTypes.INTEGER,
-    slotsFifth: DataTypes.INTEGER,
-    slotsSixth: DataTypes.INTEGER,
-    slotsSeventh: DataTypes.INTEGER,
-    slotsEigth: DataTypes.INTEGER,
-    slotsNinth: DataTypes.INTEGER,
-    currentLegendaryResistances: DataTypes.INTEGER,
+    slotsFirst: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsSecond: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsThird: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsFourth: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsFifth: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsSixth: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsSeventh: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsEigth: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    slotsNinth: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    currentLegendaryResistances: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
   }, {
     sequelize,
     modelName: 'Creature',
