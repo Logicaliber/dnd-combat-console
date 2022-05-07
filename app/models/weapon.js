@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Weapon.belongsToMany(models.CreatureType, { through: 'CreatureTypeWeapon' });
+      Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon });
     }
   }
   Weapon.init({
