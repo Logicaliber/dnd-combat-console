@@ -12,116 +12,149 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true,
       },
+      size: {
+        type: Sequelize.STRING,
+        defaultValue: 'medium',
+      },
       type: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
       },
       tags: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
       },
       alignment: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
       },
-      hitDie: {
-        type: Sequelize.INTEGER
-      },
-      numDice: {
-        type: Sequelize.INTEGER
-      },
-      maxHP: {
-        type: Sequelize.INTEGER
+      armorId: {
+        type: Sequelize.INTEGER,
       },
       hasShield: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+      },
+      hitDie: {
+        type: Sequelize.INTEGER,
+      },
+      numDice: {
+        type: Sequelize.INTEGER,
+      },
+      maxHP: {
+        type: Sequelize.INTEGER,
       },
       speed: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 30,
       },
       flySpeed: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       swimSpeed: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       climbSpeed: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       burrowSpeed: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
       },
       hover: {
-        type: Sequelize.BOOLEAN
-      },
-      proficiencyBonus: {
-        type: Sequelize.INTEGER
-      },
-      challengeRating: {
-        type: Sequelize.INTEGER
-      },
-      resistances: {
-        type: Sequelize.JSON
-      },
-      passivePerception: {
-        type: Sequelize.INTEGER
-      },
-      senses: {
-        type: Sequelize.JSON
-      },
-      languages: {
-        type: Sequelize.JSON
-      },
-      actionPatterns: {
-        type: Sequelize.JSON
-      },
-      reactions: {
-        type: Sequelize.JSON
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       str: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
       dex: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
       con: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
       int: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
       wis: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
       cha: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
-      size: {
-        type: Sequelize.STRING
+      savingThrows: {
+        type: Sequelize.JSON,
+        defaultValue: null,
       },
       skills: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
+        defaultValue: null,
       },
-      saves: {
-        type: Sequelize.JSON
+      resistances: {
+        type: Sequelize.JSON,
+        defaultValue: null,
       },
-      spellcasting: {
-        type: Sequelize.STRING
+      senses: {
+        type: Sequelize.JSON,
       },
-      innateSpells: {
-        type: Sequelize.JSON
+      passivePerception: {
+        type: Sequelize.INTEGER,
+        defaultValue: 10,
       },
-      spellSlots: {
-        type: Sequelize.JSON
+      languages: {
+        type: Sequelize.JSON,
       },
-      legendaryActions: {
-        type: Sequelize.JSON
+      challengeRating: {
+        type: Sequelize.INTEGER,
+      },
+      proficiencyBonus: {
+        type: Sequelize.INTEGER,
+        defaultValue: 2,
       },
       legendaryResistances: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
+      specialAbilities: {
+        type: Sequelize.JSON,
+        defaultValue: null,
+      },
+      spellcasting: {
+        type: Sequelize.STRING,
+        defaultValue: null,
+      },
+      spellSlots: {
+        type: Sequelize.JSON,
+        defaultValue: null,
+      },
+      innateSpells: {
+        type: Sequelize.JSON,
+        defaultValue: null,
+      },
+      actionPatterns: {
+        type: Sequelize.JSON,
+      },
+      legendaryActions: {
+        type: Sequelize.JSON,
+        defaultValue: null,
+      },
+      reactions: {
+        type: Sequelize.JSON,
+        defaultValue: null,
       },
       lairActions: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
+        defaultValue: null,
       },
       regionalEffects: {
-        type: Sequelize.JSON
+        type: Sequelize.JSON,
+        defaultValue: null,
       },
       createdAt: {
         allowNull: false,

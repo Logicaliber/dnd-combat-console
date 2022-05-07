@@ -1,6 +1,6 @@
 'use strict';
 
-const { normalizedCR, withTs } = require('./seederHelpers');
+const { normalizedCR, withTs } = require('./helpers/seederHelpers');
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
@@ -27,7 +27,6 @@ module.exports = {
       passivePerception: 9,
       languages: '["common","goblin"]',
       challengeRating: normalizedCR('1/4'),
-      proficiencyBonus: 2,
       actionPatterns: '[]', // TODO
     }])
     await queryInterface.bulkInsert('CreatureTypes', creatureTypes, {});
