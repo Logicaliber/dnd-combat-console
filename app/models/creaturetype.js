@@ -9,7 +9,6 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      CreatureType.hasOne(models.Armor);
       CreatureType.hasMany(models.Creature);
       CreatureType.belongsTo(models.Armor);
       CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell });

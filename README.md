@@ -20,5 +20,7 @@ psql -h localhost -d dnd -p 5432 -U dndapp
 dndapppass
 # To list all tables:
 \d
-# Type normal sql queries to look around, e.g.
+# Use normal sql queries.
 SELECT * FROM "CreatureTypes";
+# To exit:
+\q

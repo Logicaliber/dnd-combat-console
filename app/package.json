@@ -1,7 +1,7 @@
 {
   "name": "app",
   "version": "1.0.0",
-  "description": "DdD Combat Console",
+  "description": "DnD Combat Console",
   "main": "index.js",
   "scripts": {
     "db:create": "npx sequelize-cli db:create",
