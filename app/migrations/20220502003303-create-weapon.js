@@ -38,7 +38,7 @@ module.exports = {
         type: Sequelize.STRING,
         defaultValue: null,
       },
-      saveHalf: {
+      saveStillHalf: {
         type: Sequelize.BOOLEAN,
         defaultValue: null,
       },

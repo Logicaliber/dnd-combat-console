@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
     components: DataTypes.STRING,
     duration: DataTypes.STRING,
     saveType: DataTypes.STRING,
-    saveHalf: DataTypes.BOOLEAN,
+    saveStillHalf: DataTypes.BOOLEAN,
     description: DataTypes.TEXT,
     damage: DataTypes.JSON
   }, {

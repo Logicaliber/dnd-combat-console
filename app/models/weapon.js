@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
       type: Sequelize.STRING,
       defaultValue: null,
     },
-    saveHalf: {
+    saveStillHalf: {
       type: Sequelize.STRING,
       defaultValue: null,
     },
