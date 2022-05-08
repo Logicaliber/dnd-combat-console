@@ -1,6 +1,6 @@
 const { Model } = require('sequelize');
 
-const { isArrayOfDamageObjects, isArrayOfAlphabeticalStrings } = require('../services/validationHelpers');
+const { isArrayOfAlphabeticalStrings, isDamageObject } = require('../services/validationHelpers');
 
 module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {
@@ -22,7 +22,16 @@ module.exports = (sequelize, DataTypes) => {
     damages: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfDamageObjects,
+        isArrayOfDamageObjects(damages) {
+          if (damages === null) return;
+          if (typeof damages === 'string') {
+            damages = JSON.parse(damages);
+          }
+          if (!damages.isArray()) throw new Error('damages must be an array');
+          damages.forEach((damage) => {
+            isDamageObject(damage);
+          });
+        },
       },
     },
     properties: {
