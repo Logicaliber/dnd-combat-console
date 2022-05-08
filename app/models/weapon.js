@@ -52,6 +52,7 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
     attackShape: {
+      allowNull: true,
       type: DataTypes.STRING,
       validate: {
         is: /^[0-9]*[0,5]ft (cone|cylinder|sphere|line')$/,
@@ -67,7 +68,7 @@ module.exports = (sequelize, DataTypes) => {
     saveType: {
       type: DataTypes.STRING,
       validate: {
-        in: [['str', 'dex', 'con', 'int', 'wis', 'cha']],
+        in: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
       },
     },
     saveStillHalf: {

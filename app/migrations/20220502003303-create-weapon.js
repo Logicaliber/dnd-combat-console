@@ -26,6 +26,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       attackShape: {
+        allowNull: true,
         type: Sequelize.STRING,
       },
       save: {
