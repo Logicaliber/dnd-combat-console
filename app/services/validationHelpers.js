@@ -1,4 +1,6 @@
 module.exports = {
+  MAX_DESCRIPTION: 200,
+  MAX_INFORMATION: 20,
   /**
    * actionPatterns: [
    *   [{
@@ -65,21 +67,6 @@ module.exports = {
       throw new Error('first alignment must be on ethical axis, second alignment on moral axis');
     }
   },
-  /**
-   *  damage {
-   *    num: [0,i],                 // if 0, damage is 0.
-   *    die: [1,2,...,12],          // Size of dice to roll
-   *    bonus: [0,3],               // Any bonus to the damage.
-   *    type: string,               // if '', damage is 0.
-   *    effect: string,             // 'stunned for 1 round'.
-   *      --  below are optional --
-   *    damageRequirement: string,  // any requirements for the damage.
-   *    requirement: string,        // any requirements for the effect.
-   *    save: [0,10,11,...,30],     // The save DC the target need to pass to prevent the effect.
-   *    saveType: string,           // One of 'str', 'dex', ... , 'cha'.
-   *    saveStillHalf: false,       // Local override if negation of Weapon.saveStillHalf
-   *  }
-   */
   isArrayOfDamageObjects(damages) {
     if (damages === null) return;
     if (typeof damages === 'string') {
@@ -162,6 +149,49 @@ module.exports = {
         prevLetter = element.charAt(0);
       }
     });
+  },
+  /**
+   *  damage {
+   *    num: [0,i],                 // if 0, damage is 0.
+   *    die: [1,2,...,12],          // Size of dice to roll
+   *    bonus: [0,3],               // Any bonus to the damage.
+   *    type: string,               // if '', damage is 0.
+   *    effect: string,             // 'stunned for 1 round'.
+   *      --  below are optional --
+   *    damageRequirement: string,  // any requirements for the damage.
+   *    requirement: string,        // any requirements for the effect.
+   *    save: [0,10,11,...,30],     // The save DC the target need to pass to prevent the effect.
+   *    saveType: string,           // One of 'str', 'dex', ... , 'cha'.
+   *    saveStillHalf: false,       // Local override if negation of Weapon or Spell .saveStillHalf
+   *  }
+   */
+  isDamageObject(object) {
+    if (typeof object !== 'object') throw new Error('damages must be an array of objects');
+    const objectKeys = Object.keys(object);
+    if (
+      !objectKeys.includes('num')
+      || !objectKeys.includes('die')
+      || !objectKeys.includes('bonus')
+      || !objectKeys.includes('type')
+      || !objectKeys.includes('effect')
+      || typeof object.num !== 'number'
+      || object.num < 0 || object.num > 20
+      || typeof object.die !== 'number'
+      || !([...Array(12).keys()]
+        .map((i) => i + 1)
+        .includes(object.die))
+      || typeof object.bonus !== 'number'
+      || !([...Array(4).keys()]
+        .includes(object.bonus))
+      || typeof object.type !== 'string'
+      || object.type.length < 8
+      || object.type.length > this.MAX_INFORMATION
+      || typeof object.effect !== 'string'
+      || object.effect.length < 8
+      || object.effect.length > this.MAX_INFORMATION
+    ) {
+      throw new Error(`damage object ${JSON.stringify(object)} failed validation`);
+    }
   },
   isValidResistancesObject(object) {
     if (object === null) return;
