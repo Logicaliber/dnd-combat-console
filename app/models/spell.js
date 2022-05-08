@@ -1,7 +1,12 @@
 const { Model } = require('sequelize');
 
 const { isDamageObject } = require('../services/validationHelpers');
-const { MAX_DESCRIPTION, MAX_INFORMATION } = require('../variables');
+const {
+  MIN_INFORMATION,
+  MAX_INFORMATION,
+  MIN_DESCRIPTION,
+  MAX_DESCRIPTION,
+} = require('../variables');
 
 module.exports = (sequelize, DataTypes) => {
   class Spell extends Model {
@@ -38,7 +43,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: '1 action',
       type: DataTypes.STRING,
       validate: {
-        len: [8, MAX_INFORMATION],
+        len: [MIN_INFORMATION, MAX_INFORMATION],
       },
     },
     range: {
@@ -59,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: 'instantaneous',
       type: DataTypes.STRING,
       validate: {
-        len: [1, MAX_INFORMATION],
+        len: [MIN_INFORMATION, MAX_INFORMATION],
       },
     },
     saveType: {
@@ -76,7 +81,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       type: DataTypes.TEXT,
       validate: {
-        len: [12, MAX_DESCRIPTION],
+        len: [MIN_DESCRIPTION, MAX_DESCRIPTION],
       },
     },
     damages: {
@@ -104,7 +109,7 @@ module.exports = (sequelize, DataTypes) => {
                 || typeof spellDamage.damage !== 'object'
                 || !objectKeys.includes('effect')
                 || typeof spellDamage.effect !== 'string'
-                || spellDamage.effect.length < 0
+                || !spellDamage.effect.length
                 || spellDamage.effect.length > MAX_INFORMATION
                 || !objectKeys.includes('slot')
               ) throw new Error(`spellDamage object ${JSON.stringify(spellDamage)} failed validation`);

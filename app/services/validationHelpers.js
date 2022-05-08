@@ -1,18 +1,12 @@
 const {
   MAX_DICE,
-  MAX_DIE_SIZE,
   MIN_INFORMATION,
   MAX_INFORMATION,
+  VALID_DIE_SIZES,
+  MAX_ARRAY_LENGTH,
 } = require('../variables');
 
 module.exports = {
-  /**
-   * for example ['ammunition','heavy','loading','two-handed']
-   */
-  isArrayOfAlphabeticalStrings(array) {
-    if (array === null) return;
-    module.exports.isArrayOfStrings(array, true);
-  },
 
   /**
    * specialAbilities, reactions, etc. [{
@@ -28,7 +22,7 @@ module.exports = {
       array = JSON.parse(array);
     }
     if (!array.isArray()) throw new Error('array must be an array');
-    if (array.length <= 0) throw new Error('array should not be length 0');
+    if (!array.length) throw new Error('array should not be length 0');
     array.forEach((object) => {
       if (typeof object !== 'object') throw new Error('array must contain objects');
       const objectKeys = Object.keys(object);
@@ -41,6 +35,14 @@ module.exports = {
     });
   },
 
+  /**
+   * for example ['ammunition','heavy','loading','two-handed']
+   */
+  isArrayOfStringsAlphabetical(array) {
+    if (array === null) return;
+    module.exports.isArrayOfStrings(array, true);
+  },
+
   isArrayOfStrings(array, alphabetical = false) {
     if (array === null) return;
     if (typeof array === 'string') {
@@ -48,7 +50,8 @@ module.exports = {
     }
     let prevLetter = 'a';
     if (!array.isArray()) throw new Error('array must be an array');
-    if (array.length <= 0) throw new Error('array should not be length 0');
+    if (!array.length) throw new Error('array should not be length 0');
+    if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
     array.forEach((element) => {
       if (typeof element !== 'string' || !/^ [a_z]$ /.test(element)) throw new Error('array elements must be strings of lowercase letters');
       if (alphabetical) {
@@ -87,8 +90,7 @@ module.exports = {
       || !([...Array(MAX_DICE + 1).keys()]
         .includes(object.num))
       || typeof object.die !== 'number'
-      || !([...Array(MAX_DIE_SIZE + 1).keys()]
-        .includes(object.die))
+      || !VALID_DIE_SIZES.includes(object.die)
       || typeof object.bonus !== 'number'
       || !([...Array(4).keys()]
         .includes(object.bonus))

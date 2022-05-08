@@ -1,6 +1,6 @@
 const { Model } = require('sequelize');
 
-const { isArrayOfAlphabeticalStrings, isDamageObject } = require('../services/validationHelpers');
+const { isArrayOfStringsAlphabetical, isDamageObject } = require('../services/validationHelpers');
 
 module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {
@@ -37,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
     properties: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfAlphabeticalStrings,
+        isArrayOfStringsAlphabetical,
       },
     },
     normalRange: {

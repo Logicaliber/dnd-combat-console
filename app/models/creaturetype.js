@@ -5,6 +5,14 @@ const {
   isArrayOfLabeledDescriptions,
   isValidStat,
 } = require('../services/validationHelpers');
+const {
+  MAX_ARRAY_LENGTH,
+  MAX_DICE,
+  VALID_HIT_DIE_SIZES,
+  MIN_INFORMATION,
+  MAX_INFORMATION,
+  MAX_DESCRIPTION,
+} = require('../variables');
 
 module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
@@ -67,13 +75,14 @@ module.exports = (sequelize, DataTypes) => {
     hitDie: {
       type: DataTypes.INTEGER,
       validate: {
-        in: [[1, 4, 6, 8, 10, 12]],
+        in: [VALID_HIT_DIE_SIZES],
       },
     },
     numDice: {
       type: DataTypes.INTEGER,
       validate: {
         min: 1,
+        max: MAX_DICE,
       },
     },
     maxHP: {
@@ -178,14 +187,22 @@ module.exports = (sequelize, DataTypes) => {
             || !objectKeys.includes('str')
             || !objectKeys.includes('int')
             || !objectKeys.includes('wis')
-            || !objectKeys.includes('cha')
-            || object.str < 0 || object.str > 30
-            || object.dex < 0 || object.dex > 30
-            || object.con < 0 || object.con > 30
-            || object.int < 0 || object.int > 30
-            || object.wis < 0 || object.wis > 30
-            || object.cha < 0 || object.cha > 30
-          ) throw new Error('saving throws object must contain each ability as a key');
+            || !objectKeys.includes('cha')) throw new Error('saving throws object must contain each ability as a key');
+          if (
+            typeof object.str !== 'number'
+            || object.str < 0 || object.str > 19
+            || typeof object.dex !== 'number'
+            || object.dex < 0 || object.dex > 19
+            || typeof object.con !== 'number'
+            || object.con < 0 || object.con > 19
+            || typeof object.int !== 'number'
+            || object.int < 0 || object.int > 19
+            || typeof object.wis !== 'number'
+            || object.wis < 0 || object.wis > 19
+            || typeof object.cha !== 'number'
+            || object.cha < 0 || object.cha > 19
+            // 19: +10 from stat, +9 from proficiency
+          ) throw new Error('saving throws must be numbers between 0 and 19');
         },
       },
     },
@@ -198,7 +215,8 @@ module.exports = (sequelize, DataTypes) => {
             array = JSON.parse(array);
           }
           if (!array.isArray()) throw new Error('skill array must be an array');
-          if (array.length <= 0) throw new Error('skill array should not be length 0');
+          if (!array.length) throw new Error('skill array should not be length 0');
+          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((object) => {
             if (typeof object !== 'object') throw new Error('skill array must contain objects');
             const objectKeys = Object.keys(object);
@@ -207,7 +225,11 @@ module.exports = (sequelize, DataTypes) => {
               || !objectKeys.includes('skill')
               || !objectKeys.includes('value')
               || typeof object.skill !== 'string'
+              || object.skill.length < MIN_INFORMATION
+              || object.skill.length > MAX_INFORMATION
               || typeof object.value !== 'number'
+              || object.skill.value < 0
+              || object.skill.value > 28 // 10 from ability score, 18 from expertise
             ) throw new Error('skill array object must contain a skill, value pair');
           });
         },
@@ -328,6 +350,8 @@ module.exports = (sequelize, DataTypes) => {
             array = JSON.parse(array);
           }
           if (!array.isArray()) throw new Error('innate spell array must be an array');
+          if (!array.length) throw new Error('innate spell array cannot be empty');
+          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((innateSpell) => {
             if (typeof innateSpell !== 'object') throw new Error('innate spell array must be an array of objects');
             const objectKeys = Object.keys(innateSpell);
@@ -367,7 +391,8 @@ module.exports = (sequelize, DataTypes) => {
             array = JSON.parse(array);
           }
           if (!array.isArray()) throw new Error('action patterns array must be an array');
-          if (array.length <= 0) throw new Error('action patterns array should not be length 0');
+          if (!array.length) throw new Error('action patterns array should not be length 0');
+          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((actionPattern) => {
             if (typeof actionPattern !== 'object' || !actionPattern.isArray()) throw new Error('action patterns array must contain arrays');
             actionPattern.forEach((object) => {
@@ -388,6 +413,8 @@ module.exports = (sequelize, DataTypes) => {
               ) {
                 throw new Error('action object must have keys other, restrictions, spellId, times, and weaponId');
               }
+              if (object.other.length > MAX_DESCRIPTION) throw new Error('max description length exceeded');
+              if (object.restrictions.length > MAX_INFORMATION) throw new Error('max information length exceeded');
               if (object.other.length === 0 && object.spellId === 0 && object.weaponId === 0) {
                 throw new Error('action must be one of other, spell, or weapon attack');
               }
