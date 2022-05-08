@@ -81,7 +81,7 @@ module.exports = (sequelize, DataTypes) => {
     damages: {
       type: DataTypes.JSON,
       validate: {
-        isValidSpellDamagesArray(array) {
+        isSpellDamagesArray(array) {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);

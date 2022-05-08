@@ -1,12 +1,13 @@
 module.exports = {
+  MIN_DICE: 0,
   MAX_DICE: 20,
   MAX_DIE_SIZE: 12,
-  MAX_DESCRIPTION: 200,
-  MAX_INFORMATION: 20,
-  MIN_DICE: 0,
   MIN_DIE_SIZE: 0,
-  MIN_DESCRIPTION: 8,
   MIN_INFORMATION: 4,
+  MAX_INFORMATION: 50,
+  MIN_DESCRIPTION: 8,
+  MAX_DESCRIPTION: 500,
+
   /**
    * for example ['ammunition','heavy','loading','two-handed']
    */
@@ -14,11 +15,12 @@ module.exports = {
     if (array === null) return;
     module.exports.isArrayOfStrings(array, true);
   },
+
   /**
-   * abilities: {
+   * specialAbilities, reactions, etc. [{
    *   label: string,
    *   description: string
-   * }
+   * }]
    * @param {Array} array
    * @throws
    */
@@ -40,6 +42,7 @@ module.exports = {
       if (typeof object.title !== 'string' || typeof object.description !== 'string') throw new Error('title and description must be strings');
     });
   },
+
   isArrayOfStrings(array, alphabetical = false) {
     if (array === null) return;
     if (typeof array === 'string') {
@@ -56,6 +59,7 @@ module.exports = {
       }
     });
   },
+
   /**
    *  damage {
    *    num: [0,i],                 // if 0, damage is 0.
@@ -100,6 +104,7 @@ module.exports = {
       throw new Error(`damage object ${JSON.stringify(object)} failed validation`);
     }
   },
+
   isValidStat(num) {
     if (typeof num !== 'number') throw new Error('stats must be numbers');
     if (num < 0 || num > 30) throw new Error('stats must be greater than 0 and no greater than 30');
