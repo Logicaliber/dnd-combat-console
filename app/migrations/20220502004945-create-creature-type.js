@@ -12,8 +12,8 @@ module.exports = {
         unique: true,
       },
       size: {
-        type: Sequelize.STRING,
         defaultValue: 'medium',
+        type: Sequelize.STRING,
       },
       type: {
         type: Sequelize.JSON,
@@ -28,6 +28,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       hasShield: {
+        defaultValue: false,
         type: Sequelize.BOOLEAN,
       },
       hitDie: {
@@ -40,52 +41,52 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       speed: {
-        type: Sequelize.INTEGER,
         defaultValue: 30,
+        type: Sequelize.INTEGER,
       },
       flySpeed: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       swimSpeed: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       climbSpeed: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       burrowSpeed: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       hover: {
-        type: Sequelize.BOOLEAN,
         defaultValue: false,
+        type: Sequelize.BOOLEAN,
       },
       str: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       dex: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       con: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       int: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       wis: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       cha: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       savingThrows: {
         type: Sequelize.JSON,
@@ -100,8 +101,8 @@ module.exports = {
         type: Sequelize.JSON,
       },
       passivePerception: {
-        type: Sequelize.INTEGER,
         defaultValue: 10,
+        type: Sequelize.INTEGER,
       },
       languages: {
         type: Sequelize.JSON,
@@ -110,12 +111,12 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       proficiencyBonus: {
-        type: Sequelize.INTEGER,
         defaultValue: 2,
+        type: Sequelize.INTEGER,
       },
       legendaryResistances: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       specialAbilities: {
         type: Sequelize.JSON,
