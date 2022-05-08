@@ -1,6 +1,6 @@
 const { Model } = require('sequelize');
 
-const { MAX_LEGENDARY_RESISTANCES, MAX_SPELL_SLOTS } = require('../services/validationHelpers');
+const { MAX_LEGENDARY_RESISTANCES, MAX_SPELL_SLOTS } = require('../variables');
 
 module.exports = (sequelize, DataTypes) => {
   class Creature extends Model {

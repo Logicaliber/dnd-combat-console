@@ -462,7 +462,7 @@ module.exports = (sequelize, DataTypes) => {
     modelName: 'CreatureType',
     validate: {
       maxHPBoundedByHitDice() {
-        if (this.maxHP > (this.numDice * (this.hitDie + this.con))) throw new Error('maxHP field cannot be greater than hit dice allow');
+        if (this.maxHP > (this.numDice * (this.hitDie + ((this.con - 10) / 2)))) throw new Error('maxHP field cannot be greater than hit dice allow');
       },
     },
   });

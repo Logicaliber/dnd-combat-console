@@ -93,6 +93,7 @@ module.exports = (sequelize, DataTypes) => {
             array = JSON.parse(array);
           }
           if (!array.isArray()) throw new Error('spell damages array must be an array');
+          if (!array.length) throw new Error('array should not be empty');
           array.forEach((subArray) => {
             if (typeof subArray !== 'object'
               || !subArray.isArray()
