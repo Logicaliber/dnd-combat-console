@@ -12,8 +12,8 @@ module.exports = {
         unique: true,
       },
       creatureTypeId: {
-        type: Sequelize.INTEGER,
         allowNull: false,
+        type: Sequelize.INTEGER,
       },
       maxHP: {
         type: Sequelize.INTEGER,

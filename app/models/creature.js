@@ -1,5 +1,7 @@
 const { Model } = require('sequelize');
 
+const { MAX_LEGENDARY_RESISTANCES, MAX_SPELL_SLOTS } = require('../services/validationHelpers');
+
 module.exports = (sequelize, DataTypes) => {
   class Creature extends Model {
     /**
@@ -18,8 +20,8 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     creatureTypeId: {
-      type: DataTypes.INTEGER,
       allowNull: false,
+      type: DataTypes.INTEGER,
     },
     maxHP: {
       type: DataTypes.INTEGER,
@@ -32,60 +34,70 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsSecond: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsThird: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsFourth: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsFifth: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsSixth: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsSeventh: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsEigth: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     slotsNinth: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_SPELL_SLOTS,
       },
     },
     currentLegendaryResistances: {
       type: DataTypes.INTEGER,
       validate: {
         min: 0,
+        max: MAX_LEGENDARY_RESISTANCES,
       },
     },
   }, {

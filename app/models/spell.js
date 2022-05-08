@@ -1,6 +1,7 @@
 const { Model } = require('sequelize');
 
-const { MAX_DESCRIPTION, MAX_INFORMATION, isDamageObject } = require('../services/validationHelpers');
+const { isDamageObject } = require('../services/validationHelpers');
+const { MAX_DESCRIPTION, MAX_INFORMATION } = require('../variables');
 
 module.exports = (sequelize, DataTypes) => {
   class Spell extends Model {

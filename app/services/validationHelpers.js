@@ -1,13 +1,11 @@
-module.exports = {
-  MIN_DICE: 0,
-  MAX_DICE: 20,
-  MAX_DIE_SIZE: 12,
-  MIN_DIE_SIZE: 0,
-  MIN_INFORMATION: 4,
-  MAX_INFORMATION: 50,
-  MIN_DESCRIPTION: 8,
-  MAX_DESCRIPTION: 500,
+const {
+  MAX_DICE,
+  MAX_DIE_SIZE,
+  MIN_INFORMATION,
+  MAX_INFORMATION,
+} = require('../variables');
 
+module.exports = {
   /**
    * for example ['ammunition','heavy','loading','two-handed']
    */
@@ -86,20 +84,20 @@ module.exports = {
       || !objectKeys.includes('effect')) throw new Error('damage object must have keys num, die, bonus, type, and effect');
     if (
       typeof object.num !== 'number'
-      || !([...Array(this.MAX_DICE + 1).keys()]
+      || !([...Array(MAX_DICE + 1).keys()]
         .includes(object.num))
       || typeof object.die !== 'number'
-      || !([...Array(this.MAX_DIE_SIZE + 1).keys()]
+      || !([...Array(MAX_DIE_SIZE + 1).keys()]
         .includes(object.die))
       || typeof object.bonus !== 'number'
       || !([...Array(4).keys()]
         .includes(object.bonus))
       || typeof object.type !== 'string'
-      || object.type.length < this.MIN_INFORMATION
-      || object.type.length > this.MAX_INFORMATION
+      || object.type.length < MIN_INFORMATION
+      || object.type.length > MAX_INFORMATION
       || typeof object.effect !== 'string'
-      || object.effect.length < this.MIN_INFORMATION
-      || object.effect.length > this.MAX_INFORMATION
+      || object.effect.length < MIN_INFORMATION
+      || object.effect.length > MAX_INFORMATION
     ) {
       throw new Error(`damage object ${JSON.stringify(object)} failed validation`);
     }

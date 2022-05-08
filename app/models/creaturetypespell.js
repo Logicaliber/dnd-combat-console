@@ -12,8 +12,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CreatureTypeSpell.init({
-    creatureTypeId: DataTypes.INTEGER,
-    spellId: DataTypes.INTEGER,
+    creatureTypeId: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
+    },
+    spellId: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
+    },
   }, {
     sequelize,
     modelName: 'CreatureTypeSpell',
