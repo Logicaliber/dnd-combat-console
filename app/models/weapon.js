@@ -17,23 +17,43 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
-    damage: {
+    /**
+     *  damage {
+     *    num: 0,               // if 0, damage is 0
+     *    die: 1,               // Number of dice
+     *    type: 'acid',         // if '', damage is 0
+     *    effect: '',           // 'stunned for 1 round', 'blinded for eternity', 'another d6 acid'
+     *        --  below are optional --
+     *    requirement: '',      // any requirements for the effect. If effect is '' and save is 0,
+     *                          // this is instead a requirement for the damage
+     *    save: 0,              // This and below define effect. If the weapon itself
+     *                             requires a saving throw, it will have a non-Null saveType value
+     *    saveType: '',         // One of 'str', 'dex', ... , 'cha'.
+     *    saveStillHalf: false, // If false and root weapon has true, no damage
+     *  }
+     */
+    damages: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfObjects(damage) {
-          if (typeof damage === 'string') {
-            damage = JSON.parse(damage);
+        isArrayOfObjects(damages) {
+          if (typeof damages === 'string') {
+            damages = JSON.parse(damages);
           }
-          if (!damage.isArray()) throw new Error('damage must be an array');
-          damage.forEach((obj) => {
-            if (typeof obj !== 'object') throw new Error('damage must be an array of objects');
-            Object.values(obj).forEach((value) => {
-              if (typeof value !== 'string' && typeof value !== 'number') throw new Error('damage objects must contain only strings or numbers');
+          if (!damages.isArray()) throw new Error('damages must be an array');
+          damages.forEach((damage) => {
+            if (typeof damage !== 'object') throw new Error('damages must be an array of objects');
+            Object.values(damage).forEach((value) => {
+              if (!(typeof value === 'boolean' && typeof value === 'string' && typeof value === 'number')) {
+                throw new Error('damage objects must contain only booleans, strings, or numbers');
+              }
             });
           });
         },
       },
     },
+    /**
+     * ['ammunition','heavy','loading','two-handed']
+     */
     properties: {
       type: DataTypes.JSON,
       validate: {
