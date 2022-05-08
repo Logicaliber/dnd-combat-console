@@ -17,8 +17,18 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
-    type: DataTypes.STRING,
-    baseAC: DataTypes.INTEGER,
+    type: {
+      type: DataTypes.STRING,
+      validate: {
+        isIn: [['light', 'medium', 'heavy', 'natural']],
+      },
+    },
+    baseAC: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
     disadvantage: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,

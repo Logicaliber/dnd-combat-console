@@ -18,28 +18,27 @@ module.exports = {
         type: Sequelize.JSON,
       },
       normalRange: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       longRange: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       attackShape: {
+        allowNull: true,
         type: Sequelize.STRING,
-        defaultValue: null,
       },
       save: {
-        type: Sequelize.INTEGER,
         defaultValue: 0,
+        type: Sequelize.INTEGER,
       },
       saveType: {
         type: Sequelize.STRING,
-        defaultValue: null,
       },
       saveStillHalf: {
-        type: Sequelize.BOOLEAN,
         defaultValue: false,
+        type: Sequelize.BOOLEAN,
       },
       createdAt: {
         allowNull: false,

@@ -12,8 +12,14 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   CreatureTypeWeapon.init({
-    creatureTypeId: DataTypes.INTEGER,
-    weaponId: DataTypes.INTEGER,
+    creatureTypeId: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
+    },
+    weaponId: {
+      allowNull: false,
+      type: DataTypes.INTEGER,
+    },
   }, {
     sequelize,
     modelName: 'CreatureTypeWeapon',

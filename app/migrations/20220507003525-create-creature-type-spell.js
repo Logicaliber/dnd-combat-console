@@ -8,9 +8,11 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       creatureTypeId: {
+        allowNull: false,
         type: Sequelize.INTEGER,
       },
       spellId: {
+        allowNull: false,
         type: Sequelize.INTEGER,
       },
       createdAt: {

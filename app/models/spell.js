@@ -1,5 +1,13 @@
 const { Model } = require('sequelize');
 
+const { isDamageObject } = require('../services/validationHelpers');
+const {
+  MIN_INFORMATION,
+  MAX_INFORMATION,
+  MIN_DESCRIPTION,
+  MAX_DESCRIPTION,
+} = require('../variables');
+
 module.exports = (sequelize, DataTypes) => {
   class Spell extends Model {
     /**
@@ -17,16 +25,100 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
-    level: DataTypes.INTEGER,
-    school: DataTypes.STRING,
-    castingTime: DataTypes.STRING,
-    range: DataTypes.INTEGER,
-    components: DataTypes.STRING,
-    duration: DataTypes.STRING,
-    saveType: DataTypes.STRING,
-    saveStillHalf: DataTypes.BOOLEAN,
-    description: DataTypes.TEXT,
-    damage: DataTypes.JSON,
+    level: {
+      defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+        max: 9,
+      },
+    },
+    school: {
+      type: DataTypes.STRING,
+      validate: {
+        in: [['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation']],
+      },
+    },
+    castingTime: {
+      defaultValue: '1 action',
+      type: DataTypes.STRING,
+      validate: {
+        len: [MIN_INFORMATION, MAX_INFORMATION],
+      },
+    },
+    range: {
+      defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    components: {
+      defaultValue: 'V, S',
+      type: DataTypes.STRING,
+      validate: {
+        len: [1, MAX_INFORMATION],
+      },
+    },
+    duration: {
+      defaultValue: 'instantaneous',
+      type: DataTypes.STRING,
+      validate: {
+        len: [MIN_INFORMATION, MAX_INFORMATION],
+      },
+    },
+    saveType: {
+      type: DataTypes.STRING,
+      validate: {
+        in: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
+      },
+    },
+    saveStillHalf: {
+      defaultValue: false,
+      type: DataTypes.BOOLEAN,
+    },
+    description: {
+      allowNull: false,
+      type: DataTypes.TEXT,
+      validate: {
+        len: [MIN_DESCRIPTION, MAX_DESCRIPTION],
+      },
+    },
+    damages: {
+      type: DataTypes.JSON,
+      validate: {
+        isSpellDamagesArray(array) {
+          if (array === null) return;
+          if (typeof array === 'string') {
+            array = JSON.parse(array);
+          }
+          if (!array.isArray()) throw new Error('spell damages array must be an array');
+          array.forEach((subArray) => {
+            if (typeof subArray !== 'object'
+              || !subArray.isArray()
+              || !subArray.length) throw new Error('spell damages array must be an array of arrays');
+            subArray.forEach((spellDamage) => {
+              if (typeof spellDamage !== 'object') throw new Error('spell damages array must be an array of arrays of objects');
+              const objectKeys = Object.keys(spellDamage);
+              if (objectKeys.length !== 4
+                || !objectKeys.includes('caster')
+                || typeof spellDamage.caster !== 'number'
+                || spellDamage.caster < 0
+                || spellDamage.caster > 20
+                || !objectKeys.includes('damage')
+                || typeof spellDamage.damage !== 'object'
+                || !objectKeys.includes('effect')
+                || typeof spellDamage.effect !== 'string'
+                || !spellDamage.effect.length
+                || spellDamage.effect.length > MAX_INFORMATION
+                || !objectKeys.includes('slot')
+              ) throw new Error(`spellDamage object ${JSON.stringify(spellDamage)} failed validation`);
+              isDamageObject(spellDamage.damage);
+            });
+          });
+        },
+      },
+    },
   }, {
     sequelize,
     modelName: 'Spell',

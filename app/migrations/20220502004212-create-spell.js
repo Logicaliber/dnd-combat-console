@@ -12,33 +12,40 @@ module.exports = {
         unique: true,
       },
       level: {
+        defaultValue: 0,
         type: Sequelize.INTEGER,
       },
       school: {
         type: Sequelize.STRING,
       },
       castingTime: {
+        defaultValue: '1 action',
         type: Sequelize.STRING,
       },
       range: {
+        defaultValue: 0,
         type: Sequelize.INTEGER,
       },
       components: {
+        defaultValue: 'V, S',
         type: Sequelize.STRING,
       },
       duration: {
+        defaultValue: 'instantaneous',
         type: Sequelize.STRING,
       },
       saveType: {
         type: Sequelize.STRING,
       },
       saveStillHalf: {
+        defaultValue: false,
         type: Sequelize.BOOLEAN,
       },
       description: {
+        allowNull: false,
         type: Sequelize.TEXT,
       },
-      damage: {
+      damages: {
         type: Sequelize.JSON,
       },
       createdAt: {

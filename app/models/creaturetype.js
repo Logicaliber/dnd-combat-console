@@ -1,5 +1,19 @@
 const { Model } = require('sequelize');
 
+const {
+  isArrayOfStrings,
+  isArrayOfLabeledDescriptions,
+  isValidStat,
+} = require('../services/validationHelpers');
+const {
+  MAX_ARRAY_LENGTH,
+  MAX_DICE,
+  VALID_HIT_DIE_SIZES,
+  MIN_INFORMATION,
+  MAX_INFORMATION,
+  MAX_DESCRIPTION,
+} = require('../variables');
+
 module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
     /**
@@ -21,125 +35,436 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     size: {
-      type: DataTypes.STRING,
       defaultValue: 'medium',
+      type: DataTypes.STRING,
+      in: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan']],
     },
-    type: DataTypes.JSON,
-    tags: DataTypes.JSON,
-    alignment: DataTypes.JSON,
+    type: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
+    tags: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
+    alignment: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfAlignmentStrings(array) {
+          if (array === null) return;
+          isArrayOfStrings(array);
+          if (typeof array === 'string') array = JSON.parse(array);
+          if (array.length !== 2) throw new Error('alignment array must be length two');
+          if (!(array[0] === 'chaotic' || array[0] === 'neutral' || array[0] === 'lawful')
+            || !(array[1] === 'evil' || array[1] === 'neutral' || array[1] === 'good')
+          ) {
+            throw new Error('first alignment must be on ethical axis, second alignment on moral axis');
+          }
+        },
+      },
+    },
     armorId: DataTypes.INTEGER,
-    hasShield: DataTypes.BOOLEAN,
-    hitDie: DataTypes.INTEGER,
-    numDice: DataTypes.INTEGER,
-    maxHP: DataTypes.INTEGER,
-    speed: {
+    hasShield: {
+      defaultValue: false,
+      type: DataTypes.BOOLEAN,
+    },
+    hitDie: {
       type: DataTypes.INTEGER,
+      validate: {
+        in: [VALID_HIT_DIE_SIZES],
+      },
+    },
+    numDice: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 1,
+        max: MAX_DICE,
+      },
+    },
+    maxHP: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 1,
+      },
+    },
+    speed: {
       defaultValue: 30,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     flySpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     swimSpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     climbSpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     burrowSpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     hover: {
-      type: DataTypes.BOOLEAN,
       defaultValue: false,
+      type: DataTypes.BOOLEAN,
     },
     str: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     dex: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     con: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     int: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     wis: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     cha: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     savingThrows: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isSavingThrowsObject(object) {
+          if (object === null) return;
+          if (typeof object === 'string') {
+            object = JSON.parse(object);
+          }
+          const objectKeys = Object.keys(object);
+          if (objectKeys.length !== 6
+            || !objectKeys.includes('str')
+            || !objectKeys.includes('dex')
+            || !objectKeys.includes('str')
+            || !objectKeys.includes('int')
+            || !objectKeys.includes('wis')
+            || !objectKeys.includes('cha')) throw new Error('saving throws object must contain each ability as a key');
+          if (
+            typeof object.str !== 'number'
+            || object.str < 0 || object.str > 19
+            || typeof object.dex !== 'number'
+            || object.dex < 0 || object.dex > 19
+            || typeof object.con !== 'number'
+            || object.con < 0 || object.con > 19
+            || typeof object.int !== 'number'
+            || object.int < 0 || object.int > 19
+            || typeof object.wis !== 'number'
+            || object.wis < 0 || object.wis > 19
+            || typeof object.cha !== 'number'
+            || object.cha < 0 || object.cha > 19
+            // 19: +10 from stat, +9 from proficiency
+          ) throw new Error('saving throws must be numbers between 0 and 19');
+        },
+      },
     },
-    skills: DataTypes.JSON,
+    skills: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfSkillObjects(array) {
+          if (array === null) return;
+          if (typeof array === 'string') {
+            array = JSON.parse(array);
+          }
+          if (!array.isArray()) throw new Error('skill array must be an array');
+          if (!array.length) throw new Error('skill array should not be length 0');
+          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
+          array.forEach((object) => {
+            if (typeof object !== 'object') throw new Error('skill array must contain objects');
+            const objectKeys = Object.keys(object);
+            if (
+              objectKeys.length !== 2
+              || !objectKeys.includes('skill')
+              || !objectKeys.includes('value')
+              || typeof object.skill !== 'string'
+              || object.skill.length < MIN_INFORMATION
+              || object.skill.length > MAX_INFORMATION
+              || typeof object.value !== 'number'
+              || object.skill.value < 0
+              || object.skill.value > 28 // 10 from ability score, 18 from expertise
+            ) throw new Error('skill array object must contain a skill, value pair');
+          });
+        },
+      },
+    },
     resistances: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isResistancesObject(object) {
+          if (object === null) return;
+          if (typeof object === 'string') {
+            object = JSON.parse(object);
+          }
+          const objectKeys = Object.keys(object);
+          if (objectKeys.length !== 6
+            || !objectKeys.includes('resistant')
+            || !objectKeys.includes('vulnerable')
+            || !objectKeys.includes('immune')
+          ) throw new Error('resistances object must have resistant, vulnerable, and immune as keys');
+          isArrayOfStrings(object.resistant);
+          isArrayOfStrings(object.vulnerable);
+          isArrayOfStrings(object.immune);
+        },
+      },
     },
-    senses: DataTypes.JSON,
+    senses: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
     passivePerception: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
-    },
-    languages: DataTypes.JSON,
-    challengeRating: DataTypes.INTEGER,
-    proficiencyBonus: {
       type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    languages: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
+    challengeRating: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: -3,
+        max: 30,
+      },
+    },
+    proficiencyBonus: {
       defaultValue: 2,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 2,
+        max: 9,
+      },
     },
     legendaryResistances: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     specialAbilities: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     spellcasting: {
       type: DataTypes.STRING,
-      defaultValue: null,
+      validate: {
+        in: [['int', 'wis', 'cha', null]],
+      },
     },
     spellSlots: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        /**
+         * for example [0,5,2,0,0,0,0,0,0,0]
+         * @param {Array} array
+         * @throws
+         */
+        isSpellSlotArray(array) {
+          if (array === null) return;
+          if (typeof array === 'string') {
+            array = JSON.parse(array);
+          }
+          if (!array.isArray()) throw new Error('spell slot array must be an array');
+          if (array.length !== 10) throw new Error('spell slot array should be length 10');
+          if (array[0] !== 0) throw new Error('index 0 of spell slot array should be 0');
+          array.forEach((number) => {
+            if (typeof number !== 'number' || number < 0 || number > 10) {
+              throw new Error('spell slot array must contain only numbers between 0 and 10');
+            }
+          });
+        },
+      },
     },
     innateSpells: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        /**
+         * innateSpell: {
+         *   spellId: integer,
+         *   perDay: [0-9], // perDay 0 => "at will"
+         *   restrictions: string,
+         * }
+         * @param {Array} array
+         * @throws
+         */
+        isInnateSpellArray(array) {
+          if (array === null) return;
+          if (typeof array === 'string') {
+            array = JSON.parse(array);
+          }
+          if (!array.isArray()) throw new Error('innate spell array must be an array');
+          if (!array.length) throw new Error('innate spell array cannot be empty');
+          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
+          array.forEach((innateSpell) => {
+            if (typeof innateSpell !== 'object') throw new Error('innate spell array must be an array of objects');
+            const objectKeys = Object.keys(innateSpell);
+            if (
+              objectKeys.length !== 3
+              || !objectKeys.includes('spellId')
+              || !objectKeys.includes('perDay')
+              || !objectKeys.includes('restrictions')
+              || typeof innateSpell.spellId !== 'number'
+              || innateSpell.spellId < 1
+              || typeof innateSpell.perDay !== 'number'
+              || innateSpell.perDay < 0
+              || typeof innateSpell.restrictions !== 'string'
+              || innateSpell.restrictions.length > MAX_INFORMATION
+            ) throw new Error('innate spell object must contain a spellId, a perDay, and a restrictions');
+          });
+        },
+      },
     },
-    actionPatterns: DataTypes.JSON,
+    actionPatterns: {
+      type: DataTypes.JSON,
+      validate: {
+        /**
+         * actionPatterns: [
+         *   "actionPattern" [ "action" {
+         *     other: string,        // If not '', an action other than a weapon or spell attack
+         *     restrictions: string, // Any restrictions the action has
+         *     spellId: [0-inf],     // id of a spell
+         *     times: [1-9],         // number of times to attack with the weapon
+         *     weaponId: [0-inf],    // id of a weapon
+         *                           // Disallow non-zero spellId and non-zero weaponId
+         *                           // If spellId is non-zero, times should be 1.
+         *   }],
+         * ]
+         */
+        isArrayOfActionPatterns(array) {
+          if (typeof array === 'string') {
+            array = JSON.parse(array);
+          }
+          if (!array.isArray()) throw new Error('action patterns array must be an array');
+          if (!array.length) throw new Error('action patterns array should not be length 0');
+          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
+          array.forEach((actionPattern) => {
+            if (typeof actionPattern !== 'object' || !actionPattern.isArray()) throw new Error('action patterns array must contain arrays');
+            actionPattern.forEach((object) => {
+              if (typeof object !== 'object') throw new Error('action pattern must be an array of action objects');
+              const objectKeys = Object.keys(object);
+              if (
+                objectKeys.length !== 5
+                || !objectKeys.includes('other')
+                || !objectKeys.includes('restrictions')
+                || !objectKeys.includes('spellId')
+                || !objectKeys.includes('times')
+                || !objectKeys.includes('weaponId')
+                || typeof object.other !== 'string'
+                || typeof object.restrictions !== 'string'
+                || typeof object.spellId !== 'number'
+                || typeof object.times !== 'number'
+                || typeof object.weaponId !== 'number'
+              ) {
+                throw new Error('action object must have keys other, restrictions, spellId, times, and weaponId');
+              }
+              if (object.other.length > MAX_DESCRIPTION) throw new Error('max description length exceeded');
+              if (object.restrictions.length > MAX_INFORMATION) throw new Error('max information length exceeded');
+              if (object.other.length === 0 && object.spellId === 0 && object.weaponId === 0) {
+                throw new Error('action must be one of other, spell, or weapon attack');
+              }
+              if (object.spellId !== 0 && object.weaponId !== 0) {
+                throw new Error('action cannot be both a spell and a weapon attack');
+              }
+              if (object.other.length > 0 && (object.spellId !== 0 || object.weaponId !== 0)) {
+                throw new Error('action cannot be both other and a spell or weapon attack');
+              }
+              if (object.spellId !== 0 && object.times !== 1) {
+                throw new Error('spell actions cannot be used multiple times');
+              }
+            });
+          });
+        },
+      },
+    },
     legendaryActions: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     reactions: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     lairActions: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     regionalEffects: {
       type: DataTypes.JSON,
-      defaultValue: null,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
   }, {
     sequelize,
     modelName: 'CreatureType',
+    validate: {
+      maxHPBoundedByHitDice() {
+        if (this.maxHP > (this.numDice * (this.hitDie + this.con))) throw new Error('maxHP field cannot be greater than hit dice allow');
+      },
+    },
   });
   return CreatureType;
 };

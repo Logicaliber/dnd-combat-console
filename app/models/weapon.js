@@ -1,5 +1,7 @@
 const { Model } = require('sequelize');
 
+const { isArrayOfStringsAlphabetical, isDamageObject } = require('../services/validationHelpers');
+
 module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {
     /**
@@ -17,31 +19,70 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       unique: true,
     },
-    damage: DataTypes.JSON,
-    properties: DataTypes.JSON,
+    damages: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfDamageObjects(damages) {
+          if (damages === null) return;
+          if (typeof damages === 'string') {
+            damages = JSON.parse(damages);
+          }
+          if (!damages.isArray()) throw new Error('damages must be an array');
+          damages.forEach((damage) => {
+            isDamageObject(damage);
+          });
+        },
+      },
+    },
+    properties: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStringsAlphabetical,
+      },
+    },
     normalRange: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+        mod5(number) {
+          if (number % 5) throw new Error('normalRange must be divisible by 5');
+        },
+      },
     },
     longRange: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+        mod5(number) {
+          if (number % 5) throw new Error('longRange must be divisible by 5');
+        },
+      },
     },
     attackShape: {
+      allowNull: true,
       type: DataTypes.STRING,
-      defaultValue: null,
+      validate: {
+        is: /^[0-9]*[0,5]ft (cone|cylinder|sphere|line')$/,
+      },
     },
     save: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     saveType: {
       type: DataTypes.STRING,
-      defaultValue: null,
+      validate: {
+        in: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
+      },
     },
     saveStillHalf: {
-      type: DataTypes.BOOLEAN,
       defaultValue: false,
+      type: DataTypes.BOOLEAN,
     },
   }, {
     sequelize,
