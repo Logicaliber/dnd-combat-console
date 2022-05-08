@@ -365,6 +365,7 @@ module.exports = (sequelize, DataTypes) => {
               || typeof innateSpell.perDay !== 'number'
               || innateSpell.perDay < 0
               || typeof innateSpell.restrictions !== 'string'
+              || innateSpell.restrictions.length > MAX_INFORMATION
             ) throw new Error('innate spell object must contain a spellId, a perDay, and a restrictions');
           });
         },

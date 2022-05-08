@@ -1,9 +1,11 @@
 const {
+  MAX_ARRAY_LENGTH,
   MAX_DICE,
   MIN_INFORMATION,
   MAX_INFORMATION,
+  MIN_DESCRIPTION,
+  MAX_DESCRIPTION,
   VALID_DIE_SIZES,
-  MAX_ARRAY_LENGTH,
 } = require('../variables');
 
 module.exports = {
@@ -30,8 +32,13 @@ module.exports = {
         objectKeys.length !== 2
         || !objectKeys.includes('title')
         || !objectKeys.includes('description')
+        || typeof object.title !== 'string'
+        || object.title.length < MIN_INFORMATION
+        || object.title.length > MAX_INFORMATION
+        || typeof object.description !== 'string'
+        || object.description.length < MIN_DESCRIPTION
+        || object.description.length > MAX_DESCRIPTION
       ) throw new Error('array object must contain a title, description pair');
-      if (typeof object.title !== 'string' || typeof object.description !== 'string') throw new Error('title and description must be strings');
     });
   },
 
@@ -53,7 +60,12 @@ module.exports = {
     if (!array.length) throw new Error('array should not be length 0');
     if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
     array.forEach((element) => {
-      if (typeof element !== 'string' || !/^ [a_z]$ /.test(element)) throw new Error('array elements must be strings of lowercase letters');
+      if (
+        typeof element !== 'string'
+        || !/^[a_z-]+$/.test(element)
+        || element.length < MIN_INFORMATION
+        || element.length > MAX_INFORMATION
+      ) throw new Error('array elements must be strings of lowercase letters or dashes');
       if (alphabetical) {
         if (element.charAt(0) < prevLetter) throw new Error('array must be in alphabetical order');
         prevLetter = element.charAt(0);
