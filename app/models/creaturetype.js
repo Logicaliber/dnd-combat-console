@@ -1,5 +1,18 @@
 const { Model } = require('sequelize');
 
+const {
+  isArrayOfActionPatterns,
+  isArrayOfAlignmentStrings,
+  isArrayOfStrings,
+  isArrayOfLabeledDescriptions,
+  isArrayOfSkillObjects,
+  isValidResistancesObject,
+  isValidSavingThrowsObject,
+  isValidSpellSlotArray,
+  isValidInnateSpellArray,
+  isValidStat,
+} = require('../services/validationHelpers');
+
 module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
     /**
@@ -21,111 +34,244 @@ module.exports = (sequelize, DataTypes) => {
       unique: true,
     },
     size: {
-      type: DataTypes.STRING,
       defaultValue: 'medium',
+      type: DataTypes.STRING,
+      in: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan']],
     },
-    type: DataTypes.JSON,
-    tags: DataTypes.JSON,
-    alignment: DataTypes.JSON,
+    type: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
+    tags: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
+    alignment: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfAlignmentStrings,
+      },
+    },
     armorId: DataTypes.INTEGER,
-    hasShield: DataTypes.BOOLEAN,
-    hitDie: DataTypes.INTEGER,
-    numDice: DataTypes.INTEGER,
-    maxHP: DataTypes.INTEGER,
-    speed: {
+    hasShield: {
+      defaultValue: false,
+      type: DataTypes.BOOLEAN,
+    },
+    hitDie: {
       type: DataTypes.INTEGER,
+      validate: {
+        in: [[1, 4, 6, 8, 10, 12]],
+      },
+    },
+    numDice: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 1,
+      },
+    },
+    maxHP: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 1,
+      },
+    },
+    speed: {
       defaultValue: 30,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     flySpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     swimSpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     climbSpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     burrowSpeed: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     hover: {
-      type: DataTypes.BOOLEAN,
       defaultValue: false,
+      type: DataTypes.BOOLEAN,
     },
     str: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     dex: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     con: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     int: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     wis: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     cha: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
+      type: DataTypes.INTEGER,
+      validate: {
+        isValidStat,
+      },
     },
     savingThrows: {
       type: DataTypes.JSON,
+      validate: {
+        isValidSavingThrowsObject,
+      },
     },
-    skills: DataTypes.JSON,
+    skills: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfSkillObjects,
+      },
+    },
     resistances: {
       type: DataTypes.JSON,
+      validate: {
+        isValidResistancesObject,
+      },
     },
-    senses: DataTypes.JSON,
+    senses: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
     passivePerception: {
-      type: DataTypes.INTEGER,
       defaultValue: 10,
-    },
-    languages: DataTypes.JSON,
-    challengeRating: DataTypes.INTEGER,
-    proficiencyBonus: {
       type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
+    },
+    languages: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfStrings,
+      },
+    },
+    challengeRating: {
+      type: DataTypes.INTEGER,
+      validate: {
+        min: -3,
+        max: 30,
+      },
+    },
+    proficiencyBonus: {
       defaultValue: 2,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 2,
+        max: 9,
+      },
     },
     legendaryResistances: {
-      type: DataTypes.INTEGER,
       defaultValue: 0,
+      type: DataTypes.INTEGER,
+      validate: {
+        min: 0,
+      },
     },
     specialAbilities: {
       type: DataTypes.JSON,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     spellcasting: {
       type: DataTypes.STRING,
+      validate: {
+        in: [['int', 'wis', 'cha', null]],
+      },
     },
     spellSlots: {
       type: DataTypes.JSON,
+      validate: {
+        isValidSpellSlotArray,
+      },
     },
     innateSpells: {
       type: DataTypes.JSON,
+      validate: {
+        isValidInnateSpellArray,
+      },
     },
-    actionPatterns: DataTypes.JSON,
+    actionPatterns: {
+      type: DataTypes.JSON,
+      validate: {
+        isArrayOfActionPatterns,
+      },
+    },
     legendaryActions: {
       type: DataTypes.JSON,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     reactions: {
       type: DataTypes.JSON,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     lairActions: {
       type: DataTypes.JSON,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
     regionalEffects: {
       type: DataTypes.JSON,
+      validate: {
+        isArrayOfLabeledDescriptions,
+      },
     },
   }, {
     sequelize,
