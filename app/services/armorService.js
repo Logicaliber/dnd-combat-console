@@ -6,6 +6,12 @@ module.exports = {
    * @returns {Object} new Armor
    */
   createArmor: async (armorObject) => {
+    const { count } = await Armor.findAndCountAll({
+      where: {
+        name: armorObject.name,
+      },
+    });
+    if (count) throw new Error(`armor with name ${armorObject.name} already exists`);
     return Armor.create(armorObject);
   },
 
@@ -22,7 +28,11 @@ module.exports = {
    * @returns {Object} updated Armor
    */
   updateArmor: async (armorObject) => {
-    return Armor.update(armorObject);
+    return Armor.update(armorObject, {
+      where: {
+        id: armorObject.id,
+      },
+    });
   },
 
   /**
@@ -38,6 +48,10 @@ module.exports = {
       creatureType.armorId = null;
       return creatureType.save();
     }));
-    return Armor.destroy(armorId);
+    return Armor.destroy({
+      where: {
+        id: armorId,
+      },
+    });
   },
 };

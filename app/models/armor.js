@@ -20,7 +20,10 @@ module.exports = (sequelize, DataTypes) => {
     type: {
       type: DataTypes.STRING,
       validate: {
-        isIn: [['light', 'medium', 'heavy', 'natural']],
+        isIn: {
+          args: [['light', 'medium', 'heavy', 'natural']],
+          msg: 'armor type must be one of: light, medium, heavy, or natural',
+        },
       },
     },
     baseAC: {
