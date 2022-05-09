@@ -10,7 +10,7 @@
     "db:migrate:undo": "npx sequelize-cli db:migrate:undo",
     "db:seed": "npx sequelize-cli db:seed:all",
     "dev": "nodemon index.js",
-    "test": "nyc mocha --timeout 3000"
+    "test": "nyc mocha --timeout 3000 --exit"
   },
   "keywords": [
     "dnd",

@@ -54,7 +54,7 @@ module.exports = (sequelize, DataTypes) => {
     alignment: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfAlignmentStrings(array) {
+        isArrayOfAlignmentStrings: (array) => {
           if (array === null) return;
           isArrayOfStrings(array);
           if (typeof array === 'string') array = JSON.parse(array);
@@ -175,7 +175,7 @@ module.exports = (sequelize, DataTypes) => {
     savingThrows: {
       type: DataTypes.JSON,
       validate: {
-        isSavingThrowsObject(object) {
+        isSavingThrowsObject: (object) => {
           if (object === null) return;
           if (typeof object === 'string') {
             object = JSON.parse(object);
@@ -209,7 +209,7 @@ module.exports = (sequelize, DataTypes) => {
     skills: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfSkillObjects(array) {
+        isArrayOfSkillObjects: (array) => {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);
@@ -238,7 +238,7 @@ module.exports = (sequelize, DataTypes) => {
     resistances: {
       type: DataTypes.JSON,
       validate: {
-        isResistancesObject(object) {
+        isResistancesObject: (object) => {
           if (object === null) return;
           if (typeof object === 'string') {
             object = JSON.parse(object);
@@ -316,7 +316,7 @@ module.exports = (sequelize, DataTypes) => {
          * @param {Array} array
          * @throws
          */
-        isSpellSlotArray(array) {
+        isSpellSlotArray: (array) => {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);
@@ -344,7 +344,7 @@ module.exports = (sequelize, DataTypes) => {
          * @param {Array} array
          * @throws
          */
-        isInnateSpellArray(array) {
+        isInnateSpellArray: (array) => {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);
@@ -387,7 +387,7 @@ module.exports = (sequelize, DataTypes) => {
          *   }],
          * ]
          */
-        isArrayOfActionPatterns(array) {
+        isArrayOfActionPatterns: (array) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
@@ -461,7 +461,7 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'CreatureType',
     validate: {
-      maxHPBoundedByHitDice() {
+      maxHPBoundedByHitDice: () => {
         if (this.maxHP > (this.numDice * (this.hitDie + ((this.con - 10) / 2)))) throw new Error('maxHP field cannot be greater than hit dice allow');
       },
     },

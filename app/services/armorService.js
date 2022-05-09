@@ -5,7 +5,7 @@ module.exports = {
    * @param {Object} armorObject
    * @returns {Object} new Armor
    */
-  async createArmor(armorObject) {
+  createArmor: async (armorObject) => {
     return Armor.create(armorObject);
   },
 
@@ -13,7 +13,7 @@ module.exports = {
    * @param {Integer} armorId
    * @returns {Object} Armor
    */
-  async getArmor(armorId) {
+  getArmor: async (armorId) => {
     return Armor.findByPk(armorId);
   },
 
@@ -21,14 +21,14 @@ module.exports = {
    * @param {Object} armorObject
    * @returns {Object} updated Armor
    */
-  async updateArmor(armorObject) {
+  updateArmor: async (armorObject) => {
     return Armor.update(armorObject);
   },
 
   /**
    * @param {Integer} armorId
    */
-  async deleteArmor(armorId) {
+  deleteArmor: async (armorId) => {
     const creatureTypes = await CreatureType.findAll({
       where: {
         armorId,
