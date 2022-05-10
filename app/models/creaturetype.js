@@ -214,7 +214,7 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('skill array must be an array');
+          if (!Array.isArray(array)) throw new Error('skill array must be an array');
           if (!array.length) throw new Error('skill array should not be length 0');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((object) => {
@@ -321,7 +321,7 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('spell slot array must be an array');
+          if (!Array.isArray(array)) throw new Error('spell slot array must be an array');
           if (array.length !== 10) throw new Error('spell slot array should be length 10');
           if (array[0] !== 0) throw new Error('index 0 of spell slot array should be 0');
           array.forEach((number) => {
@@ -349,7 +349,7 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('innate spell array must be an array');
+          if (!Array.isArray(array)) throw new Error('innate spell array must be an array');
           if (!array.length) throw new Error('innate spell array cannot be empty');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((innateSpell) => {
@@ -391,7 +391,7 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('action patterns array must be an array');
+          if (!Array.isArray(array)) throw new Error('action patterns array must be an array');
           if (!array.length) throw new Error('action patterns array should not be length 0');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((actionPattern) => {

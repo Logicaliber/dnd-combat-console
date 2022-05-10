@@ -22,7 +22,7 @@ module.exports = {
     if (typeof array === 'string') {
       array = JSON.parse(array);
     }
-    if (!array.isArray()) throw new Error('array must be an array');
+    if (!Array.isArray(array)) throw new Error('array must be an array');
     if (!array.length) throw new Error('array should not be length 0');
     array.forEach((object) => {
       if (typeof object !== 'object') throw new Error('array must contain objects');
@@ -41,27 +41,19 @@ module.exports = {
     });
   },
 
-  /**
-   * for example ['ammunition','heavy','loading','two-handed']
-   */
-  isArrayOfStringsAlphabetical: (array) => {
-    if (array === null) return;
-    module.exports.isArrayOfStrings(array, true);
-  },
-
   isArrayOfStrings: (array, alphabetical = false) => {
     if (array === null) return;
     if (typeof array === 'string') {
       array = JSON.parse(array);
     }
     let prevLetter = 'a';
-    if (!array.isArray()) throw new Error('array must be an array');
+    if (!Array.isArray(array)) throw new Error('array must be an array');
     if (!array.length) throw new Error('array should not be length 0');
     if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
     array.forEach((element) => {
       if (
         typeof element !== 'string'
-        || !/^[a_z-]+$/.test(element)
+        || !/^[a-z-]+$/.test(element)
         || element.length < MIN_INFORMATION
         || element.length > MAX_INFORMATION
       ) throw new Error('array elements must be strings of lowercase letters or dashes');
@@ -70,6 +62,14 @@ module.exports = {
         prevLetter = element.charAt(0);
       }
     });
+  },
+
+  /**
+   * for example ['ammunition','heavy','loading','two-handed']
+   */
+  isArrayOfStringsAlphabetical: (array) => {
+    if (array === null) return;
+    module.exports.isArrayOfStrings(array, true);
   },
 
   /**
@@ -91,32 +91,29 @@ module.exports = {
    * then the save is for avoiding the damage, rather than the effect
    */
   isDamageObject: (object) => {
-    if (typeof object !== 'object') throw new Error('damages must be an array of objects');
+    if (typeof object !== 'object') throw new Error('damage object must be an object');
     const objectKeys = Object.keys(object);
-    if (
-      !objectKeys.includes('num')
+
+    if (!objectKeys.includes('num')
       || !objectKeys.includes('die')
       || !objectKeys.includes('bonus')
       || !objectKeys.includes('type')
       || !objectKeys.includes('effect')) throw new Error('damage object must have keys num, die, bonus, type, and effect');
-    if (
-      typeof object.num !== 'number'
-      || !([...Array(MAX_DICE + 1).keys()]
-        .includes(object.num))
-      || typeof object.die !== 'number'
-      || !VALID_DIE_SIZES.includes(object.die)
-      || typeof object.bonus !== 'number'
-      || !([...Array(4).keys()]
-        .includes(object.bonus))
-      || typeof object.type !== 'string'
-      || object.type.length < MIN_INFORMATION
-      || object.type.length > MAX_INFORMATION
-      || typeof object.effect !== 'string'
-      || object.effect.length < MIN_INFORMATION
-      || object.effect.length > MAX_INFORMATION
-    ) {
-      throw new Error(`damage object ${JSON.stringify(object)} failed validation`);
-    }
+
+    if (typeof object.num !== 'number'
+      || !([...Array(MAX_DICE + 1).keys()].includes(object.num))) throw new Error(`damage.num must be a number between 0 and MAX_DICE, got ${typeof object.num} ${object.num}`);
+
+    if (typeof object.die !== 'number'
+      || !(VALID_DIE_SIZES.includes(object.die))) throw new Error(`damage.die must be a number in ${JSON.stringify(VALID_DIE_SIZES)}, got ${typeof object.die} ${object.die}`);
+
+    if (typeof object.bonus !== 'number'
+      || !([0, 1, 2, 3].includes(object.bonus))) throw new Error(`damage.bonus must be a number between 0 and 3, got ${object.bonus}`);
+
+    if (typeof object.type !== 'string'
+      || object.type.length > MAX_INFORMATION) throw new Error('damage.type must be a string');
+
+    if (typeof object.effect !== 'string'
+      || object.effect.length > MAX_INFORMATION) throw new Error('damage.effect must be a string');
   },
 
   isValidStat: (num) => {

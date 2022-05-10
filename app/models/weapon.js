@@ -27,7 +27,8 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof damages === 'string') {
             damages = JSON.parse(damages);
           }
-          if (!damages.isArray()) throw new Error('damages must be an array');
+          if (typeof damages !== 'object') throw new Error('damages string failed to parse to an object');
+          if (!Array.isArray(damages)) throw new Error('damages must be an array');
           damages.forEach((damage) => {
             isDamageObject(damage);
           });

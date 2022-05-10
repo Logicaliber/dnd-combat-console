@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true,
       },
-      damage: {
+      damages: {
         type: Sequelize.JSON,
       },
       properties: {
