@@ -106,7 +106,7 @@ describe('Weapon Service', () => {
         });
         if (result) throw new Error('updateWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Validation error: damage object must be an object');
+        assert.equal(error.message, 'Validation error: damage object must be an object, got type string');
       }
     });
 
@@ -118,7 +118,7 @@ describe('Weapon Service', () => {
         });
         if (result) throw new Error('updateWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Validation error: array elements must be strings of lowercase letters or dashes');
+        assert.equal(error.message, `Validation error: array elements must be strings of ${MIN_INFORMATION} to ${MAX_INFORMATION} characters, and only lowercase letters or dashes`);
       }
     });
 
