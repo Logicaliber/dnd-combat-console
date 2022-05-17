@@ -19,28 +19,33 @@ module.exports = {
    */
   isArrayOfLabeledDescriptions: (array) => {
     if (array === null) return;
-    if (typeof array === 'string') {
-      array = JSON.parse(array);
-    }
+    if (typeof array === 'string') array = JSON.parse(array);
     if (!Array.isArray(array)) throw new Error('array must be an array');
     if (!array.length) throw new Error('array should not be length 0');
     array.forEach((object) => {
       if (typeof object !== 'object') throw new Error('array must contain objects');
       const objectKeys = Object.keys(object);
-      if (
-        objectKeys.length !== 2
-        || !objectKeys.includes('title')
+      if (objectKeys.length !== 2
+        || !objectKeys.includes('label')
         || !objectKeys.includes('description')
-        || typeof object.title !== 'string'
-        || object.title.length < MIN_INFORMATION
-        || object.title.length > MAX_INFORMATION
-        || typeof object.description !== 'string'
+      ) throw new Error(`labelled description object must have keys label and description, got ${JSON.stringify(objectKeys)}`);
+      if (typeof object.label !== 'string'
+        || object.label.length < MIN_INFORMATION
+        || object.label.length > MAX_INFORMATION
+      ) throw new Error(`label must be a string between ${MIN_INFORMATION} and ${MAX_INFORMATION} characters, got type ${typeof object.label}`);
+      if (typeof object.description !== 'string'
         || object.description.length < MIN_DESCRIPTION
         || object.description.length > MAX_DESCRIPTION
-      ) throw new Error('array object must contain a title, description pair');
+      ) throw new Error(`description must be a string between ${MIN_DESCRIPTION} and ${MAX_DESCRIPTION} characters, got type ${typeof object.description}`);
     });
   },
 
+  /**
+   * Only allows single-word strings, no spaces or characters other than '-'
+   * @param {Array} array
+   * @param {Boolean} alphabetical
+   * @throws
+   */
   isArrayOfStrings: (array, alphabetical = false) => {
     if (array === null) return;
     if (typeof array === 'string') {
@@ -56,7 +61,7 @@ module.exports = {
         || !/^[a-z-]+$/.test(element)
         || element.length < MIN_INFORMATION
         || element.length > MAX_INFORMATION
-      ) throw new Error('array elements must be strings of lowercase letters or dashes');
+      ) throw new Error(`array elements must be strings of ${MIN_INFORMATION} to ${MAX_INFORMATION} characters, and only lowercase letters or dashes`);
       if (alphabetical) {
         if (element.charAt(0) < prevLetter) throw new Error('array must be in alphabetical order');
         prevLetter = element.charAt(0);
@@ -91,29 +96,35 @@ module.exports = {
    * then the save is for avoiding the damage, rather than the effect
    */
   isDamageObject: (object) => {
-    if (typeof object !== 'object') throw new Error('damage object must be an object');
+    if (typeof object !== 'object') throw new Error(`damage object must be an object, got type ${typeof object}`);
     const objectKeys = Object.keys(object);
 
     if (!objectKeys.includes('num')
       || !objectKeys.includes('die')
       || !objectKeys.includes('bonus')
       || !objectKeys.includes('type')
-      || !objectKeys.includes('effect')) throw new Error('damage object must have keys num, die, bonus, type, and effect');
+      || !objectKeys.includes('effect')
+    ) throw new Error('damage object must have keys num, die, bonus, type, and effect');
 
     if (typeof object.num !== 'number'
-      || !([...Array(MAX_DICE + 1).keys()].includes(object.num))) throw new Error(`damage.num must be a number between 0 and MAX_DICE, got ${typeof object.num} ${object.num}`);
+      || !([...Array(MAX_DICE + 1).keys()].includes(object.num))
+    ) throw new Error(`damage.num must be a number between 0 and MAX_DICE, got type ${typeof object.num}`);
 
     if (typeof object.die !== 'number'
-      || !(VALID_DIE_SIZES.includes(object.die))) throw new Error(`damage.die must be a number in ${JSON.stringify(VALID_DIE_SIZES)}, got ${typeof object.die} ${object.die}`);
+      || !(VALID_DIE_SIZES.includes(object.die))
+    ) throw new Error(`damage.die must be a number in ${JSON.stringify(VALID_DIE_SIZES)}, got type ${typeof object.die}`);
 
     if (typeof object.bonus !== 'number'
-      || !([0, 1, 2, 3].includes(object.bonus))) throw new Error(`damage.bonus must be a number between 0 and 3, got ${object.bonus}`);
+      || !([0, 1, 2, 3].includes(object.bonus))
+    ) throw new Error(`damage.bonus must be a number between 0 and 3, got type ${typeof object.bonus}`);
 
     if (typeof object.type !== 'string'
-      || object.type.length > MAX_INFORMATION) throw new Error('damage.type must be a string');
+      || object.type.length > MAX_INFORMATION
+    ) throw new Error('damage.type must be a string');
 
     if (typeof object.effect !== 'string'
-      || object.effect.length > MAX_INFORMATION) throw new Error('damage.effect must be a string');
+      || object.effect.length > MAX_INFORMATION
+    ) throw new Error('damage.effect must be a string');
   },
 
   isValidStat: (num) => {

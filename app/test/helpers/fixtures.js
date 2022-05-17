@@ -4,32 +4,32 @@ module.exports = {
     damages: JSON.stringify([
       [{
         caster: 0,
+        effect: '',
+        slot: 0,
         damage: {
           num: 1, die: 6, type: 'acid', bonus: 0, effect: '',
         },
-        effect: '',
-        slot: 0,
       }], [{
         caster: 5,
+        effect: '',
+        slot: 0,
         damage: {
           num: 2, die: 6, type: 'acid', bonus: 0, effect: '',
         },
-        effect: '',
-        slot: 0,
       }], [{
         caster: 11,
+        effect: '',
+        slot: 0,
         damage: {
           num: 3, die: 6, type: 'acid', bonus: 0, effect: '',
         },
-        effect: '',
-        slot: 0,
       }], [{
         caster: 17,
+        effect: '',
+        slot: 0,
         damage: {
           num: 4, die: 6, type: 'acid', bonus: 0, effect: '',
         },
-        effect: '',
-        slot: 0,
       }]]),
   },
 
@@ -38,32 +38,11 @@ module.exports = {
     damages: JSON.stringify([
       [{
         caster: 0,
+        effect: '',
+        slot: 0,
         damage: {
           num: 0, die: 6, type: 'acid', bonus: 0, effect: '',
         },
-        effect: '',
-        slot: 0,
-      }], [{
-        caster: 5,
-        damage: {
-          num: 0, die: 6, type: 'acid', bonus: 0, effect: '',
-        },
-        effect: '',
-        slot: 0,
-      }], [{
-        caster: 11,
-        damage: {
-          num: 0, die: 6, type: 'acid', bonus: 0, effect: '',
-        },
-        effect: '',
-        slot: 0,
-      }], [{
-        caster: 17,
-        damage: {
-          num: 0, die: 6, type: 'acid', bonus: 0, effect: '',
-        },
-        effect: '',
-        slot: 0,
       }]]),
   },
 };

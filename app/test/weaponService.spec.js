@@ -2,6 +2,7 @@ const { assert } = require('chai');
 
 const { CreatureType, CreatureTypeWeapon, Weapon } = require('../models');
 const weaponService = require('../services/weaponService');
+const { MIN_INFORMATION, MAX_INFORMATION } = require('../variables');
 
 const syncRelevantModels = async () => {
   await Weapon.sync({ force: true });
@@ -30,7 +31,7 @@ describe('Weapon Service', () => {
         });
         if (result) throw new Error('createWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Validation error: damage object must be an object');
+        assert.equal(error.message, 'Validation error: damage object must be an object, got type string');
       }
     });
 
@@ -42,7 +43,7 @@ describe('Weapon Service', () => {
         });
         if (result) throw new Error('createWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Validation error: array elements must be strings of lowercase letters or dashes');
+        assert.equal(error.message, `Validation error: array elements must be strings of ${MIN_INFORMATION} to ${MAX_INFORMATION} characters, and only lowercase letters or dashes`);
       }
     });
 
