@@ -8,10 +8,10 @@ module.exports = (sequelize, DataTypes) => {
      * @param {String} password
      * @returns Boolean
      */
-    static validatePassword(password) {
+    static validatePassword = (password) => {
       return typeof password === 'string'
         && /^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$/.test(password);
-    }
+    };
 
     /**
      * Helper method for defining associations.
@@ -21,6 +21,12 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      email: sequelize.modelOptsObject(true, true, true),
+      password: sequelize.modelOptsObject(true, false, false),
+    };
   }
   User.init({
     email: {

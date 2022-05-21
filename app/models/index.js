@@ -14,6 +14,15 @@ if (config.use_env_variable) {
   sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
+// attach model options builder
+sequelize.modelOptsObject = (required, searchable, updateable) => {
+  return {
+    required,
+    searchable,
+    updateable,
+  };
+};
+
 fs
   .readdirSync(__dirname)
   .filter((file) => {

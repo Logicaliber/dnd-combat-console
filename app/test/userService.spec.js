@@ -23,6 +23,15 @@ describe('User Service', () => {
   });
 
   describe('createUser', () => {
+    it('should throw an error if fields are missing', async () => {
+      try {
+        const result = await userService.createUser({});
+        if (result) throw new Error('createUser should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'User creation failed, fields missing: email,password');
+      }
+    });
+
     it('should throw an error if an invalid password is passed', async () => {
       try {
         const result = await userService.createUser({
@@ -102,8 +111,7 @@ describe('User Service', () => {
   describe('updateUser', () => {
     it('should throw an error if an invalid email is passed', async () => {
       try {
-        const result = await userService.updateUser({
-          id: user.dataValues.id,
+        const result = await userService.updateUser(user.dataValues.id, {
           email: 'email',
         });
         if (result) throw new Error('updateUser should have thrown an error');
@@ -114,19 +122,17 @@ describe('User Service', () => {
 
     it('should not allow updating the password by this method', async () => {
       try {
-        const result = await userService.updateUser({
-          id: user.dataValues.id,
+        const result = await userService.updateUser(user.dataValues.id, {
           password: validPassword,
         });
         if (result) throw new Error('updateUser should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'fields were not updateable: password');
+        assert.equal(error.message, 'User update failed, fields are not updateable: password');
       }
     });
 
     it('should update a user if all valid fields are passed', async () => {
-      await userService.updateUser({
-        id: user.dataValues.id,
+      await userService.updateUser(user.dataValues.id, {
         email: secondValidEmail,
       });
       assert.lengthOf((await User.findAll()), expectedUsers);

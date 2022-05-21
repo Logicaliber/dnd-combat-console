@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
+const { missingRequiredParams, nonUpdateableParams } = require('./serviceHelpers');
 
 module.exports = {
   /**
@@ -7,6 +8,9 @@ module.exports = {
    * @returns {Object} new User
    */
   createUser: async (userObject) => {
+    const missingParams = missingRequiredParams(userObject, User.optionsSchema);
+    if (missingParams.length) throw new Error(`User creation failed, fields missing: ${missingParams.join()}`);
+
     if ((await User.findAndCountAll({
       where: {
         email: userObject.email,
@@ -30,15 +34,16 @@ module.exports = {
   },
 
   /**
+   * @param {Integer} userId
    * @param {Object} userObject
    * @returns {Object} updated User
    */
-  updateUser: async (userObject) => {
-    // TODO Build out proper field restrictions (required, updateable, searchable)
-    if (userObject.password) throw new Error('fields were not updateable: password');
+  updateUser: async (userId, userObject) => {
+    const badParams = nonUpdateableParams(userObject, User.optionsSchema);
+    if (badParams.length) throw new Error(`User update failed, fields are not updateable: ${badParams.join()}`);
     return User.update(userObject, {
       where: {
-        id: userObject.id,
+        id: userId,
       },
     });
   },
