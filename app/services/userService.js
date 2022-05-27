@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
-const { missingRequiredParams, nonUpdateableParams } = require('./serviceHelpers');
+const { missingRequiredParams, nonUpdateableParams } = require('./validationHelpers');
 
 module.exports = {
   /**

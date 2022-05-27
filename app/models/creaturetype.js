@@ -28,6 +28,50 @@ module.exports = (sequelize, DataTypes) => {
       CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell });
       CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      size: sequelize.modelOptsObject(false, true, true),
+      type: sequelize.modelOptsObject(false, true, true),
+      tags: sequelize.modelOptsObject(false, true, true),
+      alignment: sequelize.modelOptsObject(false, true, true),
+      armorId: sequelize.modelOptsObject(false, true, true),
+      hasShield: sequelize.modelOptsObject(false, true, true),
+      hitDie: sequelize.modelOptsObject(true, true, true),
+      numDice: sequelize.modelOptsObject(true, true, true),
+      maxHP: sequelize.modelOptsObject(true, true, true),
+      speed: sequelize.modelOptsObject(false, true, true),
+      flySpeed: sequelize.modelOptsObject(false, true, true),
+      swimSpeed: sequelize.modelOptsObject(false, true, true),
+      climbSpeed: sequelize.modelOptsObject(false, true, true),
+      burrowSpeed: sequelize.modelOptsObject(false, true, true),
+      hover: sequelize.modelOptsObject(false, true, true),
+      str: sequelize.modelOptsObject(false, true, true),
+      dex: sequelize.modelOptsObject(false, true, true),
+      con: sequelize.modelOptsObject(false, true, true),
+      int: sequelize.modelOptsObject(false, true, true),
+      wis: sequelize.modelOptsObject(false, true, true),
+      cha: sequelize.modelOptsObject(false, true, true),
+      savingThrows: sequelize.modelOptsObject(false, true, true),
+      skills: sequelize.modelOptsObject(false, true, true),
+      resistances: sequelize.modelOptsObject(false, true, true),
+      senses: sequelize.modelOptsObject(false, true, true),
+      passivePerception: sequelize.modelOptsObject(false, true, true),
+      languages: sequelize.modelOptsObject(false, true, true),
+      challengeRating: sequelize.modelOptsObject(false, true, true),
+      proficiencyBonus: sequelize.modelOptsObject(false, true, true),
+      legendaryResistances: sequelize.modelOptsObject(false, true, true),
+      specialAbilities: sequelize.modelOptsObject(false, true, true),
+      spellcasting: sequelize.modelOptsObject(false, true, true),
+      spellSlots: sequelize.modelOptsObject(false, true, true),
+      innateSpells: sequelize.modelOptsObject(false, true, true),
+      actionPatterns: sequelize.modelOptsObject(true, true, true),
+      legendaryActions: sequelize.modelOptsObject(false, true, true),
+      reactions: sequelize.modelOptsObject(false, true, true),
+      lairActions: sequelize.modelOptsObject(false, true, true),
+      regionalEffects: sequelize.modelOptsObject(false, true, true),
+    };
   }
   CreatureType.init({
     name: {
@@ -37,7 +81,10 @@ module.exports = (sequelize, DataTypes) => {
     size: {
       defaultValue: 'medium',
       type: DataTypes.STRING,
-      in: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan']],
+      isIn: {
+        args: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan', null]],
+        msg: 'creatureType size must be one of tiny, small, medium, large, huge, or gargantuan',
+      },
     },
     type: {
       type: DataTypes.JSON,
@@ -75,7 +122,7 @@ module.exports = (sequelize, DataTypes) => {
     hitDie: {
       type: DataTypes.INTEGER,
       validate: {
-        in: [VALID_HIT_DIE_SIZES],
+        isIn: [VALID_HIT_DIE_SIZES],
       },
     },
     numDice: {
@@ -395,7 +442,7 @@ module.exports = (sequelize, DataTypes) => {
           if (!array.length) throw new Error('action patterns array should not be length 0');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((actionPattern) => {
-            if (typeof actionPattern !== 'object' || !actionPattern.isArray()) throw new Error('action patterns array must contain arrays');
+            if (typeof actionPattern !== 'object' || !Array.isArray(actionPattern)) throw new Error('action patterns array must contain arrays');
             actionPattern.forEach((object) => {
               if (typeof object !== 'object') throw new Error('action pattern must be an array of action objects');
               const objectKeys = Object.keys(object);
