@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Armor.hasMany(models.CreatureType);
+      Armor.hasMany(models.CreatureType, { foreignKey: 'armorId', as: 'creatureTypes' });
     }
   }
   Armor.init({

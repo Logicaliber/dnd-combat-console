@@ -23,10 +23,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      CreatureType.hasMany(models.Creature);
-      CreatureType.belongsTo(models.Armor);
-      CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell });
-      CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon });
+      CreatureType.hasMany(models.Creature, { foreignKey: 'creatureTypeId', as: 'creatures' });
+      CreatureType.belongsTo(models.Armor, { foreignKey: 'armorId', as: 'armor' });
+      CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell, foreignKey: 'creatureTypeId', as: 'spells' });
+      CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon, foreignKey: 'creatureTypeId', as: 'weapons' });
     }
 
     static optionsSchema = {
@@ -81,9 +81,11 @@ module.exports = (sequelize, DataTypes) => {
     size: {
       defaultValue: 'medium',
       type: DataTypes.STRING,
-      isIn: {
-        args: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan', null]],
-        msg: 'creatureType size must be one of tiny, small, medium, large, huge, or gargantuan',
+      validate: {
+        isIn: {
+          args: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan', null]],
+          msg: 'creatureType size must be one of tiny, small, medium, large, huge, or gargantuan',
+        },
       },
     },
     type: {

@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon });
+      Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon, foreignKey: 'weaponId', as: 'creatureTypes' });
     }
   }
   Weapon.init({
@@ -78,7 +78,7 @@ module.exports = (sequelize, DataTypes) => {
     saveType: {
       type: DataTypes.STRING,
       validate: {
-        in: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
+        isIn: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
       },
     },
     saveStillHalf: {

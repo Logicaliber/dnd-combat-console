@@ -1,4 +1,8 @@
-const { Weapon } = require('../../models');
+const {
+  Weapon,
+  CreatureType,
+  CreatureTypeWeapon,
+} = require('../../models');
 
 module.exports = {
   generateDummyWeapon: async (
@@ -31,5 +35,36 @@ module.exports = {
       saveType,
       saveStillHalf,
     });
+  },
+  generateDummyCreatureType: async (
+    name = null,
+    hitDie = null,
+    numDice = null,
+    maxHP = null,
+    actionPatterns = null,
+    weaponId = null,
+  ) => {
+    if (!name) name = 'dog';
+    const creatureTypeExists = await CreatureType.findOne({ where: { name } });
+    if (creatureTypeExists) return creatureTypeExists;
+    if (!hitDie) hitDie = 6;
+    if (!numDice) numDice = 1;
+    if (!maxHP) maxHP = 4;
+    if (!weaponId) weaponId = (await module.exports.generateDummyWeapon()).dataValues.id;
+    if (!actionPatterns) {
+      actionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${weaponId}}]]`;
+    }
+    const creatureType = await CreatureType.create({
+      name,
+      hitDie,
+      numDice,
+      maxHP,
+      actionPatterns,
+    });
+    await CreatureTypeWeapon.create({
+      creatureTypeId: creatureType.dataValues.id,
+      weaponId,
+    });
+    return creatureType;
   },
 };

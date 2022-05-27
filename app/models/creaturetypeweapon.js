@@ -8,7 +8,8 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      CreatureTypeWeapon.belongsTo(models.CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureType' });
+      CreatureTypeWeapon.belongsTo(models.Weapon, { foreignKey: 'weaponId', as: 'weapon' });
     }
   }
   CreatureTypeWeapon.init({

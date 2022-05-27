@@ -116,7 +116,7 @@ describe('CreatureType Service', () => {
     it('should return the correct creatureType for the given id', async () => {
       const result = await creatureTypeService.getCreatureType(creatureType.dataValues.id);
       assert.hasAnyKeys(result, 'dataValues');
-      assert.hasAllKeys(result.dataValues, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'actionPatterns', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects']);
+      assert.hasAllKeys(result.dataValues, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'actionPatterns', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects', 'createdAt', 'updatedAt']);
       assert.equal(result.dataValues.id, creatureType.dataValues.id);
       assert.equal(result.dataValues.name, creatureType.dataValues.name);
       assert.equal(result.dataValues.hitDie, creatureType.dataValues.hitDie);
@@ -134,7 +134,7 @@ describe('CreatureType Service', () => {
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
-          actionPatterns: 'invalid',
+          actionPatterns: '{"validJson":"invalidArray"}',
         });
         if (result) throw new Error('updateCreatureType should have thrown an error');
       } catch (error) {

@@ -88,7 +88,7 @@ module.exports = {
   },
 
   /**
-   *  damage {
+   * @param {Object} damage {
    *    num: [0,i],                 // if 0, damage is 0.
    *    die: [1,2,...,12],          // Size of dice to roll
    *    bonus: [0,3],               // Any bonus to the damage.
