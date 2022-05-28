@@ -30,6 +30,14 @@ module.exports = (sequelize, DataTypes) => {
       slotsEigth: sequelize.modelOptsObject(false, false, true),
       slotsNinth: sequelize.modelOptsObject(false, false, true),
     };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   Creature.init({
     name: {

@@ -72,6 +72,14 @@ module.exports = (sequelize, DataTypes) => {
       lairActions: sequelize.modelOptsObject(false, true, true),
       regionalEffects: sequelize.modelOptsObject(false, true, true),
     };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   CreatureType.init({
     name: {

@@ -127,7 +127,7 @@ describe('User Service', () => {
         });
         if (result) throw new Error('updateUser should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'User update failed, fields are not updateable: password');
+        assert.equal(error.message, 'User update failed, no valid update fields found');
       }
     });
 

@@ -1,10 +1,10 @@
 const {
   CreatureType,
-  Creature,
   CreatureTypeSpell,
   CreatureTypeWeapon,
+  Creature,
 } = require('../models');
-const { missingRequiredParams, nonUpdateableParams } = require('./validationHelpers');
+const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
 module.exports = {
   /**
@@ -12,16 +12,18 @@ module.exports = {
    * @returns {Object} new CreatureType
    */
   createCreatureType: async (creatureTypeObject) => {
-    const missingParams = missingRequiredParams(creatureTypeObject, CreatureType.optionsSchema);
+    const strippedCreatureType = stripInvalidParams(creatureTypeObject, CreatureType.allowedParams);
+
+    const missingParams = missingRequiredParams(strippedCreatureType, CreatureType.requiredParams);
     if (missingParams.length) throw new Error(`creatureType creation failed, fields missing: ${missingParams.join()}`);
 
     const { count } = await CreatureType.findAndCountAll({
       where: {
-        name: creatureTypeObject.name,
+        name: strippedCreatureType.name,
       },
     });
-    if (count) throw new Error(`creatureType with name ${creatureTypeObject.name} already exists`);
-    return CreatureType.create(creatureTypeObject);
+    if (count) throw new Error(`creatureType with name ${strippedCreatureType.name} already exists`);
+    return CreatureType.create(strippedCreatureType);
   },
 
   /**
@@ -37,13 +39,9 @@ module.exports = {
    * @returns {Object} updated CreatureType
    */
   updateCreatureType: async (creatureTypeId, creatureTypeObject) => {
-    const badParams = nonUpdateableParams(creatureTypeObject, CreatureType.optionsSchema);
-    if (badParams.length) throw new Error(`CreatureType update failed, fields are not updateable: ${badParams.join()}`);
-    return CreatureType.update(creatureTypeObject, {
-      where: {
-        id: creatureTypeId,
-      },
-    });
+    const strippedCreature = stripInvalidParams(creatureTypeObject, CreatureType.updateableParams);
+
+    return CreatureType.update(strippedCreature, { where: { id: creatureTypeId } });
   },
 
   /**

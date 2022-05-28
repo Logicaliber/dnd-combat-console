@@ -9,22 +9,33 @@ const {
 } = require('../variables/index');
 
 module.exports = {
-  missingRequiredParams: (inputObject, optionsSchema) => {
-    return Object.keys(optionsSchema)
-      .filter((key) => optionsSchema[key].required)
-      .filter((key) => !Object.prototype.hasOwnProperty.call(inputObject, key));
+  /**
+   * @param {Object} inputObject
+   * @param {Array<String>} allowedParams
+   * @returns {Object} strippedInputObject
+   */
+  stripInvalidParams: (inputObject, allowedParams) => {
+    const strippedInputObject = {};
+    Object.keys(inputObject).forEach((key) => {
+      if (allowedParams.includes(key)) strippedInputObject[key] = inputObject[key];
+    });
+    return strippedInputObject;
   },
-  nonUpdateableParams: (inputObject, optionsSchema) => {
-    return Object.keys(optionsSchema)
-      .filter((key) => !optionsSchema[key].updateable)
-      .filter((key) => Object.prototype.hasOwnProperty.call(inputObject, key));
+  /**
+   * @param {Object} inputObject
+   * @param {Array<String>} requiredParams
+   * @returns {Array<String>}
+   */
+  missingRequiredParams: (inputObject, requiredParams) => {
+    return requiredParams
+      .filter((key) => !Object.prototype.hasOwnProperty.call(inputObject, key));
   },
   /**
    * specialAbilities, reactions, etc. [{
    *   label: string,
    *   description: string
    * }]
-   * @param {Array} array
+   * @param {Array|String} array
    * @throws
    */
   isArrayOfLabeledDescriptions: (array) => {
@@ -52,7 +63,7 @@ module.exports = {
 
   /**
    * Only allows single-word strings, no spaces or characters other than '-'
-   * @param {Array} array
+   * @param {Array|String} array
    * @param {Boolean} alphabetical
    * @throws
    */
@@ -88,7 +99,7 @@ module.exports = {
   },
 
   /**
-   * @param {Object} damage {
+   * @param {Object|String} damage {
    *    num: [0,i],                 // if 0, damage is 0.
    *    die: [1,2,...,12],          // Size of dice to roll
    *    bonus: [0,3],               // Any bonus to the damage.
@@ -101,6 +112,7 @@ module.exports = {
    *    saveType: string,           // One of 'str', 'dex', ... , 'cha'.
    *    saveStillHalf: false,       // Local override if negation of Weapon or Spell .saveStillHalf
    *  }
+   * @throws
    *
    * If 'effect' is an empty string, AND save is non-zero, AND saveType not an empty string,
    * then the save is for avoiding the damage, rather than the effect

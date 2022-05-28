@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { User } = require('../models');
-const { missingRequiredParams, nonUpdateableParams } = require('./validationHelpers');
+const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 module.exports = {
   /**
@@ -8,21 +8,18 @@ module.exports = {
    * @returns {Object} new User
    */
   createUser: async (userObject) => {
-    const missingParams = missingRequiredParams(userObject, User.optionsSchema);
+    const strippedUser = stripInvalidParams(userObject, User.allowedParams);
+    const missingParams = missingRequiredParams(strippedUser, User.requiredParams);
     if (missingParams.length) throw new Error(`User creation failed, fields missing: ${missingParams.join()}`);
 
-    if ((await User.findAndCountAll({
-      where: {
-        email: userObject.email,
-      },
-    })).count) throw new Error(`user with email ${userObject.email} already exists`);
+    if ((await User.findAndCountAll({ where: { email: strippedUser.email } })).count) throw new Error(`user with email ${strippedUser.email} already exists`);
 
-    const passwordIsValid = User.validatePassword(userObject.password);
+    const passwordIsValid = User.validatePassword(strippedUser.password);
     if (!passwordIsValid) throw new Error('password must contain at least one number, lowercase letter, uppercase letter, one symbol, and be at least eight characters long');
 
-    const hashedPassword = await bcrypt.hash(userObject.password, 10);
-    userObject.password = hashedPassword;
-    return User.create(userObject);
+    const hashedPassword = await bcrypt.hash(strippedUser.password, 10);
+    strippedUser.password = hashedPassword;
+    return User.create(strippedUser);
   },
 
   /**
@@ -39,23 +36,15 @@ module.exports = {
    * @returns {Object} updated User
    */
   updateUser: async (userId, userObject) => {
-    const badParams = nonUpdateableParams(userObject, User.optionsSchema);
-    if (badParams.length) throw new Error(`User update failed, fields are not updateable: ${badParams.join()}`);
-    return User.update(userObject, {
-      where: {
-        id: userId,
-      },
-    });
+    const strippedUser = stripInvalidParams(userObject, User.updateableParams);
+    if (!Object.keys(strippedUser).length) throw new Error('User update failed, no valid update fields found');
+    return User.update(strippedUser, { where: { id: userId } });
   },
 
   /**
    * @param {Integer} userId
    */
   deleteUser: async (userId) => {
-    return User.destroy({
-      where: {
-        id: userId,
-      },
-    });
+    return User.destroy({ where: { id: userId } });
   },
 };

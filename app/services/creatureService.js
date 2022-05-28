@@ -2,7 +2,7 @@ const {
   CreatureType,
   Creature,
 } = require('../models');
-const { missingRequiredParams, nonUpdateableParams } = require('./validationHelpers');
+const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
 module.exports = {
   /**
@@ -10,21 +10,20 @@ module.exports = {
    * @returns {Object} new Creature
    */
   createCreature: async (creatureObject) => {
-    const missingParams = missingRequiredParams(creatureObject, Creature.optionsSchema);
+    const strippedCreature = stripInvalidParams(creatureObject, Creature.allowedParams);
+
+    const missingParams = missingRequiredParams(strippedCreature, Creature.requiredParams);
     if (missingParams.length) throw new Error(`creature creation failed, fields missing: ${missingParams.join()}`);
 
-    const creatureType = await CreatureType.findOne({
-      where: { id: creatureObject.creatureTypeId },
+    const creatureTypeExists = await CreatureType.findOne({
+      where: { id: strippedCreature.creatureTypeId },
     });
-    if (!creatureType) throw new Error(`failed to find CreatureType with id ${creatureObject.creatureTypeId}`);
+    if (!creatureTypeExists) throw new Error(`failed to find CreatureType with id ${strippedCreature.creatureTypeId}`);
 
-    const { count } = await Creature.findAndCountAll({
-      where: {
-        name: creatureObject.name,
-      },
-    });
-    if (count) throw new Error(`creature with name ${creatureObject.name} already exists`);
-    return Creature.create(creatureObject);
+    const { count } = await Creature.findAndCountAll({ where: { name: strippedCreature.name } });
+    if (count) throw new Error(`creature with name ${strippedCreature.name} already exists`);
+
+    return Creature.create(strippedCreature);
   },
 
   /**
@@ -36,13 +35,13 @@ module.exports = {
   },
 
   /**
+   * @param {Integer} creatureId
    * @param {Object} creatureObject
    * @returns {Object} updated Creature
    */
   updateCreature: async (creatureId, creatureObject) => {
-    const badParams = nonUpdateableParams(creatureObject, Creature.optionsSchema);
-    if (badParams.length) throw new Error(`Creature update failed, fields are not updateable: ${badParams.join()}`);
-    return Creature.update(creatureObject, {
+    const strippedCreature = stripInvalidParams(creatureObject, Creature.updateableParams);
+    return Creature.update(strippedCreature, {
       where: {
         id: creatureId,
       },

@@ -27,6 +27,14 @@ module.exports = (sequelize, DataTypes) => {
       email: sequelize.modelOptsObject(true, true, true),
       password: sequelize.modelOptsObject(true, false, false),
     };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   User.init({
     email: {
