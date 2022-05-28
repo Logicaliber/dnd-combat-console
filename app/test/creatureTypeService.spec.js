@@ -47,7 +47,7 @@ describe('CreatureType Service', () => {
         });
         if (result) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'creatureType creation failed, fields missing: hitDie,numDice,maxHP,actionPatterns');
+        assert.equal(error.message, 'CreatureType creation failed, fields missing: hitDie,numDice,maxHP,actionPatterns');
       }
     });
 
@@ -93,7 +93,7 @@ describe('CreatureType Service', () => {
         });
         if (result) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'creatureType with name dog already exists');
+        assert.equal(error.message, 'CreatureType with name dog already exists');
       }
     });
   });
