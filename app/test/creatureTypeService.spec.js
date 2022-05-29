@@ -5,9 +5,9 @@ const {
   Armor,
   Spell,
   CreatureType,
-  Creature,
   CreatureTypeSpell,
   CreatureTypeWeapon,
+  Creature,
 } = require('../models');
 const creatureTypeService = require('../services/creatureTypeService');
 const generators = require('./helpers/dummyModelGenerators');
@@ -18,9 +18,9 @@ const relevantModels = [
   Armor,
   Spell,
   CreatureType,
-  Creature,
   CreatureTypeSpell,
   CreatureTypeWeapon,
+  Creature,
 ];
 
 let validActionPatterns;
@@ -80,7 +80,7 @@ describe('CreatureType Service', () => {
         });
         if (result) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'CreatureType creation failed, unable to find Armor with ID: 1234');
+        assert.equal(error.message, 'CreatureType creation "name" failed, unable to find Armor with ID: 1234');
       }
     });
 
@@ -93,10 +93,10 @@ describe('CreatureType Service', () => {
           numDice: 1,
           maxHP: 4,
           actionPatterns: validActionPatterns,
-        }, [1234]);
+        }, null, [1234]);
         if (result) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'CreatureType creation failed, unable to find Spells with IDs: 1234');
+        assert.equal(error.message, 'CreatureType creation "name" failed, unable to find Spells with IDs: 1234');
       }
     });
 
@@ -109,10 +109,10 @@ describe('CreatureType Service', () => {
           numDice: 1,
           maxHP: 4,
           actionPatterns: validActionPatterns,
-        }, null, [1234]);
+        }, [1234]);
         if (result) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'CreatureType creation failed, unable to find Weapons with IDs: 1234');
+        assert.equal(error.message, 'CreatureType creation "name" failed, unable to find Weapons with IDs: 1234');
       }
     });
 
@@ -124,7 +124,7 @@ describe('CreatureType Service', () => {
         numDice: 1,
         maxHP: 4,
         actionPatterns: validActionPatterns,
-      }, null, [bite.dataValues.id]);
+      }, [bite.dataValues.id]);
       expectedCreatureTypes += 1;
 
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
@@ -142,7 +142,7 @@ describe('CreatureType Service', () => {
         });
         if (result) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'CreatureType with name dog already exists');
+        assert.equal(error.message, 'CreatureType with name "dog" already exists');
       }
     });
   });
