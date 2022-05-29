@@ -67,6 +67,55 @@ describe('CreatureType Service', () => {
       }
     });
 
+    it('should throw an error if an invalid armorId is passed', async () => {
+      try {
+        const result = await creatureTypeService.createCreatureType({
+          name: 'name',
+          size: 'medium',
+          hitDie: 6,
+          numDice: 1,
+          maxHP: 4,
+          armorId: 1234,
+          actionPatterns: validActionPatterns,
+        });
+        if (result) throw new Error('createCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType creation failed, unable to find Armor with ID: 1234');
+      }
+    });
+
+    it('should throw an error if invalid spellIds are passed', async () => {
+      try {
+        const result = await creatureTypeService.createCreatureType({
+          name: 'name',
+          size: 'medium',
+          hitDie: 6,
+          numDice: 1,
+          maxHP: 4,
+          actionPatterns: validActionPatterns,
+        }, [1234]);
+        if (result) throw new Error('createCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType creation failed, unable to find Spells with IDs: 1234');
+      }
+    });
+
+    it('should throw an error if invalid weaponIds are passed', async () => {
+      try {
+        const result = await creatureTypeService.createCreatureType({
+          name: 'name',
+          size: 'medium',
+          hitDie: 6,
+          numDice: 1,
+          maxHP: 4,
+          actionPatterns: validActionPatterns,
+        }, null, [1234]);
+        if (result) throw new Error('createCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType creation failed, unable to find Weapons with IDs: 1234');
+      }
+    });
+
     it('should create a creatureType if all valid fields are passed', async () => {
       creatureType = await creatureTypeService.createCreatureType({
         name: 'dog',
@@ -75,7 +124,7 @@ describe('CreatureType Service', () => {
         numDice: 1,
         maxHP: 4,
         actionPatterns: validActionPatterns,
-      });
+      }, null, [bite.dataValues.id]);
       expectedCreatureTypes += 1;
 
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);

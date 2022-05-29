@@ -47,7 +47,7 @@ module.exports = {
       if (failed.length) throw new Error(`CreatureType creation failed, unable to find Spells with IDs: ${failed.join(',')}`);
     }
 
-    // Check that the indicated Weaponns exist
+    // Check that the indicated Weapons exist
     if (weaponIds) {
       if (!Array.isArray(weaponIds)) throw new Error('CreatureType creation failed, weaponIds must be an Array');
       const failed = (await Promise.allSettled(weaponIds.map((id) => {
@@ -60,7 +60,7 @@ module.exports = {
             .catch((err) => reject(id));
         });
       }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
-      if (failed.length) throw new Error(`CreatureType creation failed, unable to find Weaponns with IDs: ${failed.join(',')}`);
+      if (failed.length) throw new Error(`CreatureType creation failed, unable to find Weapons with IDs: ${failed.join(',')}`);
     }
 
     return CreatureType.create(strippedCreatureType);
