@@ -36,99 +36,96 @@ module.exports = {
    * @param {Object} creatureTypeObject
    * @param {Array<Integer>} weaponIds
    * @param {Array<Integer>} spellIds
-   * @returns {Object} new CreatureType
+   * @returns {CreatureType} new creatureType, with its armor, weapons, and spells included
    */
   createCreatureType: async (creatureTypeObject, weaponIds = null, spellIds = null) => {
-    const strippedCreatureType = stripInvalidParams(creatureTypeObject, CreatureType.allowedParams);
-
-    const missingParams = missingRequiredParams(strippedCreatureType, CreatureType.requiredParams);
+    // Filter out disallowed params
+    creatureTypeObject = stripInvalidParams(creatureTypeObject, CreatureType.allowedParams);
+    // Check for missing required params
+    const missingParams = missingRequiredParams(creatureTypeObject, CreatureType.requiredParams);
     if (missingParams.length) throw new Error(`CreatureType creation failed, fields missing: ${missingParams.join()}`);
-
-    const { count } = await CreatureType.findAndCountAll({
-      where: { name: strippedCreatureType.name },
-    });
-    if (count) throw new Error(`CreatureType with name "${strippedCreatureType.name}" already exists`);
+    // Check that the provided creatureType name is unique
+    if ((await CreatureType.findAll({ where: { name: creatureTypeObject.name } })).length) {
+      throw new Error(`CreatureType with name "${creatureTypeObject.name}" already exists`);
+    }
 
     // Check that the indicated Armor exists
-    if (strippedCreatureType.armorId) {
-      const armorExists = await Armor.findOne({ where: { id: strippedCreatureType.armorId } });
-      if (!armorExists) throw new Error(`CreatureType creation "${strippedCreatureType.name}" failed, unable to find Armor with ID: ${strippedCreatureType.armorId}`);
+    if (creatureTypeObject.armorId && !(await Armor.findByPk(creatureTypeObject.armorId))) {
+      throw new Error(`CreatureType creation "${creatureTypeObject.name}" failed, unable to find Armor with ID: ${creatureTypeObject.armorId}`);
     }
-
     // Check that the indicated Weapons exist
     if (weaponIds) {
-      if (!Array.isArray(weaponIds)) throw new Error(`CreatureType creation "${strippedCreatureType.name}" failed, weaponIds must be an Array`);
-      const failed = (await Promise.allSettled(weaponIds.map((id) => {
+      if (!Array.isArray(weaponIds)) throw new Error(`CreatureType creation "${creatureTypeObject.name}" failed, weaponIds must be an Array`);
+      const failedFindWeapons = (await Promise.allSettled(weaponIds.map((id) => {
         return new Promise((resolve, reject) => {
-          Weapon.findAndCountAll({ where: { id } })
-            .then(({ count: weaponCount, weapons }) => {
-              if (!weaponCount) reject(id);
+          Weapon.findByPk(id, { attributes: ['id'] })
+            .then((weapon) => {
+              if (!weapon) reject(id);
               resolve(id);
             })
             .catch((err) => reject(id));
         });
       }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
-      if (failed.length) throw new Error(`CreatureType creation "${strippedCreatureType.name}" failed, unable to find Weapons with IDs: ${failed.join(',')}`);
+      if (failedFindWeapons.length) {
+        throw new Error(`CreatureType creation "${creatureTypeObject.name}" failed, unable to find Weapons with IDs: ${failedFindWeapons.join(',')}`);
+      }
     }
-
     // Check that the indicated Spells exist
     if (spellIds) {
-      if (!Array.isArray(spellIds)) throw new Error(`CreatureType creation "${strippedCreatureType.name}" failed, spellIds must be an Array`);
-      const failed = (await Promise.allSettled(spellIds.map((id) => {
+      if (!Array.isArray(spellIds)) throw new Error(`CreatureType creation "${creatureTypeObject.name}" failed, spellIds must be an Array`);
+      const failedFindSpells = (await Promise.allSettled(spellIds.map((id) => {
         return new Promise((resolve, reject) => {
-          Spell.findAndCountAll({ where: { id } })
-            .then(({ count: spellCount, spells }) => {
-              if (!spellCount) reject(id);
+          Spell.findByPk(id, { attributes: ['id'] })
+            .then((spell) => {
+              if (!spell) reject(id);
               resolve(id);
             })
             .catch((err) => reject(id));
         });
       }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
-      if (failed.length) throw new Error(`CreatureType creation "${strippedCreatureType.name}" failed, unable to find Spells with IDs: ${failed.join(',')}`);
+      if (failedFindSpells.length) {
+        throw new Error(`CreatureType creation "${creatureTypeObject.name}" failed, unable to find Spells with IDs: ${failedFindSpells.join(',')}`);
+      }
     }
 
-    const createdCreatureType = await CreatureType.create(strippedCreatureType);
-    if (!createdCreatureType) throw new Error(`Failed to create CreatureType with name "${strippedCreatureType.name}" (database error)`);
-    const { id } = createdCreatureType.dataValues;
+    // Create the creatureType
+    const createdCreatureType = await CreatureType.create(creatureTypeObject);
+    if (!createdCreatureType) throw new Error(`Failed to create CreatureType with name "${creatureTypeObject.name}" (database error)`);
+    const { id: creatureTypeId, name } = createdCreatureType.dataValues;
 
     // Create the CreatureTypeWeapon junctions
     if (weaponIds) {
-      const failedWeaponIds = (await Promise
-        .allSettled(weaponIds.map((weaponId) => {
-          return new Promise((resolve, reject) => {
-            CreatureTypeWeapon.create({
-              creatureTypeId: id,
-              weaponId,
-            })
-              .then(() => resolve(weaponId))
-              .catch((err) => reject(weaponId));
-          });
-        })))
-        .filter((result) => result.status === 'rejected')
-        .map((result) => result.reason);
-      if (failedWeaponIds.length) throw new Error(`Failed to create CreatureTypeWeapons for "${strippedCreatureType.name}" with creatureTypeId: ${id} and weaponIds: ${failedWeaponIds.join(',')}`);
+      const failedCreateCreatureTypeWeaons = (await Promise.allSettled(weaponIds.map((weaponId) => {
+        return new Promise((resolve, reject) => {
+          CreatureTypeWeapon.create({ creatureTypeId, weaponId })
+            .then(() => resolve(weaponId))
+            .catch((err) => reject(weaponId));
+        });
+      }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
+      if (failedCreateCreatureTypeWeaons.length) {
+        throw new Error(`Failed to create CreatureTypeWeapons for "${name}" with creatureTypeId: ${creatureTypeId} and weaponIds: ${failedCreateCreatureTypeWeaons.join(',')}`);
+      }
     }
-
     // Create the CreatureTypeSpell junctions
     if (spellIds) {
-      const failedSpellIds = (await Promise
-        .allSettled(spellIds.map((spellId) => {
-          return new Promise((resolve, reject) => {
-            CreatureTypeSpell.create({
-              creatureTypeId: id,
-              spellId,
-            })
-              .then(() => resolve(spellId))
-              .catch((err) => reject(spellId));
-          });
-        })))
-        .filter((result) => result.status === 'rejected')
-        .map((result) => result.reason);
-      if (failedSpellIds.length) throw new Error(`Failed to create CreatureTypeSpells for "${strippedCreatureType.name}" with creatureTypeId: ${id} and spellIds: ${failedSpellIds.join(',')}`);
+      const failedCreatureCreatureTypeSpells = (await Promise.allSettled(spellIds.map((spellId) => {
+        return new Promise((resolve, reject) => {
+          CreatureTypeSpell.create({ creatureTypeId, spellId })
+            .then(() => resolve(spellId))
+            .catch((err) => reject(spellId));
+        });
+      }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
+      if (failedCreatureCreatureTypeSpells.length) {
+        throw new Error(`Failed to create CreatureTypeSpells for "${name}" with creatureTypeId: ${creatureTypeId} and spellIds: ${failedCreatureCreatureTypeSpells.join(',')}`);
+      }
     }
-    return CreatureType.findOne({
-      where: { id },
+
+    // Return the new creatureType with its armor, weapons, and spells included
+    return CreatureType.findByPk(creatureTypeId, {
       include: [{
+        model: Armor,
+        as: 'armor',
+      }, {
         model: Weapon,
         as: 'weapons',
       }, {
@@ -140,19 +137,23 @@ module.exports = {
 
   /**
    * @param {Integer} creatureTypeId
-   * @returns {Object} CreatureType
+   * @returns {CreatureType} CreatureType
    */
   getCreatureType: async (creatureTypeId) => {
     return CreatureType.findByPk(creatureTypeId);
   },
 
   /**
+   * @param {Integer} creatureTypeId
    * @param {Object} updateFields
-   * @returns {Object} updated CreatureType
+   * @returns {CreatureType} updated CreatureType
    */
   updateCreatureType: async (creatureTypeId, updateFields) => {
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, CreatureType.updateableParams);
+    // Check that the indicated creatureType exists
+    if (!(await CreatureType.findByPk(creatureTypeId))) throw new Error(`CreatureType update failed, no creatureType found with ID: ${creatureTypeId}`);
+    // Update the creatureType
     return CreatureType.update(updateFields, { where: { id: creatureTypeId } });
   },
 
@@ -160,22 +161,16 @@ module.exports = {
    * @param {Integer} creatureTypeId
    */
   deleteCreatureType: async (creatureTypeId) => {
-    // Delete all CreatureType - Spell associations
-    const creatureTypeSpells = await CreatureTypeSpell.findAll({ where: { creatureTypeId } });
-    await Promise.allSettled(creatureTypeSpells.map(async (creatureTypeSpell) => {
-      creatureTypeSpell.destroy();
-    }));
+    // Check that the indicated creatureType exists
+    const creatureType = await CreatureType.findByPk(creatureTypeId);
+    if (!creatureType) throw new Error(`CreatureType deletion failed, no creatureType found with ID: ${creatureTypeId}`);
     // Delete all CreatureType - Weapon associations
-    const creatureTypeWeapons = await CreatureTypeWeapon.findAll({ where: { creatureTypeId } });
-    await Promise.allSettled(creatureTypeWeapons.map(async (creatureTypeWeapon) => {
-      creatureTypeWeapon.destroy();
-    }));
+    await CreatureTypeWeapon.destroy({ where: { creatureTypeId } });
+    // Delete all CreatureType - Spell associations
+    await CreatureTypeSpell.destroy({ where: { creatureTypeId } });
     // Delete all associated Creatures
-    const creatures = await Creature.findAll({ where: { creatureTypeId } });
-    await Promise.allSettled(creatures.map(async (creature) => {
-      creature.destroy();
-    }));
-    // Finally, delete the CreatureType
-    return CreatureType.destroy({ where: { id: creatureTypeId } });
+    await Creature.destroy({ where: { creatureTypeId } });
+    // Delete the CreatureType
+    return creatureType.destroy();
   },
 };

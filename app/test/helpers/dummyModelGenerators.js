@@ -2,6 +2,7 @@ const {
   Armor,
   Weapon,
   Spell,
+  Creature,
   CreatureType,
   CreatureTypeWeapon,
   CreatureTypeSpell,
@@ -131,5 +132,35 @@ module.exports = {
       });
     }
     return creatureType;
+  },
+  generateDummyCreature: async (name = null, creatureTypeId = null, maxHP = null) => {
+    let creatureTypeName;
+    let creatureTypeMaxHP;
+    if (!creatureTypeId) {
+      ({
+        id: creatureTypeId, name: creatureTypeName, maxHP: creatureTypeMaxHP,
+      } = (await module.exports.generateDummyCreatureType()));
+    }
+    if (!name) name = `${creatureTypeName} 1`;
+    const creatureExists = await Creature.findOne({
+      where: { name },
+      include: [{
+        model: CreatureType,
+        as: 'creatureType',
+      }],
+    });
+    if (creatureExists) return creatureExists;
+    if (!maxHP) maxHP = creatureTypeMaxHP;
+    const creatureId = (await Creature.create({
+      name,
+      creatureTypeId,
+      maxHP,
+    })).dataValues.id;
+    return Creature.findByPk(creatureId, {
+      include: [{
+        model: CreatureType,
+        as: 'creatureType',
+      }],
+    });
   },
 };

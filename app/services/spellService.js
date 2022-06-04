@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Spell, CreatureType, CreatureTypeSpell } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
@@ -16,6 +17,7 @@ module.exports = {
     if ((await Spell.findAll({ where: { name: spellObject.name } })).length) {
       throw new Error(`Spell with name ${spellObject.name} already exists`);
     }
+    // Create the spell
     return Spell.create(spellObject);
   },
 
@@ -32,7 +34,7 @@ module.exports = {
    * @returns {Object} updated Spell
    */
   updateSpell: async (spellId, updateFields) => {
-    // Remove disallowed params
+    // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Spell.updateableParams);
     // Check that the indicated spell exists
     if (!(await Spell.findByPk(spellId))) throw new Error(`Spell update failed, no spell found with ID: ${spellId}`);
@@ -49,18 +51,17 @@ module.exports = {
       include: [{
         model: CreatureType,
         as: 'creatureTypes',
+        attributes: ['id'],
       }],
     });
     if (!spell) throw new Error(`Spell deletion failed, no spell found with ID: ${spellId}`);
     // Delete all relevant CreatureType - Spell associations
-    await Promise.allSettled(spell.dataValues.creatureTypes.map(async (creatureType) => {
-      return CreatureTypeSpell.destroy({
-        where: {
-          creatureTypeId: creatureType.dataValues.id,
-          spellId: spell.dataValues.id,
-        },
-      });
-    }));
+    await CreatureTypeSpell.destroy({
+      where: {
+        creatureTypeId: { [Op.in]: spell.dataValues.creatureTypes.map((ct) => ct.dataValues.id) },
+        spellId: spell.dataValues.id,
+      },
+    });
     // Delete the spell
     return spell.destroy();
   },

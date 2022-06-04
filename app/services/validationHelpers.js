@@ -27,8 +27,7 @@ module.exports = {
    * @returns {Array<String>}
    */
   missingRequiredParams: (inputObject, requiredParams) => {
-    return requiredParams
-      .filter((key) => !Object.prototype.hasOwnProperty.call(inputObject, key));
+    return requiredParams.filter((key) => !{}.hasOwnProperty.call(inputObject, key));
   },
   /**
    * specialAbilities, reactions, etc. [{
@@ -41,10 +40,10 @@ module.exports = {
   isArrayOfLabeledDescriptions: (array) => {
     if (array === null) return;
     if (typeof array === 'string') array = JSON.parse(array);
-    if (!Array.isArray(array)) throw new Error('array must be an array');
-    if (!array.length) throw new Error('array should not be length 0');
+    if (!Array.isArray(array)) throw new Error('labelled description array must be an array');
+    if (!array.length) throw new Error('labelled description array should not be length 0');
     array.forEach((object) => {
-      if (typeof object !== 'object') throw new Error('array must contain objects');
+      if (typeof object !== 'object') throw new Error('labelled description array must contain objects');
       const objectKeys = Object.keys(object);
       if (objectKeys.length !== 2
         || !objectKeys.includes('label')

@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Weapon, CreatureType, CreatureTypeWeapon } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
@@ -33,7 +34,7 @@ module.exports = {
    * @returns {Weapon} the updated weapon
    */
   updateWeapon: async (weaponId, updateFields) => {
-    // Remove disallowed params
+    // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Weapon.updateableParams);
     // Check that the indicated weapon exists
     if (!(await Weapon.findByPk(weaponId))) throw new Error(`Weapon update failed, no weapon found with ID: ${weaponId}`);
@@ -50,18 +51,17 @@ module.exports = {
       include: [{
         model: CreatureType,
         as: 'creatureTypes',
+        attributes: ['id'],
       }],
     });
     if (!weapon) throw new Error(`Weapon deletion failed, no weapon found with ID: ${weaponId}`);
     // Delete all relevant CreatureType - Weapon associations
-    await Promise.allSettled(weapon.dataValues.creatureTypes.map(async (creatureType) => {
-      return CreatureTypeWeapon.destroy({
-        where: {
-          creatureTypeId: creatureType.dataValues.id,
-          weaponId: weapon.dataValues.id,
-        },
-      });
-    }));
+    await CreatureTypeWeapon.destroy({
+      where: {
+        creatureTypeId: { [Op.in]: weapon.dataValues.creatureTypes.map((ct) => ct.dataValues.id) },
+        weaponId: weapon.dataValues.id,
+      },
+    });
     // Delete the weapon
     return weapon.destroy();
   },

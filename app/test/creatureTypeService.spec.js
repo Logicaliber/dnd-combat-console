@@ -23,16 +23,23 @@ const relevantModels = [
   Creature,
 ];
 
+let armorId;
+let biteId;
+let spellId;
 let validActionPatterns;
-let bite;
-let expectedCreatureTypes = 0;
 let creatureType = null;
+let expectedCreatureTypes = 0;
+let expectedCreatureTypeWeapons = 0;
+let expectedCreatureTypeSpells = 0;
+let expectedCreatures = 0;
 
 describe('CreatureType Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    bite = await generators.generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]');
-    validActionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${bite.dataValues.id}}]]`;
+    armorId = (await generators.generateDummyArmor('fur', 'natural', 9)).dataValues.id;
+    biteId = (await generators.generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
+    spellId = (await generators.generateDummySpell()).dataValues.id;
+    validActionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${biteId}}],[{"other":"","restrictions":"","spellId":${spellId},"times":1,"weaponId":0}]]`;
   });
 
   after(async () => {
@@ -40,36 +47,34 @@ describe('CreatureType Service', () => {
   });
 
   describe('createCreatureType', () => {
-    it('should throw an error if required fields are missing', async () => {
+    it('Should throw an error if required fields are missing', async () => {
       try {
-        const result = await creatureTypeService.createCreatureType({
+        if ((await creatureTypeService.createCreatureType({
           name: 'dog',
-        });
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        }))) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation failed, fields missing: hitDie,numDice,maxHP,actionPatterns');
       }
     });
 
-    it('should throw an error if an invalid size is passed', async () => {
+    it('Should throw an error if an invalid size is passed', async () => {
       try {
-        const result = await creatureTypeService.createCreatureType({
+        if ((await creatureTypeService.createCreatureType({
           name: 'name',
           size: 'invalid',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
           actionPatterns: validActionPatterns,
-        });
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        }))) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: creatureType size must be one of tiny, small, medium, large, huge, or gargantuan');
       }
     });
 
-    it('should throw an error if an invalid armorId is passed', async () => {
+    it('Should throw an error if an invalid armorId is passed', async () => {
       try {
-        const result = await creatureTypeService.createCreatureType({
+        if ((await creatureTypeService.createCreatureType({
           name: 'name',
           size: 'medium',
           hitDie: 6,
@@ -77,70 +82,80 @@ describe('CreatureType Service', () => {
           maxHP: 4,
           armorId: 1234,
           actionPatterns: validActionPatterns,
-        });
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        }))) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation "name" failed, unable to find Armor with ID: 1234');
       }
     });
 
-    it('should throw an error if invalid spellIds are passed', async () => {
+    it('Should throw an error if invalid spellIds are passed', async () => {
       try {
-        const result = await creatureTypeService.createCreatureType({
+        if ((await creatureTypeService.createCreatureType({
           name: 'name',
           size: 'medium',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
           actionPatterns: validActionPatterns,
-        }, null, [1234]);
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        }, null, [1234]))) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation "name" failed, unable to find Spells with IDs: 1234');
       }
     });
 
-    it('should throw an error if invalid weaponIds are passed', async () => {
+    it('Should throw an error if invalid weaponIds are passed', async () => {
       try {
-        const result = await creatureTypeService.createCreatureType({
+        if ((await creatureTypeService.createCreatureType({
           name: 'name',
           size: 'medium',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
           actionPatterns: validActionPatterns,
-        }, [1234]);
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        }, [1234]))) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation "name" failed, unable to find Weapons with IDs: 1234');
       }
     });
 
-    it('should create a creatureType if all valid fields are passed', async () => {
+    it('Should create a creatureType if all valid fields are passed', async () => {
       creatureType = await creatureTypeService.createCreatureType({
         name: 'dog',
         size: 'medium',
         hitDie: 6,
         numDice: 1,
         maxHP: 4,
+        armorId,
         actionPatterns: validActionPatterns,
-      }, [bite.dataValues.id]);
+      }, [biteId], [spellId]);
       expectedCreatureTypes += 1;
-
+      expectedCreatureTypeWeapons += 1;
+      expectedCreatureTypeSpells += 1;
+      // Check that one creatureType was created
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
+      // Check that one creatureTypeWeapon was created
+      assert.lengthOf((await CreatureTypeWeapon.findAll()), expectedCreatureTypeWeapons);
+      // Check that one creatureTypeSpell was created
+      assert.lengthOf((await CreatureTypeSpell.findAll()), expectedCreatureTypeSpells);
+      // Check that the creatureType has the correct armor
+      assert.equal(creatureType.dataValues.armor.dataValues.id, armorId);
+      assert.equal(creatureType.dataValues.armor.dataValues.name, 'fur');
+
+      // Create a creature that is this creatureType, for use in the deleteCreatureType tests
+      await generators.generateDummyCreature(null, creatureType.dataValues.id);
+      expectedCreatures += 1;
     });
 
-    it('should throw an error if a duplicate creatureType name is used', async () => {
+    it('Should throw an error if a duplicate creatureType name is used', async () => {
       try {
-        const result = await creatureTypeService.createCreatureType({
+        if ((await creatureTypeService.createCreatureType({
           name: 'dog',
           size: 'medium',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
           actionPatterns: validActionPatterns,
-        });
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        }))) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType with name "dog" already exists');
       }
@@ -148,21 +163,19 @@ describe('CreatureType Service', () => {
   });
 
   describe('getCreatureType', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await creatureTypeService.getCreatureType('invalid');
-        if (result) throw new Error('getCreatureType should have thrown an error');
+        if ((await creatureTypeService.getCreatureType('invalid'))) throw new Error('getCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return null if a non-existant id is passed', async () => {
-      const result = await creatureTypeService.getCreatureType(99999);
-      assert.isNull(result);
+    it('Should return null if a non-existant id is passed', async () => {
+      assert.isNull((await creatureTypeService.getCreatureType(99999)));
     });
 
-    it('should return the correct creatureType for the given id', async () => {
+    it('Should return the correct creatureType for the given id', async () => {
       const result = await creatureTypeService.getCreatureType(creatureType.dataValues.id);
       assert.hasAnyKeys(result, 'dataValues');
       assert.hasAllKeys(result.dataValues, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'actionPatterns', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects', 'createdAt', 'updatedAt']);
@@ -176,7 +189,7 @@ describe('CreatureType Service', () => {
   });
 
   describe('updateCreatureType', () => {
-    it('should throw an error if an invalid actionPatterns is passed', async () => {
+    it('Should throw an error if an invalid actionPatterns is passed', async () => {
       try {
         const result = await creatureTypeService.updateCreatureType(creatureType.dataValues.id, {
           name: 'dog',
@@ -191,18 +204,17 @@ describe('CreatureType Service', () => {
       }
     });
 
-    it('should update a creatureType if all valid fields are passed', async () => {
+    it('Should update a creatureType if all valid fields are passed', async () => {
       await creatureTypeService.updateCreatureType(creatureType.dataValues.id, {
         name: 'big dog',
         hitDie: 12,
         numDice: 4,
         maxHP: 26,
       });
-
+      // Check that no new creatureType was created
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
-
+      // Check that the creatureType was updated
       await creatureType.reload();
-
       assert.equal(creatureType.dataValues.name, 'big dog');
       assert.equal(creatureType.dataValues.hitDie, 12);
       assert.equal(creatureType.dataValues.numDice, 4);
@@ -211,24 +223,40 @@ describe('CreatureType Service', () => {
   });
 
   describe('deleteCreatureType', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await creatureTypeService.deleteCreatureType('invalid');
-        if (result) throw new Error('createCreatureType should have thrown an error');
+        if ((await creatureTypeService.deleteCreatureType('invalid'))) {
+          throw new Error('deleteCreatureType should have thrown an error');
+        }
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return 0 if the id is non-existant', async () => {
-      const result = await creatureTypeService.deleteCreatureType(99999);
-      assert.equal(result, 0);
+    it('Should throw an error if the id is non-existant', async () => {
+      try {
+        if ((await creatureTypeService.deleteCreatureType(99999))) {
+          throw new Error('deleteCreatureType should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType deletion failed, no creatureType found with ID: 99999');
+      }
     });
 
-    it('should delete the creatureType with the given id', async () => {
+    it('Should delete the creatureType with the given id, as well as all related creatures, and all creatureTypeWeapon and creatureTypeSpell associations', async () => {
       await creatureTypeService.deleteCreatureType(creatureType.dataValues.id);
       expectedCreatureTypes -= 1;
+      expectedCreatureTypeSpells -= 1;
+      expectedCreatureTypeWeapons -= 1;
+      expectedCreatures -= 1;
+      // Check that one creatureType was deleted
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
+      // Check that one creatureTypeWeapon was deleted
+      assert.lengthOf((await CreatureTypeWeapon.findAll()), expectedCreatureTypeWeapons);
+      // Check that one creatureTypeSpell was deleted
+      assert.lengthOf((await CreatureTypeSpell.findAll()), expectedCreatureTypeSpells);
+      // Check that one creatureType was deleted
+      assert.lengthOf((await Creature.findAll()), expectedCreatures);
     });
   });
 });
