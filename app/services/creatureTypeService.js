@@ -36,7 +36,7 @@ module.exports = {
    * @param {Object} creatureTypeObject
    * @param {Array<Integer>} weaponIds
    * @param {Array<Integer>} spellIds
-   * @returns {CreatureType} new creatureType, with its armor, weapons, and spells included
+   * @returns {Promise<CreatureType>} new creatureType, with its armor, weapons, and spells included
    */
   createCreatureType: async (creatureTypeObject, weaponIds = null, spellIds = null) => {
     // Filter out disallowed params
@@ -137,7 +137,7 @@ module.exports = {
 
   /**
    * @param {Integer} creatureTypeId
-   * @returns {CreatureType} CreatureType
+   * @returns {Promise<CreatureType>} CreatureType
    */
   getCreatureType: async (creatureTypeId) => {
     return CreatureType.findByPk(creatureTypeId);
@@ -146,7 +146,7 @@ module.exports = {
   /**
    * @param {Integer} creatureTypeId
    * @param {Object} updateFields
-   * @returns {CreatureType} updated CreatureType
+   * @returns {Promise<CreatureType>} updated CreatureType
    */
   updateCreatureType: async (creatureTypeId, updateFields) => {
     // Remove non-updateable params
@@ -158,7 +158,8 @@ module.exports = {
   },
 
   /**
-   * @param {Integer} creatureTypeId
+   * @param {Integer}
+   * @returns {Promise<1|0>} if the creatureType was deleted
    */
   deleteCreatureType: async (creatureTypeId) => {
     // Check that the indicated creatureType exists

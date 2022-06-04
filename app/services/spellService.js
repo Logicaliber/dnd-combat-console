@@ -5,7 +5,7 @@ const { missingRequiredParams, stripInvalidParams } = require('./validationHelpe
 module.exports = {
   /**
    * @param {Object} spellObject
-   * @returns {Object} new Spell
+   * @returns {Promise<Spell>} the new spell
    */
   createSpell: async (spellObject) => {
     // Remove disallowed params
@@ -23,15 +23,16 @@ module.exports = {
 
   /**
    * @param {Integer} spellId
-   * @returns {Object} Spell
+   * @returns {Promise<Spell>} the spell
    */
   getSpell: async (spellId) => {
     return Spell.findByPk(spellId);
   },
 
   /**
+   * @param {Integer} spellId
    * @param {Object} updateFields
-   * @returns {Object} updated Spell
+   * @returns {Promise<Spell>} the updated spell
    */
   updateSpell: async (spellId, updateFields) => {
     // Remove non-updateable params
@@ -44,6 +45,7 @@ module.exports = {
 
   /**
    * @param {Integer} spellId
+   * @returns {Promise<1|0>} if the spell was deleted
    */
   deleteSpell: async (spellId) => {
     // Check that the indicated spell exists

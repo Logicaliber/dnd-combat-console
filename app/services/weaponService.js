@@ -5,7 +5,7 @@ const { missingRequiredParams, stripInvalidParams } = require('./validationHelpe
 module.exports = {
   /**
    * @param {Object} weaponObject
-   * @returns {Weapon} the new weapon
+   * @returns {Promise<Weapon>} the new weapon
    */
   createWeapon: async (weaponObject) => {
     // Remove disallowed params
@@ -22,7 +22,7 @@ module.exports = {
 
   /**
    * @param {Integer} weaponId
-   * @returns {Weapon} the weapon
+   * @returns {Promise<Weapon>} the weapon
    */
   getWeapon: async (weaponId) => {
     return Weapon.findByPk(weaponId);
@@ -31,7 +31,7 @@ module.exports = {
   /**
    * @param {Integer} weaponId
    * @param {Object} updateFields
-   * @returns {Weapon} the updated weapon
+   * @returns {Promise<Weapon>} the updated weapon
    */
   updateWeapon: async (weaponId, updateFields) => {
     // Remove non-updateable params
@@ -44,6 +44,7 @@ module.exports = {
 
   /**
    * @param {Integer} weaponId
+   * @returns {Promise<1|0>} if the weapon was deleted
    */
   deleteWeapon: async (weaponId) => {
     // Check that the indicated weapon exists

@@ -7,28 +7,35 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 module.exports = {
   /**
    * @param {Object} creatureObject
-   * @returns {Object} new Creature
+   * @returns {Promise<Creature>} the new creature, with its creatureType included
    */
   createCreature: async (creatureObject) => {
-    const strippedCreature = stripInvalidParams(creatureObject, Creature.allowedParams);
-
-    const missingParams = missingRequiredParams(strippedCreature, Creature.requiredParams);
-    if (missingParams.length) throw new Error(`creature creation failed, fields missing: ${missingParams.join()}`);
-
-    const creatureTypeExists = await CreatureType.findOne({
-      where: { id: strippedCreature.creatureTypeId },
+    // Filter out disallowed params
+    creatureObject = stripInvalidParams(creatureObject, Creature.allowedParams);
+    // Check for missing required params
+    const missingParams = missingRequiredParams(creatureObject, Creature.requiredParams);
+    if (missingParams.length) throw new Error(`Creature creation failed, fields missing: ${missingParams.join()}`);
+    // Check that the indicated creatureType exists
+    if (!(await CreatureType.findOne({
+      where: { id: creatureObject.creatureTypeId },
+    }))) throw new Error(`Creature creation failed, no creatureType found with ID: ${creatureObject.creatureTypeId}`);
+    // Check that the provided creature name is unique
+    if ((await Creature.findAll({ where: { name: creatureObject.name } })).length) {
+      throw new Error(`Creature with name ${creatureObject.name} already exists`);
+    }
+    // Create the creature
+    const creatureId = (await Creature.create(creatureObject)).dataValues.id;
+    return Creature.findByPk(creatureId, {
+      include: [{
+        model: CreatureType,
+        as: 'creatureType',
+      }],
     });
-    if (!creatureTypeExists) throw new Error(`failed to find CreatureType with id ${strippedCreature.creatureTypeId}`);
-
-    const { count } = await Creature.findAndCountAll({ where: { name: strippedCreature.name } });
-    if (count) throw new Error(`creature with name ${strippedCreature.name} already exists`);
-
-    return Creature.create(strippedCreature);
   },
 
   /**
    * @param {Integer} creatureId
-   * @returns {Object} Creature
+   * @returns {Promise<Creature>} the creature
    */
   getCreature: async (creatureId) => {
     return Creature.findByPk(creatureId);
@@ -37,25 +44,26 @@ module.exports = {
   /**
    * @param {Integer} creatureId
    * @param {Object} updateFields
-   * @returns {Object} updated Creature
+   * @returns {Creature} the updated creature
    */
   updateCreature: async (creatureId, updateFields) => {
-    const strippedCreature = stripInvalidParams(updateFields, Creature.updateableParams);
-    return Creature.update(strippedCreature, {
-      where: {
-        id: creatureId,
-      },
-    });
+    // Filter out disallowed params
+    updateFields = stripInvalidParams(updateFields, Creature.updateableParams);
+    // Check that the indicated creature exists
+    if (!(await Creature.findByPk(creatureId))) throw new Error(`Creature update failed, no creature found with ID: ${creatureId}`);
+    // Update the creature
+    return Creature.update(updateFields, { where: { id: creatureId } });
   },
 
   /**
    * @param {Integer} creatureId
+   * @returns {Promise<1|0>} if the creature was deleted
    */
   deleteCreature: async (creatureId) => {
-    return Creature.destroy({
-      where: {
-        id: creatureId,
-      },
-    });
+    // Check that the indicated creature exists
+    const creature = await Creature.findByPk(creatureId);
+    if (!creature) throw new Error(`Creature deletion failed, no creature found with ID: ${creatureId}`);
+    // Delete the creature
+    return creature.destroy();
   },
 };

@@ -4,7 +4,7 @@ const { missingRequiredParams, stripInvalidParams } = require('./validationHelpe
 module.exports = {
   /**
    * @param {Object} armorObject
-   * @returns {Object} new Armor
+   * @returns {Promise<Armor>} new armor
    */
   createArmor: async (armorObject) => {
     // Remove disallowed params
@@ -21,15 +21,16 @@ module.exports = {
 
   /**
    * @param {Integer} armorId
-   * @returns {Object} Armor
+   * @returns {Promise<Armor>} the armor
    */
   getArmor: async (armorId) => {
     return Armor.findByPk(armorId);
   },
 
   /**
+   * @param {Integer} armorId
    * @param {Object} updateFields
-   * @returns {Object} updated Armor
+   * @returns {Promise<Armor>} the updated armor
    */
   updateArmor: async (armorId, updateFields) => {
     // Remove non-updateable params
@@ -42,6 +43,7 @@ module.exports = {
 
   /**
    * @param {Integer} armorId
+   * @returns {Promise<1|0>} if the armor was deleted
    */
   deleteArmor: async (armorId) => {
     // Check that the armor exists
@@ -53,10 +55,7 @@ module.exports = {
     });
     if (!armor) throw new Error(`Armor deletion failed, no armor found with ID: ${armorId}`);
     // For each creatureType that uses this armor, set its armorId to null
-    await Promise.allSettled(armor.dataValues.creatureTypes.map(async (creatureType) => {
-      creatureType.armorId = null;
-      return creatureType.save();
-    }));
+    await CreatureType.update({ armorId: null }, { where: { armorId } });
     // Delete the armor
     return armor.destroy();
   },

@@ -5,7 +5,7 @@ const { missingRequiredParams, stripInvalidParams } = require('./validationHelpe
 module.exports = {
   /**
    * @param {Object} userObject
-   * @returns {Object} new User
+   * @returns {Promise<User>} the new user
    */
   createUser: async (userObject) => {
     // Filter out disallowed params
@@ -27,7 +27,7 @@ module.exports = {
 
   /**
    * @param {Integer} userId
-   * @returns {Object} User
+   * @returns {Promise<User>} the user
    */
   getUser: async (userId) => {
     return User.findByPk(userId);
@@ -36,7 +36,7 @@ module.exports = {
   /**
    * @param {Integer} userId
    * @param {Object} updateFields
-   * @returns {Object} updated User
+   * @returns {Promise<User>} the updated user
    */
   updateUser: async (userId, updateFields) => {
     // Filter out non-updateable params
@@ -50,6 +50,7 @@ module.exports = {
 
   /**
    * @param {Integer} userId
+   * @returns {Promise<1|0>} if the user was deleted
    */
   deleteUser: async (userId) => {
     // Check that the indicated user exists

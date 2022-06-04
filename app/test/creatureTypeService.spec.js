@@ -10,7 +10,9 @@ const {
   Creature,
 } = require('../models');
 const creatureTypeService = require('../services/creatureTypeService');
-const generators = require('./helpers/dummyModelGenerators');
+const {
+  generateDummyArmor, generateDummyWeapon, generateDummySpell, generateDummyCreature,
+} = require('./helpers/dummyModelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const relevantModels = [
@@ -36,9 +38,9 @@ let expectedCreatures = 0;
 describe('CreatureType Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    armorId = (await generators.generateDummyArmor('fur', 'natural', 9)).dataValues.id;
-    biteId = (await generators.generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
-    spellId = (await generators.generateDummySpell()).dataValues.id;
+    armorId = (await generateDummyArmor('fur', 'natural', 9)).dataValues.id;
+    biteId = (await generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
+    spellId = (await generateDummySpell()).dataValues.id;
     validActionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${biteId}}],[{"other":"","restrictions":"","spellId":${spellId},"times":1,"weaponId":0}]]`;
   });
 
@@ -142,7 +144,7 @@ describe('CreatureType Service', () => {
       assert.equal(creatureType.dataValues.armor.dataValues.name, 'fur');
 
       // Create a creature that is this creatureType, for use in the deleteCreatureType tests
-      await generators.generateDummyCreature(null, creatureType.dataValues.id);
+      await generateDummyCreature(null, creatureType.dataValues.id);
       expectedCreatures += 1;
     });
 
