@@ -1,4 +1,5 @@
-const { Spell, CreatureTypeSpell } = require('../models');
+const { Spell, CreatureType, CreatureTypeSpell } = require('../models');
+const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 module.exports = {
   /**
@@ -6,12 +7,15 @@ module.exports = {
    * @returns {Object} new Spell
    */
   createSpell: async (spellObject) => {
-    const { count } = await Spell.findAndCountAll({
-      where: {
-        name: spellObject.name,
-      },
-    });
-    if (count) throw new Error(`spell with name ${spellObject.name} already exists`);
+    // Remove disallowed params
+    spellObject = stripInvalidParams(spellObject, Spell.allowedParams);
+    // Check for missing required params
+    const missingParams = missingRequiredParams(spellObject, Spell.requiredParams);
+    if (missingParams.length) throw new Error(`Spell creation failed, fields missing: ${missingParams.join()}`);
+    // Check that the spell name is unique
+    if ((await Spell.findAll({ where: { name: spellObject.name } })).length) {
+      throw new Error(`Spell with name ${spellObject.name} already exists`);
+    }
     return Spell.create(spellObject);
   },
 
@@ -27,30 +31,37 @@ module.exports = {
    * @param {Object} spellObject
    * @returns {Object} updated Spell
    */
-  updateSpell: async (spellObject) => {
-    return Spell.update(spellObject, {
-      where: {
-        id: spellObject.id,
-      },
-    });
+  updateSpell: async (spellId, spellObject) => {
+    // Remove disallowed params
+    spellObject = stripInvalidParams(spellObject, Spell.updateableParams);
+    // Check that the indicated spell exists
+    if (!(await Spell.findByPk(spellId))) throw new Error(`Spell update failed, no spell found with ID: ${spellId}`);
+    // Update the spell
+    return Spell.update(spellObject, { where: { id: spellId } });
   },
 
   /**
    * @param {Integer} spellId
    */
   deleteSpell: async (spellId) => {
-    const creatureTypeSpells = await CreatureTypeSpell.findAll({
-      where: {
-        spellId,
-      },
+    // Check that the indicated spell exists
+    const spell = await Spell.findByPk(spellId, {
+      include: [{
+        model: CreatureType,
+        as: 'creatureTypes',
+      }],
     });
-    await Promise.allSettled(creatureTypeSpells.map(async (creatureTypeSpell) => {
-      creatureTypeSpell.destroy();
+    if (!spell) throw new Error(`Spell deletion failed, no spell found with ID: ${spellId}`);
+    // Delete all relevant CreatureType - Spell associations
+    await Promise.allSettled(spell.dataValues.creatureTypes.map(async (creatureType) => {
+      return CreatureTypeSpell.destroy({
+        where: {
+          creatureTypeId: creatureType.dataValues.id,
+          spellId: spell.dataValues.id,
+        },
+      });
     }));
-    return Spell.destroy({
-      where: {
-        id: spellId,
-      },
-    });
+    // Delete the spell
+    return spell.destroy();
   },
 };

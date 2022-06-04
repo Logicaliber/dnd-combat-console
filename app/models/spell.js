@@ -19,6 +19,29 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Spell.belongsToMany(models.CreatureType, { through: models.CreatureTypeSpell, foreignKey: 'spellId', as: 'creatureTypes' });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      level: sequelize.modelOptsObject(false, true, true),
+      school: sequelize.modelOptsObject(true, true, true),
+      castingTime: sequelize.modelOptsObject(false, true, true),
+      range: sequelize.modelOptsObject(false, true, true),
+      components: sequelize.modelOptsObject(false, true, true),
+      duration: sequelize.modelOptsObject(false, true, true),
+      saveType: sequelize.modelOptsObject(false, true, true),
+      saveStillHalf: sequelize.modelOptsObject(false, true, true),
+      description: sequelize.modelOptsObject(true, true, true),
+      damages: sequelize.modelOptsObject(false, false, true),
+    };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   Spell.init({
     name: {

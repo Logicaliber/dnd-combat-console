@@ -1,18 +1,18 @@
 const { assert } = require('chai');
-
-const { CreatureType, CreatureTypeSpell, Spell } = require('../models');
+const { Spell, CreatureType, CreatureTypeSpell } = require('../models');
 const spellService = require('../services/spellService');
-
 const { acidSplash, waterSplash } = require('./helpers/fixtures');
+const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
 
 const syncRelevantModels = async () => {
+  await Spell.sync({ force: true });
   await CreatureType.sync({ force: true });
   await CreatureTypeSpell.sync({ force: true });
-  await Spell.sync({ force: true });
 };
 
 let expectedSpells = 0;
 let spell = null;
+let creatureType = null;
 
 describe('Spell Service', () => {
   before(async () => {
@@ -24,47 +24,53 @@ describe('Spell Service', () => {
   });
 
   describe('createSpell', () => {
-    it('should throw an error if an invalid level is passed', async () => {
+    it('Should throw an error if an invalid level is passed', async () => {
       try {
-        const result = await spellService.createSpell({
+        if ((await spellService.createSpell({
           name: 'negative spell',
           level: -1,
+          school: 'illusion',
           description: 'basic description',
-        });
-        if (result) throw new Error('createSpell should have thrown an error');
+        }))) throw new Error('createSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation min on level failed');
       }
     });
 
-    it('should throw an error if an invalid school is passed', async () => {
+    it('Should throw an error if an invalid school is passed', async () => {
       try {
-        const result = await spellService.createSpell({
+        if ((await spellService.createSpell({
           name: 'backyard',
           school: 'yard',
           description: 'basic description',
-        });
-        if (result) throw new Error('createSpell should have thrown an error');
+        }))) throw new Error('createSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: school must be one of abjuration, conjuration, divination, enchantment, evocation, illusion, necromancy, or transmutation');
       }
     });
 
-    it('should throw an error if an invalid damages array is passed', async () => {
+    it('Should throw an error if an invalid damages array is passed', async () => {
       try {
-        const result = await spellService.createSpell({
+        if ((await spellService.createSpell({
           name: 'backyard',
           school: 'conjuration',
           description: 'basic description',
           damages: '["valid json", "invalid spell damages array"]',
-        });
-        if (result) throw new Error('createSpell should have thrown an error');
+        }))) throw new Error('createSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: spell damages array must be an array of arrays');
       }
     });
 
-    it('should create a spell if all valid fields are passed', async () => {
+    it('Should throw an error if required params are missing', async () => {
+      try {
+        if ((await spellService.createSpell({}))) throw new Error('createSpell should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Spell creation failed, fields missing: name,school,description');
+      }
+    });
+
+    it('Should create a spell if all valid fields are passed', async () => {
       spell = await spellService.createSpell({
         name: 'Acid Splash',
         level: 0,
@@ -79,105 +85,101 @@ describe('Spell Service', () => {
         damages: acidSplash.damages,
       });
       expectedSpells += 1;
-
+      // Check that one spell was created
       assert.lengthOf((await Spell.findAll()), expectedSpells);
+
+      // Create a creatureType that uses this spell, for use in the deleteSpell tests
+      creatureType = await generateDummyCreatureType(
+        null, null, null, null, null, null, 0, spell.dataValues.id,
+      );
     });
 
-    it('should throw an error if a duplicate spell name is used', async () => {
+    it('Should throw an error if a duplicate spell name is used', async () => {
       try {
-        const result = await spellService.createSpell({
-          name: 'Acid Splash',
-          level: 0,
+        if ((await spellService.createSpell({
+          name: spell.dataValues.name,
           school: 'conjuration',
-          castingTime: '1 action',
-          range: 60,
-          components: 'V, S',
-          duration: 'instantaneous',
-          saveType: 'dex',
-          saveStillHalf: false,
           description: acidSplash.description,
-          damages: acidSplash.damages,
-        });
-        if (result) throw new Error('createSpell should have thrown an error');
+        }))) throw new Error('createSpell should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'spell with name Acid Splash already exists');
+        assert.equal(error.message, `Spell with name ${spell.dataValues.name} already exists`);
       }
     });
   });
 
   describe('getSpell', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await spellService.getSpell('invalid');
-        if (result) throw new Error('getSpell should have thrown an error');
+        if ((await spellService.getSpell('invalid'))) throw new Error('getSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return null if a non-existant id is passed', async () => {
-      const result = await spellService.getSpell(99999);
-      assert.isNull(result);
+    it('Should return null if a non-existant id is passed', async () => {
+      assert.isNull((await spellService.getSpell(99999)));
     });
 
-    it('should return the correct spell for the given id', async () => {
-      const result = await spellService.getSpell(spell.id);
+    it('Should return the correct spell for the given id', async () => {
+      const result = await spellService.getSpell(spell.dataValues.id);
       assert.hasAnyKeys(result, 'dataValues');
       assert.hasAllKeys(result.dataValues, ['id', 'name', 'level', 'school', 'castingTime', 'range', 'components', 'duration', 'saveType', 'saveStillHalf', 'description', 'damages', 'createdAt', 'updatedAt']);
-      assert.equal(result.dataValues.id, spell.id);
-      assert.equal(result.dataValues.name, spell.name);
-      assert.equal(result.dataValues.school, spell.school);
+      assert.equal(result.dataValues.id, spell.dataValues.id);
+      assert.equal(result.dataValues.name, spell.dataValues.name);
+      assert.equal(result.dataValues.school, spell.dataValues.school);
     });
   });
 
   describe('updateSpell', () => {
-    it('should throw an error if an invalid damages array is passed', async () => {
+    it('Should throw an error if an invalid damages array is passed', async () => {
       try {
-        const result = await spellService.updateSpell({
-          id: spell.id,
-          damages: '["valid json","invalid damages array"]',
-        });
-        if (result) throw new Error('updateSpell should have thrown an error');
+        if ((await spellService.updateSpell(spell.dataValues.id, {
+          damages: '["valid json","invalid spell damages array"]',
+        }))) throw new Error('updateSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: spell damages array must be an array of arrays');
       }
     });
 
-    it('should update a spell if all valid fields are passed', async () => {
-      await spellService.updateSpell({
-        id: spell.id,
+    it('Should update a spell if all valid fields are passed', async () => {
+      await spellService.updateSpell(spell.dataValues.id, {
         name: 'water splash',
         description: waterSplash.description,
         damages: waterSplash.damages,
       });
-
+      // Check that the number of spells hasn't changed
       assert.lengthOf((await Spell.findAll()), expectedSpells);
-
+      // Check that the spell was updated
       await spell.reload();
-
-      assert.equal(spell.name, 'water splash');
+      assert.equal(spell.dataValues.name, 'water splash');
     });
   });
 
   describe('deleteSpell', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await spellService.deleteSpell('invalid');
-        if (result) throw new Error('createSpell should have thrown an error');
+        if ((await spellService.deleteSpell('invalid'))) throw new Error('createSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return 0 if the id is non-existant', async () => {
-      const result = await spellService.deleteSpell(99999);
-      assert.equal(result, 0);
+    it('Should throw an error if the id is non-existant', async () => {
+      try {
+        if ((await spellService.deleteSpell(99999))) throw new Error('createSpell should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Spell deletion failed, no spell found with ID: 99999');
+      }
     });
 
-    it('should delete the spell with the given id', async () => {
-      await spellService.deleteSpell(spell.id);
+    it('Should delete the spell with the given id', async () => {
+      await spellService.deleteSpell(spell.dataValues.id);
       expectedSpells -= 1;
+      // Check that one spell was deleted
       assert.lengthOf((await Spell.findAll()), expectedSpells);
+      // Check that the creature that was using this spell now has no spells
+      const spells = await creatureType.getSpells();
+      assert.lengthOf(spells, 0);
     });
   });
 });

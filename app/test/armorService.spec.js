@@ -59,7 +59,9 @@ describe('Armor Service', () => {
       assert.lengthOf((await Armor.findAll()), expectedArmors);
 
       // Create a creatureType that uses this armor, for use in a later test
-      creatureType = await generateDummyCreatureType(null, null, null, null, armor.dataValues.id);
+      creatureType = await generateDummyCreatureType(
+        null, null, null, null, armor.dataValues.id, null, null, 0,
+      );
     });
 
     it('Should throw an error if a duplicate armor name is used', async () => {

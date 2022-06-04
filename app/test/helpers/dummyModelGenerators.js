@@ -1,9 +1,12 @@
 const {
   Armor,
   Weapon,
+  Spell,
   CreatureType,
   CreatureTypeWeapon,
+  CreatureTypeSpell,
 } = require('../../models');
+const { acidSplash } = require('./fixtures');
 
 module.exports = {
   generateDummyArmor: async (name = null, type = null, baseAC = null, disadvantage = null) => {
@@ -44,6 +47,46 @@ module.exports = {
       saveStillHalf,
     });
   },
+  generateDummySpell: async (
+    name = null,
+    level = null,
+    school = null,
+    castingTime = null,
+    range = null,
+    components = null,
+    duration = null,
+    saveType = null,
+    saveStillHalf = null,
+    description = null,
+    damages = null,
+  ) => {
+    if (!name) name = 'Acid Splash';
+    const spellExists = await Spell.findOne({ where: { name } });
+    if (spellExists) return spellExists;
+    if (!level) level = 0;
+    if (!school) school = 'conjuration';
+    if (!castingTime) castingTime = '1 action';
+    if (!range) range = 60;
+    if (!components) components = 'V; S';
+    if (!duration) duration = 'instantaneous';
+    if (!saveType) saveType = 'dex';
+    if (!saveStillHalf) saveStillHalf = false;
+    if (!description) description = acidSplash.description;
+    if (!damages) damages = acidSplash.damages;
+    return Spell.create({
+      name,
+      level,
+      school,
+      castingTime,
+      range,
+      components,
+      duration,
+      saveType,
+      saveStillHalf,
+      description,
+      damages,
+    });
+  },
   generateDummyCreatureType: async (
     name = null,
     hitDie = null,
@@ -51,7 +94,8 @@ module.exports = {
     maxHP = null,
     armorId = null,
     actionPatterns = null,
-    weaponId = null,
+    weaponId = 0,
+    spellId = 0,
   ) => {
     if (!name) name = 'dog';
     const creatureTypeExists = await CreatureType.findOne({ where: { name } });
@@ -60,22 +104,32 @@ module.exports = {
     if (!numDice) numDice = 1;
     if (!maxHP) maxHP = 4;
     if (!armorId) armorId = (await module.exports.generateDummyArmor()).dataValues.id;
-    if (!weaponId) weaponId = (await module.exports.generateDummyWeapon()).dataValues.id;
+    // If neither weaponId or spellId are passed, just use a weapon
+    if (weaponId === null) weaponId = (await module.exports.generateDummyWeapon()).dataValues.id;
+    else if (spellId === null) spellId = (await module.exports.generateDummySpell()).dataValues.id;
     if (!actionPatterns) {
-      actionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${weaponId}}]]`;
+      actionPatterns = `[[{"other":"","restrictions":"","spellId":${spellId},"times":1,"weaponId":${weaponId}}]]`;
     }
     const creatureType = await CreatureType.create({
       name,
       hitDie,
       numDice,
       maxHP,
-      actionPatterns,
       armorId,
+      actionPatterns,
     });
-    await CreatureTypeWeapon.create({
-      creatureTypeId: creatureType.dataValues.id,
-      weaponId,
-    });
+    if (weaponId) {
+      await CreatureTypeWeapon.create({
+        creatureTypeId: creatureType.dataValues.id,
+        weaponId,
+      });
+    }
+    if (spellId) {
+      await CreatureTypeSpell.create({
+        creatureTypeId: creatureType.dataValues.id,
+        spellId,
+      });
+    }
     return creatureType;
   },
 };
