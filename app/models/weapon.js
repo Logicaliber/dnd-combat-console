@@ -13,6 +13,27 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon, foreignKey: 'weaponId', as: 'creatureTypes' });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      damages: sequelize.modelOptsObject(false, false, true),
+      properties: sequelize.modelOptsObject(false, false, true),
+      normalRange: sequelize.modelOptsObject(false, true, true),
+      longRange: sequelize.modelOptsObject(false, true, true),
+      attackShape: sequelize.modelOptsObject(false, true, true),
+      save: sequelize.modelOptsObject(false, true, true),
+      saveType: sequelize.modelOptsObject(false, true, true),
+      saveStillHalf: sequelize.modelOptsObject(false, true, true),
+    };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   Weapon.init({
     name: {

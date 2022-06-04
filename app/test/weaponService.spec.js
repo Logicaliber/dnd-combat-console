@@ -1,8 +1,8 @@
 const { assert } = require('chai');
-
 const { CreatureType, CreatureTypeWeapon, Weapon } = require('../models');
 const weaponService = require('../services/weaponService');
 const { MIN_INFORMATION, MAX_INFORMATION } = require('../variables');
+const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
 
 const syncRelevantModels = async () => {
   await Weapon.sync({ force: true });
@@ -10,8 +10,10 @@ const syncRelevantModels = async () => {
   await CreatureTypeWeapon.sync({ force: true });
 };
 
+const rubberDaggerDamages = '[{"num":1,"die":0,"bonus":0,"type":"bludgeoning","effect":""}]';
 let expectedWeapons = 0;
 let weapon = null;
+let creatureType = null;
 
 describe('Weapon Service', () => {
   before(async () => {
@@ -23,140 +25,140 @@ describe('Weapon Service', () => {
   });
 
   describe('createWeapon', () => {
-    it('should throw an error if an invalid damages is passed', async () => {
+    it('Should throw an error if an invalid damages array is passed', async () => {
       try {
-        const result = await weaponService.createWeapon({
+        if ((await weaponService.createWeapon({
           name: 'rubber dagger',
           damages: '["valid json","invalid damages array"]',
-        });
-        if (result) throw new Error('createWeapon should have thrown an error');
+        }))) throw new Error('createWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: damage object must be an object, got type string');
       }
     });
 
-    it('should throw an error if an invalid properties array is passed', async () => {
+    it('Should throw an error if an invalid properties array is passed', async () => {
       try {
-        const result = await weaponService.createWeapon({
+        if ((await weaponService.createWeapon({
           name: 'rubber dagger',
           properties: '["valid json","invalid properties array"]',
-        });
-        if (result) throw new Error('createWeapon should have thrown an error');
+        }))) throw new Error('createWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, `Validation error: array elements must be strings of ${MIN_INFORMATION} to ${MAX_INFORMATION} characters, and only lowercase letters or dashes`);
       }
     });
 
-    it('should create a weapon if all valid fields are passed', async () => {
+    it('Should create a weapon if all valid fields are passed', async () => {
       weapon = await weaponService.createWeapon({
         name: 'rubber dagger',
-        damages: '[{"num":1,"die":0,"bonus":0,"type":"bludgeoning","effect":""}]',
+        damages: rubberDaggerDamages,
         properties: '["finesse","light","thrown"]',
       });
       expectedWeapons += 1;
-
+      // Check that one weapon was created
       assert.lengthOf((await Weapon.findAll()), expectedWeapons);
+
+      // Create a creatureType that uses this weapon, for use in the deleteWeapon tests
+      creatureType = await generateDummyCreatureType(
+        null, null, null, null, null, null, weapon.dataValues.id, 0,
+      );
     });
 
-    it('should throw an error if a duplicate weapon name is used', async () => {
+    it('Should throw an error if a duplicate weapon name is used', async () => {
       try {
-        const result = await weaponService.createWeapon({
+        if ((await weaponService.createWeapon({
           name: 'rubber dagger',
-          damages: '[{"num":1,"die":0,"bonus":0,"type":"bludgeoning","effect":""}]',
+          damages: rubberDaggerDamages,
           properties: '["finesse"]',
-        });
-        if (result) throw new Error('createWeapon should have thrown an error');
+        }))) throw new Error('createWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'weapon with name rubber dagger already exists');
+        assert.equal(error.message, 'Weapon with name rubber dagger already exists');
       }
     });
   });
 
   describe('getWeapon', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await weaponService.getWeapon('invalid');
-        if (result) throw new Error('getWeapon should have thrown an error');
+        if ((await weaponService.getWeapon('invalid'))) throw new Error('getWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return null if a non-existant id is passed', async () => {
-      const result = await weaponService.getWeapon(99999);
-      assert.isNull(result);
+    it('Should return null if a non-existant id is passed', async () => {
+      assert.isNull((await weaponService.getWeapon(99999)));
     });
 
-    it('should return the correct weapon for the given id', async () => {
-      const result = await weaponService.getWeapon(weapon.id);
+    it('Should return the correct weapon for the given id', async () => {
+      const result = await weaponService.getWeapon(weapon.dataValues.id);
       assert.hasAnyKeys(result, 'dataValues');
       assert.hasAllKeys(result.dataValues, ['id', 'name', 'damages', 'properties', 'normalRange', 'longRange', 'attackShape', 'save', 'saveType', 'saveStillHalf', 'createdAt', 'updatedAt']);
-      assert.equal(result.dataValues.id, weapon.id);
-      assert.equal(result.dataValues.name, weapon.name);
-      assert.equal(result.dataValues.normalRange, weapon.normalRange);
+      assert.equal(result.dataValues.id, weapon.dataValues.id);
+      assert.equal(result.dataValues.name, weapon.dataValues.name);
+      assert.equal(result.dataValues.normalRange, weapon.dataValues.normalRange);
     });
   });
 
   describe('updateWeapon', () => {
-    it('should throw an error if an invalid damages is passed', async () => {
+    it('Should throw an error if an invalid damages array is passed', async () => {
       try {
-        const result = await weaponService.updateWeapon({
-          id: weapon.id,
+        if ((await weaponService.updateWeapon(weapon.dataValues.id, {
           damages: '["valid json","invalid damages array"]',
-        });
-        if (result) throw new Error('updateWeapon should have thrown an error');
+        }))) throw new Error('updateWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: damage object must be an object, got type string');
       }
     });
 
-    it('should throw an error if an invalid properties array is passed', async () => {
+    it('Should throw an error if an invalid properties array is passed', async () => {
       try {
-        const result = await weaponService.updateWeapon({
-          id: weapon.id,
+        if ((await weaponService.updateWeapon(weapon.dataValues.id, {
           properties: '["valid json","invalid properties array"]',
-        });
-        if (result) throw new Error('updateWeapon should have thrown an error');
+        }))) throw new Error('updateWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, `Validation error: array elements must be strings of ${MIN_INFORMATION} to ${MAX_INFORMATION} characters, and only lowercase letters or dashes`);
       }
     });
 
-    it('should update a weapon if all valid fields are passed', async () => {
-      await weaponService.updateWeapon({
-        id: weapon.id,
+    it('Should update a weapon if all valid fields are passed', async () => {
+      await weaponService.updateWeapon(weapon.dataValues.id, {
         name: 'rubber shortsword',
-        damages: '[{"num":1,"die":0,"bonus":0,"type":"bludgeoning","effect":""}]',
+        damages: rubberDaggerDamages,
         properties: '["finesse","light"]',
       });
-
+      // Check that the number of weapons hasn't changed
       assert.lengthOf((await Weapon.findAll()), expectedWeapons);
-
+      // Check that the weapon was updated
       await weapon.reload();
-
-      assert.equal(weapon.name, 'rubber shortsword');
+      assert.equal(weapon.dataValues.name, 'rubber shortsword');
     });
   });
 
   describe('deleteWeapon', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await weaponService.deleteWeapon('invalid');
-        if (result) throw new Error('createWeapon should have thrown an error');
+        if ((await weaponService.deleteWeapon('invalid'))) throw new Error('deleteWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return 0 if the id is non-existant', async () => {
-      const result = await weaponService.deleteWeapon(99999);
-      assert.equal(result, 0);
+    it('Should throw an error if the id is non-existant', async () => {
+      try {
+        if ((await weaponService.deleteWeapon(99999))) throw new Error('deleteWeapon should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Weapon deletion failed, no weapon found with ID: 99999');
+      }
     });
 
-    it('should delete the weapon with the given id', async () => {
-      await weaponService.deleteWeapon(weapon.id);
+    it('Should delete the weapon with the given id, and delete any relevant CreatureType - Weapon associations', async () => {
+      await weaponService.deleteWeapon(weapon.dataValues.id);
       expectedWeapons -= 1;
+      // Check that one weapon was deleted
       assert.lengthOf((await Weapon.findAll()), expectedWeapons);
+      // Check that the creature that was using this weapon now has no weapons
+      const weapons = await creatureType.getWeapons();
+      assert.lengthOf(weapons, 0);
     });
   });
 });

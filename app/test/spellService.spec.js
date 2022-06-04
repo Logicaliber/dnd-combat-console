@@ -158,7 +158,7 @@ describe('Spell Service', () => {
   describe('deleteSpell', () => {
     it('Should throw an error if an invalid id is passed', async () => {
       try {
-        if ((await spellService.deleteSpell('invalid'))) throw new Error('createSpell should have thrown an error');
+        if ((await spellService.deleteSpell('invalid'))) throw new Error('deleteSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
@@ -166,13 +166,13 @@ describe('Spell Service', () => {
 
     it('Should throw an error if the id is non-existant', async () => {
       try {
-        if ((await spellService.deleteSpell(99999))) throw new Error('createSpell should have thrown an error');
+        if ((await spellService.deleteSpell(99999))) throw new Error('deleteSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Spell deletion failed, no spell found with ID: 99999');
       }
     });
 
-    it('Should delete the spell with the given id', async () => {
+    it('Should delete the spell with the given id, and delete any relevant CreatureType - Spell associations', async () => {
       await spellService.deleteSpell(spell.dataValues.id);
       expectedSpells -= 1;
       // Check that one spell was deleted

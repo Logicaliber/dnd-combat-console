@@ -168,7 +168,7 @@ describe('Armor Service', () => {
       }
     });
 
-    it('Should delete the armor with the given id', async () => {
+    it('Should delete the armor with the given id, and set any creatureTypes using this armor to have armorId: null', async () => {
       await armorService.deleteArmor(armor.dataValues.id);
       expectedArmors -= 1;
       // Check that one armor was deleted
