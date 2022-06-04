@@ -37,6 +37,7 @@ module.exports = {
   updateSpell: async (spellId, updateFields) => {
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Spell.updateableParams);
+    if (!Object.keys(updateFields).length) throw new Error('Spell update failed, no valid update fields found');
     // Check that the indicated spell exists
     if (!(await Spell.findByPk(spellId))) throw new Error(`Spell update failed, no spell found with ID: ${spellId}`);
     // Update the spell

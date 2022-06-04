@@ -36,6 +36,7 @@ module.exports = {
   updateWeapon: async (weaponId, updateFields) => {
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Weapon.updateableParams);
+    if (!Object.keys(updateFields).length) throw new Error('Weapon update failed, no valid update fields found');
     // Check that the indicated weapon exists
     if (!(await Weapon.findByPk(weaponId))) throw new Error(`Weapon update failed, no weapon found with ID: ${weaponId}`);
     // Update the weapon

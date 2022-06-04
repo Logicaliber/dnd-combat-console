@@ -95,15 +95,16 @@ module.exports = {
 
     // Create the CreatureTypeWeapon junctions
     if (weaponIds) {
-      const failedCreateCreatureTypeWeaons = (await Promise.allSettled(weaponIds.map((weaponId) => {
-        return new Promise((resolve, reject) => {
-          CreatureTypeWeapon.create({ creatureTypeId, weaponId })
-            .then(() => resolve(weaponId))
-            .catch((err) => reject(weaponId));
-        });
-      }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
-      if (failedCreateCreatureTypeWeaons.length) {
-        throw new Error(`Failed to create CreatureTypeWeapons for "${name}" with creatureTypeId: ${creatureTypeId} and weaponIds: ${failedCreateCreatureTypeWeaons.join(',')}`);
+      const failedCreateCreatureTypeWeapons = (await Promise.allSettled(weaponIds
+        .map((weaponId) => {
+          return new Promise((resolve, reject) => {
+            CreatureTypeWeapon.create({ creatureTypeId, weaponId })
+              .then(() => resolve(weaponId))
+              .catch((err) => reject(weaponId));
+          });
+        }))).filter((result) => result.status === 'rejected').map((result) => result.reason);
+      if (failedCreateCreatureTypeWeapons.length) {
+        throw new Error(`Failed to create CreatureTypeWeapons for "${name}" with creatureTypeId: ${creatureTypeId} and weaponIds: ${failedCreateCreatureTypeWeapons.join(',')}`);
       }
     }
     // Create the CreatureTypeSpell junctions
@@ -151,6 +152,7 @@ module.exports = {
   updateCreatureType: async (creatureTypeId, updateFields) => {
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, CreatureType.updateableParams);
+    if (!Object.keys(updateFields).length) throw new Error('CreatureType update failed, no valid update fields found');
     // Check that the indicated creatureType exists
     if (!(await CreatureType.findByPk(creatureTypeId))) throw new Error(`CreatureType update failed, no creatureType found with ID: ${creatureTypeId}`);
     // Update the creatureType

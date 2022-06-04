@@ -14,13 +14,15 @@ module.exports = {
     const missingParams = missingRequiredParams(userObject, User.requiredParams);
     if (missingParams.length) throw new Error(`User creation failed, fields missing: ${missingParams.join()}`);
     // Check that the provided email is unique
-    if ((await User.findAndCountAll({ where: { email: userObject.email } })).count) throw new Error(`user with email ${userObject.email} already exists`);
+    if ((await User.findAll({ where: { email: userObject.email } })).length) {
+      throw new Error(`user with email ${userObject.email} already exists`);
+    }
     // Validate the password
-    const passwordIsValid = User.validatePassword(userObject.password);
-    if (!passwordIsValid) throw new Error('password must contain at least one number, lowercase letter, uppercase letter, one symbol, and be at least eight characters long');
+    if (!User.validatePassword(userObject.password)) {
+      throw new Error('password must contain at least one number, lowercase letter, uppercase letter, one symbol, and be at least eight characters long');
+    }
     // Hash the password
-    const hashedPassword = await bcrypt.hash(userObject.password, 10);
-    userObject.password = hashedPassword;
+    userObject.password = await bcrypt.hash(userObject.password, 10);
     // Create the user
     return User.create(userObject);
   },

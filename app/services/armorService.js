@@ -35,6 +35,7 @@ module.exports = {
   updateArmor: async (armorId, updateFields) => {
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Armor.updateableParams);
+    if (!Object.keys(updateFields).length) throw new Error('Armor update failed, no valid update fields found');
     // Check that the indicated armor exists
     if (!(await Armor.findByPk(armorId))) throw new Error(`Armor update failed, no armor found with ID: ${armorId}`);
     // Update the armor
@@ -47,12 +48,7 @@ module.exports = {
    */
   deleteArmor: async (armorId) => {
     // Check that the armor exists
-    const armor = await Armor.findByPk(armorId, {
-      include: [{
-        model: CreatureType,
-        as: 'creatureTypes',
-      }],
-    });
+    const armor = await Armor.findByPk(armorId);
     if (!armor) throw new Error(`Armor deletion failed, no armor found with ID: ${armorId}`);
     // For each creatureType that uses this armor, set its armorId to null
     await CreatureType.update({ armorId: null }, { where: { armorId } });
