@@ -28,7 +28,8 @@
     "global-require": 0,
     "node/no-unpublished-require": 0,
     "no-param-reassign": 0,
-    "comma-dangle": ["error", "always-multiline"]
+    "comma-dangle": ["error", "always-multiline"],
+    "function-paren-newline": [ "error", "consistent" ]
   }
 }
 

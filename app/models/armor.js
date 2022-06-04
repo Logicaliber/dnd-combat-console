@@ -11,6 +11,22 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       Armor.hasMany(models.CreatureType, { foreignKey: 'armorId', as: 'creatureTypes' });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      type: sequelize.modelOptsObject(true, true, true),
+      baseAC: sequelize.modelOptsObject(true, true, true),
+      disadvantage: sequelize.modelOptsObject(false, true, true),
+    };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   Armor.init({
     name: {

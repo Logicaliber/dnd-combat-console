@@ -2,6 +2,7 @@ const { assert } = require('chai');
 
 const { Armor, CreatureType } = require('../models');
 const armorService = require('../services/armorService');
+const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
 
 const syncRelevantModels = async () => {
   await Armor.sync({ force: true });
@@ -10,6 +11,7 @@ const syncRelevantModels = async () => {
 
 let expectedArmors = 0;
 let armor = null;
+let creatureType = null;
 
 describe('Armor Service', () => {
   before(async () => {
@@ -21,33 +23,31 @@ describe('Armor Service', () => {
   });
 
   describe('createArmor', () => {
-    it('should throw an error if an invalid type is passed', async () => {
+    it('Should throw an error if an invalid type is passed', async () => {
       try {
-        const result = await armorService.createArmor({
+        if ((await armorService.createArmor({
           name: 'name',
           type: 'invalid',
           baseAC: 12,
-        });
-        if (result) throw new Error('createArmor should have thrown an error');
+        }))) throw new Error('createArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: armor type must be one of: light, medium, heavy, or natural');
       }
     });
 
-    it('should throw an error if a negative baseAC is passed', async () => {
+    it('Should throw an error if a negative baseAC is passed', async () => {
       try {
-        const result = await armorService.createArmor({
+        if ((await armorService.createArmor({
           name: 'name',
           type: 'light',
           baseAC: -1,
-        });
-        if (result) throw new Error('createArmor should have thrown an error');
+        }))) throw new Error('createArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation min on baseAC failed');
       }
     });
 
-    it('should create an armor if all valid fields are passed', async () => {
+    it('Should create an armor if all valid fields are passed', async () => {
       armor = await armorService.createArmor({
         name: 'Extreme Plate',
         type: 'heavy',
@@ -57,117 +57,123 @@ describe('Armor Service', () => {
       expectedArmors += 1;
 
       assert.lengthOf((await Armor.findAll()), expectedArmors);
+
+      // Create a creatureType that uses this armor, for use in a later test
+      creatureType = await generateDummyCreatureType(null, null, null, null, armor.dataValues.id);
     });
 
-    it('should throw an error if a duplicate armor name is used', async () => {
+    it('Should throw an error if a duplicate armor name is used', async () => {
       try {
-        const result = await armorService.createArmor({
-          name: 'Extreme Plate',
+        if ((await armorService.createArmor({
+          name: armor.dataValues.name,
           type: 'light',
           baseAC: 12,
-        });
-        if (result) throw new Error('createArmor should have thrown an error');
+        }))) throw new Error('createArmor should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'armor with name Extreme Plate already exists');
+        assert.equal(error.message, `Armor with name ${armor.dataValues.name} already exists`);
       }
     });
   });
 
   describe('getArmor', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await armorService.getArmor('invalid');
-        if (result) throw new Error('getArmor should have thrown an error');
+        if ((await armorService.getArmor('invalid'))) {
+          throw new Error('getArmor should have thrown an error');
+        }
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return null if a non-existant id is passed', async () => {
-      const result = await armorService.getArmor(99999);
-      assert.isNull(result);
+    it('Should return null if a non-existant id is passed', async () => {
+      assert.isNull((await armorService.getArmor(99999)));
     });
 
-    it('should return the correct armor for the given id', async () => {
-      const result = await armorService.getArmor(armor.id);
+    it('Should return the correct armor for the given id', async () => {
+      const result = await armorService.getArmor(armor.dataValues.id);
       assert.hasAnyKeys(result, 'dataValues');
       assert.hasAllKeys(result.dataValues, ['id', 'name', 'type', 'baseAC', 'disadvantage', 'createdAt', 'updatedAt']);
-      assert.equal(result.dataValues.id, armor.id);
-      assert.equal(result.dataValues.name, armor.name);
-      assert.equal(result.dataValues.type, armor.type);
-      assert.equal(result.dataValues.baseAC, armor.baseAC);
-      assert.equal(result.dataValues.disadvantage, armor.disadvantage);
+      assert.equal(result.dataValues.id, armor.dataValues.id);
+      assert.equal(result.dataValues.name, armor.dataValues.name);
+      assert.equal(result.dataValues.type, armor.dataValues.type);
+      assert.equal(result.dataValues.baseAC, armor.dataValues.baseAC);
+      assert.equal(result.dataValues.disadvantage, armor.dataValues.disadvantage);
     });
   });
 
   describe('updateArmor', () => {
-    it('should throw an error if an invalid type is passed', async () => {
+    it('Should throw an error if an invalid type is passed', async () => {
       try {
-        const result = await armorService.updateArmor({
-          id: armor.id,
+        if ((await armorService.updateArmor(armor.dataValues.id, {
           name: 'Super Extreme Plate',
           type: 'still invalid',
           baseAC: 22,
-        });
-        if (result) throw new Error('updateArmor should have thrown an error');
+        }))) throw new Error('updateArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: armor type must be one of: light, medium, heavy, or natural');
       }
     });
 
-    it('should throw an error if a negative baseAC is passed', async () => {
+    it('Should throw an error if a negative baseAC is passed', async () => {
       try {
-        const result = await armorService.updateArmor({
-          id: armor.id,
+        if ((await armorService.updateArmor(armor.dataValues.id, {
           name: 'name',
           type: 'light',
           baseAC: -1,
-        });
-        if (result) throw new Error('updateArmor should have thrown an error');
+        }))) throw new Error('updateArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation min on baseAC failed');
       }
     });
 
-    it('should update an armor if all valid fields are passed', async () => {
-      await armorService.updateArmor({
-        id: armor.id,
+    it('Should update an armor if all valid fields are passed', async () => {
+      await armorService.updateArmor(armor.dataValues.id, {
         name: 'Super Extreme Plate',
         type: 'heavy',
         baseAC: 22,
         disadvantage: false,
       });
 
+      // Check that the number of armors hasn't changed
       assert.lengthOf((await Armor.findAll()), expectedArmors);
 
+      // Check that the armor was updated
       await armor.reload();
-
-      assert.equal(armor.name, 'Super Extreme Plate');
-      assert.equal(armor.type, 'heavy');
-      assert.equal(armor.baseAC, 22);
-      assert.equal(armor.disadvantage, false);
+      assert.equal(armor.dataValues.name, 'Super Extreme Plate');
+      assert.equal(armor.dataValues.type, 'heavy');
+      assert.equal(armor.dataValues.baseAC, 22);
+      assert.equal(armor.dataValues.disadvantage, false);
     });
   });
 
   describe('deleteArmor', () => {
-    it('should throw an error if an invalid id is passed', async () => {
+    it('Should throw an error if an invalid id is passed', async () => {
       try {
-        const result = await armorService.deleteArmor('invalid');
-        if (result) throw new Error('createArmor should have thrown an error');
+        if ((await armorService.deleteArmor('invalid'))) {
+          throw new Error('createArmor should have thrown an error');
+        }
       } catch (error) {
         assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
       }
     });
 
-    it('should return 0 if the id is non-existant', async () => {
-      const result = await armorService.deleteArmor(99999);
-      assert.equal(result, 0);
+    it('Should throw an error if the id is non-existant', async () => {
+      try {
+        if ((await armorService.deleteArmor(99999))) throw new Error('deleteArmor should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Armor deletion failed, no armor found with ID: 99999');
+      }
     });
 
-    it('should delete the armor with the given id', async () => {
-      await armorService.deleteArmor(armor.id);
+    it('Should delete the armor with the given id', async () => {
+      await armorService.deleteArmor(armor.dataValues.id);
       expectedArmors -= 1;
+      // Check that one armor was deleted
       assert.lengthOf((await Armor.findAll()), expectedArmors);
+      // Check that the creatureType using this armor now has no armor
+      await creatureType.reload();
+      assert.isNull(creatureType.dataValues.armorId);
     });
   });
 });

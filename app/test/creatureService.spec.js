@@ -24,7 +24,7 @@ describe('Creature Service', () => {
     const biteId = (await generators.generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
     validActionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${biteId}}]]`;
     creatureTypeId = (await generators
-      .generateDummyCreatureType('dog', null, null, null, validActionPatterns, biteId)
+      .generateDummyCreatureType('dog', null, null, null, null, validActionPatterns, biteId)
     ).dataValues.id;
   });
 
