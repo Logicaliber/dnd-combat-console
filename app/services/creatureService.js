@@ -36,11 +36,11 @@ module.exports = {
 
   /**
    * @param {Integer} creatureId
-   * @param {Object} creatureObject
+   * @param {Object} updateFields
    * @returns {Object} updated Creature
    */
-  updateCreature: async (creatureId, creatureObject) => {
-    const strippedCreature = stripInvalidParams(creatureObject, Creature.updateableParams);
+  updateCreature: async (creatureId, updateFields) => {
+    const strippedCreature = stripInvalidParams(updateFields, Creature.updateableParams);
     return Creature.update(strippedCreature, {
       where: {
         id: creatureId,

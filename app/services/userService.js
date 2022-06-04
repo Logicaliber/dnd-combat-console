@@ -8,18 +8,21 @@ module.exports = {
    * @returns {Object} new User
    */
   createUser: async (userObject) => {
-    const strippedUser = stripInvalidParams(userObject, User.allowedParams);
-    const missingParams = missingRequiredParams(strippedUser, User.requiredParams);
+    // Filter out disallowed params
+    userObject = stripInvalidParams(userObject, User.allowedParams);
+    // Check for missing required params
+    const missingParams = missingRequiredParams(userObject, User.requiredParams);
     if (missingParams.length) throw new Error(`User creation failed, fields missing: ${missingParams.join()}`);
-
-    if ((await User.findAndCountAll({ where: { email: strippedUser.email } })).count) throw new Error(`user with email ${strippedUser.email} already exists`);
-
-    const passwordIsValid = User.validatePassword(strippedUser.password);
+    // Check that the provided email is unique
+    if ((await User.findAndCountAll({ where: { email: userObject.email } })).count) throw new Error(`user with email ${userObject.email} already exists`);
+    // Validate the password
+    const passwordIsValid = User.validatePassword(userObject.password);
     if (!passwordIsValid) throw new Error('password must contain at least one number, lowercase letter, uppercase letter, one symbol, and be at least eight characters long');
-
-    const hashedPassword = await bcrypt.hash(strippedUser.password, 10);
-    strippedUser.password = hashedPassword;
-    return User.create(strippedUser);
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(userObject.password, 10);
+    userObject.password = hashedPassword;
+    // Create the user
+    return User.create(userObject);
   },
 
   /**
@@ -32,19 +35,27 @@ module.exports = {
 
   /**
    * @param {Integer} userId
-   * @param {Object} userObject
+   * @param {Object} updateFields
    * @returns {Object} updated User
    */
-  updateUser: async (userId, userObject) => {
-    const strippedUser = stripInvalidParams(userObject, User.updateableParams);
-    if (!Object.keys(strippedUser).length) throw new Error('User update failed, no valid update fields found');
-    return User.update(strippedUser, { where: { id: userId } });
+  updateUser: async (userId, updateFields) => {
+    // Filter out non-updateable params
+    updateFields = stripInvalidParams(updateFields, User.updateableParams);
+    if (!Object.keys(updateFields).length) throw new Error('User update failed, no valid update fields found');
+    // Check that the indicated user exists
+    if (!(await User.findByPk(userId))) throw new Error(`User update failed, no user found with ID: ${userId}`);
+    // Update the user
+    return User.update(updateFields, { where: { id: userId } });
   },
 
   /**
    * @param {Integer} userId
    */
   deleteUser: async (userId) => {
-    return User.destroy({ where: { id: userId } });
+    // Check that the indicated user exists
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error(`User deletion failed, no user found with ID: ${userId}`);
+    // Delete the user
+    return user.destroy();
   },
 };

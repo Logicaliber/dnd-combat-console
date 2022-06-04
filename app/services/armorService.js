@@ -28,16 +28,16 @@ module.exports = {
   },
 
   /**
-   * @param {Object} armorObject
+   * @param {Object} updateFields
    * @returns {Object} updated Armor
    */
-  updateArmor: async (armorId, armorObject) => {
+  updateArmor: async (armorId, updateFields) => {
     // Remove disallowed params
-    armorObject = stripInvalidParams(armorObject, Armor.updateableParams);
+    updateFields = stripInvalidParams(updateFields, Armor.updateableParams);
     // Check that the indicated armor exists
     if (!(await Armor.findByPk(armorId))) throw new Error(`Armor update failed, no armor found with ID: ${armorId}`);
     // Update the armor
-    return Armor.update(armorObject, { where: { id: armorId } });
+    return Armor.update(updateFields, { where: { id: armorId } });
   },
 
   /**

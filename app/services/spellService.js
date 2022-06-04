@@ -28,16 +28,16 @@ module.exports = {
   },
 
   /**
-   * @param {Object} spellObject
+   * @param {Object} updateFields
    * @returns {Object} updated Spell
    */
-  updateSpell: async (spellId, spellObject) => {
+  updateSpell: async (spellId, updateFields) => {
     // Remove disallowed params
-    spellObject = stripInvalidParams(spellObject, Spell.updateableParams);
+    updateFields = stripInvalidParams(updateFields, Spell.updateableParams);
     // Check that the indicated spell exists
     if (!(await Spell.findByPk(spellId))) throw new Error(`Spell update failed, no spell found with ID: ${spellId}`);
     // Update the spell
-    return Spell.update(spellObject, { where: { id: spellId } });
+    return Spell.update(updateFields, { where: { id: spellId } });
   },
 
   /**
