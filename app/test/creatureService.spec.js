@@ -1,7 +1,6 @@
 const { assert } = require('chai');
 const creatureService = require('../services/creatureService');
 const {
-  generateDummyWeapon,
   generateDummyCreatureType,
 } = require('./helpers/dummyModelGenerators');
 const { syncModels } = require('./helpers/modelSync');
@@ -16,7 +15,6 @@ const relevantModels = [
   Creature,
 ];
 
-let validActionPatterns;
 let expectedCreatures = 0;
 let creature = null;
 let creatureTypeId = null;
@@ -24,10 +22,7 @@ let creatureTypeId = null;
 describe('Creature Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    const biteId = (await generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
-    validActionPatterns = `[[{"other":"","restrictions":"","spellId":0,"times":1,"weaponId":${biteId}}]]`;
-    creatureTypeId = (await generateDummyCreatureType('dog', null, null, null, null, validActionPatterns, biteId, 0)
-    ).dataValues.id;
+    creatureTypeId = (await generateDummyCreatureType('dog', null, null, null, null)).dataValues.id;
   });
 
   after(async () => {

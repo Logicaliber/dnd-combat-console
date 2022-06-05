@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       ActionPattern.hasMany(models.Action, { foreignKey: 'actionPatternId', as: 'actions' });
-      ActionPattern.belongsTo(models.CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureTypes' });
+      ActionPattern.belongsTo(models.CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureType' });
     }
 
     static optionsSchema = {
