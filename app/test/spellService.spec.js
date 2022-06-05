@@ -1,22 +1,18 @@
 const { assert } = require('chai');
 const spellService = require('../services/spellService');
-const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
 const { acidSplash, waterSplash } = require('./helpers/fixtures');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
   Spell,
-  CreatureType,
 } = require('../models');
 
 const relevantModels = [
   Spell,
-  CreatureType,
 ];
 
 let expectedSpells = 0;
 let spell = null;
-let creatureType = null;
 
 describe('Spell Service', () => {
   before(async () => {
@@ -91,11 +87,6 @@ describe('Spell Service', () => {
       expectedSpells += 1;
       // Check that one spell was created
       assert.lengthOf((await Spell.findAll()), expectedSpells);
-
-      // Create a creatureType that uses this spell, for use in the deleteSpell tests
-      creatureType = await generateDummyCreatureType(
-        null, null, null, null, null, null, 0, spell.dataValues.id,
-      );
     });
 
     it('Should throw an error if a duplicate spell name is used', async () => {
@@ -176,13 +167,11 @@ describe('Spell Service', () => {
       }
     });
 
-    it('Should delete the spell with the given id, and delete any relevant CreatureType - Spell associations', async () => {
+    it('Should delete the spell with the given id', async () => {
       await spellService.deleteSpell(spell.dataValues.id);
       expectedSpells -= 1;
       // Check that one spell was deleted
       assert.lengthOf((await Spell.findAll()), expectedSpells);
-      // Check that the creature that was using this spell now has no spells
-      assert.lengthOf((await creatureType.getSpells()), 0);
     });
   });
 });

@@ -130,9 +130,6 @@ module.exports = {
       innateSpells: {
         type: Sequelize.JSON,
       },
-      actionPatterns: {
-        type: Sequelize.JSON,
-      },
       legendaryActions: {
         type: Sequelize.JSON,
       },

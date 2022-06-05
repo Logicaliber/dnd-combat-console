@@ -92,9 +92,6 @@ module.exports = {
     numDice = null,
     maxHP = null,
     armorId = null,
-    actionPatterns = null,
-    weaponId = 0,
-    spellId = 0,
   ) => {
     if (!name) name = 'dog';
     const creatureTypeExists = await CreatureType.findOne({ where: { name } });
@@ -103,19 +100,12 @@ module.exports = {
     if (!numDice) numDice = 1;
     if (!maxHP) maxHP = 4;
     if (!armorId) armorId = (await module.exports.generateDummyArmor()).dataValues.id;
-    // If neither weaponId or spellId are passed, just use a weapon
-    if (weaponId === null) weaponId = (await module.exports.generateDummyWeapon()).dataValues.id;
-    else if (spellId === null) spellId = (await module.exports.generateDummySpell()).dataValues.id;
-    if (!actionPatterns) {
-      actionPatterns = `[[{"other":"","restrictions":"","spellId":${spellId},"times":1,"weaponId":${weaponId}}]]`;
-    }
     const creatureType = await CreatureType.create({
       name,
       hitDie,
       numDice,
       maxHP,
       armorId,
-      actionPatterns,
     });
     return creatureType;
   },

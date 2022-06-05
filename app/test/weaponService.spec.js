@@ -1,23 +1,19 @@
 const { assert } = require('chai');
 const weaponService = require('../services/weaponService');
 const { MIN_INFORMATION, MAX_INFORMATION } = require('../variables');
-const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
-  CreatureType,
   Weapon,
 } = require('../models');
 
 const relevantModels = [
-  CreatureType,
   Weapon,
 ];
 
 const rubberDaggerDamages = '[{"num":1,"die":0,"bonus":0,"type":"bludgeoning","effect":""}]';
 let expectedWeapons = 0;
 let weapon = null;
-let creatureType = null;
 
 describe('Weapon Service', () => {
   before(async () => {
@@ -60,11 +56,6 @@ describe('Weapon Service', () => {
       expectedWeapons += 1;
       // Check that one weapon was created
       assert.lengthOf((await Weapon.findAll()), expectedWeapons);
-
-      // Create a creatureType that uses this weapon, for use in the deleteWeapon tests
-      creatureType = await generateDummyCreatureType(
-        null, null, null, null, null, null, weapon.dataValues.id, 0,
-      );
     });
 
     it('Should throw an error if a duplicate weapon name is used', async () => {
@@ -155,13 +146,11 @@ describe('Weapon Service', () => {
       }
     });
 
-    it('Should delete the weapon with the given id, and delete any relevant CreatureType - Weapon associations', async () => {
+    it('Should delete the weapon with the given id', async () => {
       await weaponService.deleteWeapon(weapon.dataValues.id);
       expectedWeapons -= 1;
       // Check that one weapon was deleted
       assert.lengthOf((await Weapon.findAll()), expectedWeapons);
-      // Check that the creature that was using this weapon now has no weapons
-      assert.lengthOf((await creatureType.getWeapons()), 0);
     });
   });
 });
