@@ -1,5 +1,9 @@
 const { Op } = require('sequelize');
-const { Spell, CreatureType, CreatureTypeSpell } = require('../models');
+const {
+  Spell,
+  CreatureType,
+  CreatureTypeSpell,
+} = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 module.exports = {

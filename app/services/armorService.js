@@ -19,6 +19,7 @@ module.exports = {
     if ((await Armor.findAll({ where: { name: armorObject.name } })).length) {
       throw new Error(`Armor with name ${armorObject.name} already exists`);
     }
+    // Create the armor
     return Armor.create(armorObject);
   },
 

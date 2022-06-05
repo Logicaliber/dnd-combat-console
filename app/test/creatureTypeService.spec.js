@@ -9,8 +9,8 @@ const {
 const { syncModels } = require('./helpers/modelSync');
 
 const {
-  Weapon,
   Armor,
+  Weapon,
   Spell,
   CreatureType,
   CreatureTypeSpell,
@@ -19,8 +19,8 @@ const {
 } = require('../models');
 
 const relevantModels = [
-  Weapon,
   Armor,
+  Weapon,
   Spell,
   CreatureType,
   CreatureTypeSpell,

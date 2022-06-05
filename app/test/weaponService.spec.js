@@ -163,8 +163,7 @@ describe('Weapon Service', () => {
       // Check that one weapon was deleted
       assert.lengthOf((await Weapon.findAll()), expectedWeapons);
       // Check that the creature that was using this weapon now has no weapons
-      const weapons = await creatureType.getWeapons();
-      assert.lengthOf(weapons, 0);
+      assert.lengthOf((await creatureType.getWeapons()), 0);
     });
   });
 });

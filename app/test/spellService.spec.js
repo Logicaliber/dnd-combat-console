@@ -184,8 +184,7 @@ describe('Spell Service', () => {
       // Check that one spell was deleted
       assert.lengthOf((await Spell.findAll()), expectedSpells);
       // Check that the creature that was using this spell now has no spells
-      const spells = await creatureType.getSpells();
-      assert.lengthOf(spells, 0);
+      assert.lengthOf((await creatureType.getSpells()), 0);
     });
   });
 });
