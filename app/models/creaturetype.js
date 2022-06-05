@@ -27,6 +27,7 @@ module.exports = (sequelize, DataTypes) => {
       CreatureType.belongsTo(models.Armor, { foreignKey: 'armorId', as: 'armor' });
       CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell, foreignKey: 'creatureTypeId', as: 'spells' });
       CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon, foreignKey: 'creatureTypeId', as: 'weapons' });
+      CreatureType.hasMany(models.ActionPattern, { foreignKey: 'creatureTypeId', as: 'actionPatterns' });
     }
 
     static optionsSchema = {
