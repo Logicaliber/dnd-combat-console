@@ -8,7 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       creatureTypeId: {
-        allowNull: false,
+        allowNull: true,
         type: Sequelize.INTEGER,
       },
       priority: {

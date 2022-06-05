@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 
     static optionsSchema = {
       // required, searchable, updateable
-      actionPatternId: sequelize.modelOptsObject(true, true, false),
+      actionPatternId: sequelize.modelOptsObject(false, true, false),
       index: sequelize.modelOptsObject(true, true, true),
       weaponId: sequelize.modelOptsObject(false, true, true),
       times: sequelize.modelOptsObject(false, true, true),
@@ -41,15 +41,13 @@ module.exports = (sequelize, DataTypes) => {
   }
   Action.init({
     actionPatternId: {
-      allowNull: false,
+      allowNull: true,
       type: DataTypes.INTEGER,
     },
     index: {
       defaultValue: 0,
       type: DataTypes.INTEGER,
-      validate: {
-        min: 0,
-      },
+      validate: { min: 0 },
     },
     weaponId: {
       allowNull: true,
@@ -58,10 +56,7 @@ module.exports = (sequelize, DataTypes) => {
     times: {
       defaultValue: 1,
       type: DataTypes.INTEGER,
-      validate: {
-        min: 1,
-        max: 9,
-      },
+      validate: { min: 1, max: 9 },
     },
     spellId: {
       allowNull: true,
@@ -70,16 +65,12 @@ module.exports = (sequelize, DataTypes) => {
     restrictions: {
       allowNull: true,
       type: DataTypes.STRING,
-      validate: {
-        len: [MIN_DESCRIPTION, MAX_DESCRIPTION],
-      },
+      validate: { len: [MIN_DESCRIPTION, MAX_DESCRIPTION] },
     },
     other: {
       allowNull: true,
       type: DataTypes.STRING,
-      validate: {
-        len: [MIN_DESCRIPTION, MAX_DESCRIPTION],
-      },
+      validate: { len: [MIN_DESCRIPTION, MAX_DESCRIPTION] },
     },
   }, {
     sequelize,
