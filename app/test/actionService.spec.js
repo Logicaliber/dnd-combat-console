@@ -61,7 +61,7 @@ describe('Action Service', () => {
       }
     });
 
-    it('Should create a action if all valid fields are passed', async () => {
+    it('Should create an action if all valid fields are passed', async () => {
       action = await actionService.createAction({
         index: 0,
         weaponId,
@@ -104,7 +104,7 @@ describe('Action Service', () => {
     it('Should return the correct action for the given id', async () => {
       const result = await actionService.getAction(action.dataValues.id);
       assert.hasAnyKeys(result, 'dataValues');
-      assert.hasAllKeys(result.dataValues, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt']);
+      assert.hasAllKeys(result.dataValues, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
       assert.equal(result.dataValues.id, action.dataValues.id);
       assert.equal(result.dataValues.index, action.dataValues.index);
       assert.equal(result.dataValues.weaponId, action.dataValues.weaponId);
@@ -113,13 +113,23 @@ describe('Action Service', () => {
   });
 
   describe('updateAction', () => {
-    it('Should update a action if all valid fields are passed', async () => {
+    it('Should update an action if all valid fields are passed', async () => {
       await actionService.updateAction(action.dataValues.id, {
         times: 2,
       });
       // Check that the action was updated
       await action.reload();
       assert.equal(action.dataValues.times, 2);
+    });
+
+    it('Should not allow updating the actionPatternId with this function', async () => {
+      try {
+        if ((await actionService.updateAction(action.dataValues.id, {
+          actionPatternId: 1,
+        }))) throw new Error('updateAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action update failed, no valid update fields found');
+      }
     });
   });
 

@@ -7,10 +7,18 @@ const {
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
+const defaultActionIncludes = [{
+  model: Weapon,
+  as: 'weapon',
+}, {
+  model: Spell,
+  as: 'spell',
+}];
+
 module.exports = {
   /**
    * @param {Object} actionObject
-   * @returns {Promise<Action>} the new action, with its weapon and/or included
+   * @returns {Promise<Action>} the new action, with its weapon and/or spell included
    */
   createAction: async (actionObject) => {
     // Filter out disallowed params
@@ -40,13 +48,7 @@ module.exports = {
     // Create the action, then return it with its weapon and/or spell included
     const actionId = (await Action.create(actionObject)).dataValues.id;
     return Action.findByPk(actionId, {
-      include: [{
-        model: Weapon,
-        as: 'weapon',
-      }, {
-        model: Spell,
-        as: 'spell',
-      }],
+      include: defaultActionIncludes,
     });
   },
 
@@ -55,7 +57,9 @@ module.exports = {
    * @returns {Promise<Action>} the action
    */
   getAction: async (actionId) => {
-    return Action.findByPk(actionId);
+    return Action.findByPk(actionId, {
+      include: defaultActionIncludes,
+    });
   },
 
   /**
