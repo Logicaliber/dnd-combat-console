@@ -1,9 +1,9 @@
 const { assert } = require('chai');
 const bcrypt = require('bcryptjs');
-
-const { User } = require('../models');
 const userService = require('../services/userService');
 const { syncModels } = require('./helpers/modelSync');
+
+const { User } = require('../models');
 
 const relevantModels = [User];
 

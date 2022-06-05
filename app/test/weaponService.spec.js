@@ -1,14 +1,20 @@
 const { assert } = require('chai');
-const { CreatureType, CreatureTypeWeapon, Weapon } = require('../models');
 const weaponService = require('../services/weaponService');
 const { MIN_INFORMATION, MAX_INFORMATION } = require('../variables');
 const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
+const { syncModels } = require('./helpers/modelSync');
 
-const syncRelevantModels = async () => {
-  await Weapon.sync({ force: true });
-  await CreatureType.sync({ force: true });
-  await CreatureTypeWeapon.sync({ force: true });
-};
+const {
+  CreatureType,
+  CreatureTypeWeapon,
+  Weapon,
+} = require('../models');
+
+const relevantModels = [
+  CreatureType,
+  CreatureTypeWeapon,
+  Weapon,
+];
 
 const rubberDaggerDamages = '[{"num":1,"die":0,"bonus":0,"type":"bludgeoning","effect":""}]';
 let expectedWeapons = 0;
@@ -17,11 +23,11 @@ let creatureType = null;
 
 describe('Weapon Service', () => {
   before(async () => {
-    await syncRelevantModels();
+    await syncModels(relevantModels);
   });
 
   after(async () => {
-    await syncRelevantModels();
+    await syncModels(relevantModels);
   });
 
   describe('createWeapon', () => {

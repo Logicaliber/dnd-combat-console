@@ -1,12 +1,15 @@
 const { assert } = require('chai');
+const creatureService = require('../services/creatureService');
+const {
+  generateDummyWeapon,
+  generateDummyCreatureType,
+} = require('./helpers/dummyModelGenerators');
+const { syncModels } = require('./helpers/modelSync');
 
 const {
   CreatureType,
   Creature,
 } = require('../models');
-const creatureService = require('../services/creatureService');
-const { generateDummyWeapon, generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
-const { syncModels } = require('./helpers/modelSync');
 
 const relevantModels = [
   CreatureType,

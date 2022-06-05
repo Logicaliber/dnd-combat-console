@@ -1,4 +1,7 @@
-const { Armor, CreatureType } = require('../models');
+const {
+  Armor,
+  CreatureType,
+} = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 module.exports = {

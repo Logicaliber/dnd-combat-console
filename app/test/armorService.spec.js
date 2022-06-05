@@ -1,13 +1,17 @@
 const { assert } = require('chai');
-
-const { Armor, CreatureType } = require('../models');
 const armorService = require('../services/armorService');
 const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
+const { syncModels } = require('./helpers/modelSync');
 
-const syncRelevantModels = async () => {
-  await Armor.sync({ force: true });
-  await CreatureType.sync({ force: true });
-};
+const {
+  Armor,
+  CreatureType,
+} = require('../models');
+
+const relevantModels = [
+  Armor,
+  CreatureType,
+];
 
 let expectedArmors = 0;
 let armor = null;
@@ -15,11 +19,11 @@ let creatureType = null;
 
 describe('Armor Service', () => {
   before(async () => {
-    await syncRelevantModels();
+    await syncModels(relevantModels);
   });
 
   after(async () => {
-    await syncRelevantModels();
+    await syncModels(relevantModels);
   });
 
   describe('createArmor', () => {

@@ -1,14 +1,20 @@
 const { assert } = require('chai');
-const { Spell, CreatureType, CreatureTypeSpell } = require('../models');
 const spellService = require('../services/spellService');
-const { acidSplash, waterSplash } = require('./helpers/fixtures');
 const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
+const { acidSplash, waterSplash } = require('./helpers/fixtures');
+const { syncModels } = require('./helpers/modelSync');
 
-const syncRelevantModels = async () => {
-  await Spell.sync({ force: true });
-  await CreatureType.sync({ force: true });
-  await CreatureTypeSpell.sync({ force: true });
-};
+const {
+  Spell,
+  CreatureType,
+  CreatureTypeSpell,
+} = require('../models');
+
+const relevantModels = [
+  Spell,
+  CreatureType,
+  CreatureTypeSpell,
+];
 
 let expectedSpells = 0;
 let spell = null;
@@ -16,11 +22,11 @@ let creatureType = null;
 
 describe('Spell Service', () => {
   before(async () => {
-    await syncRelevantModels();
+    await syncModels(relevantModels);
   });
 
   after(async () => {
-    await syncRelevantModels();
+    await syncModels(relevantModels);
   });
 
   describe('createSpell', () => {

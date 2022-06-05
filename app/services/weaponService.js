@@ -17,6 +17,7 @@ module.exports = {
     if ((await Weapon.findAll({ where: { name: weaponObject.name } })).length) {
       throw new Error(`Weapon with name ${weaponObject.name} already exists`);
     }
+    // Create the weapon
     return Weapon.create(weaponObject);
   },
 
