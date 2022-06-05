@@ -11,8 +11,29 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon });
+      Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon, foreignKey: 'weaponId', as: 'creatureTypes' });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      damages: sequelize.modelOptsObject(false, false, true),
+      properties: sequelize.modelOptsObject(false, false, true),
+      normalRange: sequelize.modelOptsObject(false, true, true),
+      longRange: sequelize.modelOptsObject(false, true, true),
+      attackShape: sequelize.modelOptsObject(false, true, true),
+      save: sequelize.modelOptsObject(false, true, true),
+      saveType: sequelize.modelOptsObject(false, true, true),
+      saveStillHalf: sequelize.modelOptsObject(false, true, true),
+    };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   Weapon.init({
     name: {
@@ -27,7 +48,8 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof damages === 'string') {
             damages = JSON.parse(damages);
           }
-          if (!damages.isArray()) throw new Error('damages must be an array');
+          if (typeof damages !== 'object') throw new Error('damages string failed to parse to an object');
+          if (!Array.isArray(damages)) throw new Error('damages must be an array');
           damages.forEach((damage) => {
             isDamageObject(damage);
           });
@@ -77,7 +99,7 @@ module.exports = (sequelize, DataTypes) => {
     saveType: {
       type: DataTypes.STRING,
       validate: {
-        in: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
+        isIn: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
       },
     },
     saveStillHalf: {

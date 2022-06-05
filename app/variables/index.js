@@ -1,23 +1,3 @@
-const validDieSizes = () => {
-  return [
-    ...Array(this.MAX_DIE_SIZE + 1)
-      .filter((i) => !(i % 2) // exclude odd numbers
-        && i >= this.MIN_DIE_SIZE
-        && i <= this.MAX_DIE_SIZE)
-      .keys(),
-  ];
-};
-
-const validHitDieSizes = () => {
-  return [
-    ...Array(this.MAX_DIE_SIZE + 1)
-      .filter((i) => !(i % 2) // exclude odd numbers
-        && i >= this.MIN_HIT_DIE_SIZE
-        && i <= this.MAX_DIE_SIZE)
-      .keys(),
-  ];
-};
-
 module.exports = {
   MAX_ARRAY_LENGTH: 10,
   MIN_DICE: 0,
@@ -31,6 +11,6 @@ module.exports = {
   MAX_DESCRIPTION: 500,
   MAX_LEGENDARY_RESISTANCES: 4,
   MAX_SPELL_SLOTS: 4,
-  VALID_DIE_SIZES: validDieSizes(),
-  VALID_HIT_DIE_SIZES: validHitDieSizes(),
+  VALID_DIE_SIZES: [0, 2, 4, 6, 8, 10, 12],
+  VALID_HIT_DIE_SIZES: [4, 6, 8, 10, 12],
 };

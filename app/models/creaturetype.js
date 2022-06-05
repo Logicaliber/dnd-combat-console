@@ -23,11 +23,63 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      CreatureType.hasMany(models.Creature);
-      CreatureType.belongsTo(models.Armor);
-      CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell });
-      CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon });
+      CreatureType.hasMany(models.Creature, { foreignKey: 'creatureTypeId', as: 'creatures' });
+      CreatureType.belongsTo(models.Armor, { foreignKey: 'armorId', as: 'armor' });
+      CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell, foreignKey: 'creatureTypeId', as: 'spells' });
+      CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon, foreignKey: 'creatureTypeId', as: 'weapons' });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      size: sequelize.modelOptsObject(false, true, true),
+      type: sequelize.modelOptsObject(false, true, true),
+      tags: sequelize.modelOptsObject(false, true, true),
+      alignment: sequelize.modelOptsObject(false, true, true),
+      armorId: sequelize.modelOptsObject(false, true, true),
+      hasShield: sequelize.modelOptsObject(false, true, true),
+      hitDie: sequelize.modelOptsObject(true, true, true),
+      numDice: sequelize.modelOptsObject(true, true, true),
+      maxHP: sequelize.modelOptsObject(true, true, true),
+      speed: sequelize.modelOptsObject(false, true, true),
+      flySpeed: sequelize.modelOptsObject(false, true, true),
+      swimSpeed: sequelize.modelOptsObject(false, true, true),
+      climbSpeed: sequelize.modelOptsObject(false, true, true),
+      burrowSpeed: sequelize.modelOptsObject(false, true, true),
+      hover: sequelize.modelOptsObject(false, true, true),
+      str: sequelize.modelOptsObject(false, true, true),
+      dex: sequelize.modelOptsObject(false, true, true),
+      con: sequelize.modelOptsObject(false, true, true),
+      int: sequelize.modelOptsObject(false, true, true),
+      wis: sequelize.modelOptsObject(false, true, true),
+      cha: sequelize.modelOptsObject(false, true, true),
+      savingThrows: sequelize.modelOptsObject(false, true, true),
+      skills: sequelize.modelOptsObject(false, true, true),
+      resistances: sequelize.modelOptsObject(false, true, true),
+      senses: sequelize.modelOptsObject(false, true, true),
+      passivePerception: sequelize.modelOptsObject(false, true, true),
+      languages: sequelize.modelOptsObject(false, true, true),
+      challengeRating: sequelize.modelOptsObject(false, true, true),
+      proficiencyBonus: sequelize.modelOptsObject(false, true, true),
+      legendaryResistances: sequelize.modelOptsObject(false, true, true),
+      specialAbilities: sequelize.modelOptsObject(false, true, true),
+      spellcasting: sequelize.modelOptsObject(false, true, true),
+      spellSlots: sequelize.modelOptsObject(false, true, true),
+      innateSpells: sequelize.modelOptsObject(false, true, true),
+      actionPatterns: sequelize.modelOptsObject(true, true, true),
+      legendaryActions: sequelize.modelOptsObject(false, true, true),
+      reactions: sequelize.modelOptsObject(false, true, true),
+      lairActions: sequelize.modelOptsObject(false, true, true),
+      regionalEffects: sequelize.modelOptsObject(false, true, true),
+    };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   CreatureType.init({
     name: {
@@ -37,7 +89,12 @@ module.exports = (sequelize, DataTypes) => {
     size: {
       defaultValue: 'medium',
       type: DataTypes.STRING,
-      in: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan']],
+      validate: {
+        isIn: {
+          args: [['tiny', 'small', 'medium', 'large', 'huge', 'gargantuan', null]],
+          msg: 'creatureType size must be one of tiny, small, medium, large, huge, or gargantuan',
+        },
+      },
     },
     type: {
       type: DataTypes.JSON,
@@ -54,7 +111,7 @@ module.exports = (sequelize, DataTypes) => {
     alignment: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfAlignmentStrings(array) {
+        isArrayOfAlignmentStrings: (array) => {
           if (array === null) return;
           isArrayOfStrings(array);
           if (typeof array === 'string') array = JSON.parse(array);
@@ -75,7 +132,7 @@ module.exports = (sequelize, DataTypes) => {
     hitDie: {
       type: DataTypes.INTEGER,
       validate: {
-        in: [VALID_HIT_DIE_SIZES],
+        isIn: [VALID_HIT_DIE_SIZES],
       },
     },
     numDice: {
@@ -175,7 +232,7 @@ module.exports = (sequelize, DataTypes) => {
     savingThrows: {
       type: DataTypes.JSON,
       validate: {
-        isSavingThrowsObject(object) {
+        isSavingThrowsObject: (object) => {
           if (object === null) return;
           if (typeof object === 'string') {
             object = JSON.parse(object);
@@ -209,12 +266,12 @@ module.exports = (sequelize, DataTypes) => {
     skills: {
       type: DataTypes.JSON,
       validate: {
-        isArrayOfSkillObjects(array) {
+        isArrayOfSkillObjects: (array) => {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('skill array must be an array');
+          if (!Array.isArray(array)) throw new Error('skill array must be an array');
           if (!array.length) throw new Error('skill array should not be length 0');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((object) => {
@@ -238,7 +295,7 @@ module.exports = (sequelize, DataTypes) => {
     resistances: {
       type: DataTypes.JSON,
       validate: {
-        isResistancesObject(object) {
+        isResistancesObject: (object) => {
           if (object === null) return;
           if (typeof object === 'string') {
             object = JSON.parse(object);
@@ -316,12 +373,12 @@ module.exports = (sequelize, DataTypes) => {
          * @param {Array} array
          * @throws
          */
-        isSpellSlotArray(array) {
+        isSpellSlotArray: (array) => {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('spell slot array must be an array');
+          if (!Array.isArray(array)) throw new Error('spell slot array must be an array');
           if (array.length !== 10) throw new Error('spell slot array should be length 10');
           if (array[0] !== 0) throw new Error('index 0 of spell slot array should be 0');
           array.forEach((number) => {
@@ -344,12 +401,12 @@ module.exports = (sequelize, DataTypes) => {
          * @param {Array} array
          * @throws
          */
-        isInnateSpellArray(array) {
+        isInnateSpellArray: (array) => {
           if (array === null) return;
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('innate spell array must be an array');
+          if (!Array.isArray(array)) throw new Error('innate spell array must be an array');
           if (!array.length) throw new Error('innate spell array cannot be empty');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((innateSpell) => {
@@ -387,15 +444,15 @@ module.exports = (sequelize, DataTypes) => {
          *   }],
          * ]
          */
-        isArrayOfActionPatterns(array) {
+        isArrayOfActionPatterns: (array) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('action patterns array must be an array');
+          if (!Array.isArray(array)) throw new Error('action patterns array must be an array');
           if (!array.length) throw new Error('action patterns array should not be length 0');
           if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
           array.forEach((actionPattern) => {
-            if (typeof actionPattern !== 'object' || !actionPattern.isArray()) throw new Error('action patterns array must contain arrays');
+            if (typeof actionPattern !== 'object' || !Array.isArray(actionPattern)) throw new Error('action patterns array must contain arrays');
             actionPattern.forEach((object) => {
               if (typeof object !== 'object') throw new Error('action pattern must be an array of action objects');
               const objectKeys = Object.keys(object);
@@ -461,8 +518,8 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'CreatureType',
     validate: {
-      maxHPBoundedByHitDice() {
-        if (this.maxHP > (this.numDice * (this.hitDie + this.con))) throw new Error('maxHP field cannot be greater than hit dice allow');
+      maxHPBoundedByHitDice: () => {
+        if (this.maxHP > (this.numDice * (this.hitDie + ((this.con - 10) / 2)))) throw new Error('maxHP field cannot be greater than hit dice allow');
       },
     },
   });

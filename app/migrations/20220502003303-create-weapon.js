@@ -1,5 +1,5 @@
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('Weapons', {
       id: {
         allowNull: false,
@@ -11,7 +11,7 @@ module.exports = {
         type: Sequelize.STRING,
         unique: true,
       },
-      damage: {
+      damages: {
         type: Sequelize.JSON,
       },
       properties: {
@@ -50,7 +50,7 @@ module.exports = {
       },
     });
   },
-  async down(queryInterface, Sequelize) {
+  down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Weapons');
   },
 };

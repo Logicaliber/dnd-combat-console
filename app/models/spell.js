@@ -17,8 +17,31 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Spell.belongsToMany(models.CreatureType, { through: models.CreatureTypeSpell });
+      Spell.belongsToMany(models.CreatureType, { through: models.CreatureTypeSpell, foreignKey: 'spellId', as: 'creatureTypes' });
     }
+
+    static optionsSchema = {
+      // required, searchable, updateable
+      name: sequelize.modelOptsObject(true, true, true),
+      level: sequelize.modelOptsObject(false, true, true),
+      school: sequelize.modelOptsObject(true, true, true),
+      castingTime: sequelize.modelOptsObject(false, true, true),
+      range: sequelize.modelOptsObject(false, true, true),
+      components: sequelize.modelOptsObject(false, true, true),
+      duration: sequelize.modelOptsObject(false, true, true),
+      saveType: sequelize.modelOptsObject(false, true, true),
+      saveStillHalf: sequelize.modelOptsObject(false, true, true),
+      description: sequelize.modelOptsObject(true, true, true),
+      damages: sequelize.modelOptsObject(false, false, true),
+    };
+
+    static allowedParams = Object.keys(this.optionsSchema);
+
+    static requiredParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].required);
+
+    static updateableParams = Object.keys(this.optionsSchema)
+      .filter((key) => this.optionsSchema[key].updateable);
   }
   Spell.init({
     name: {
@@ -36,7 +59,10 @@ module.exports = (sequelize, DataTypes) => {
     school: {
       type: DataTypes.STRING,
       validate: {
-        in: [['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation']],
+        isIn: {
+          args: [['abjuration', 'conjuration', 'divination', 'enchantment', 'evocation', 'illusion', 'necromancy', 'transmutation']],
+          msg: 'school must be one of abjuration, conjuration, divination, enchantment, evocation, illusion, necromancy, or transmutation',
+        },
       },
     },
     castingTime: {
@@ -70,7 +96,7 @@ module.exports = (sequelize, DataTypes) => {
     saveType: {
       type: DataTypes.STRING,
       validate: {
-        in: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
+        isIn: [['str', 'dex', 'con', 'int', 'wis', 'cha', null]],
       },
     },
     saveStillHalf: {
@@ -92,28 +118,32 @@ module.exports = (sequelize, DataTypes) => {
           if (typeof array === 'string') {
             array = JSON.parse(array);
           }
-          if (!array.isArray()) throw new Error('spell damages array must be an array');
+          if (!Array.isArray(array)) throw new Error('spell damages array must be an array');
+          if (!array.length) throw new Error('array should not be empty');
           array.forEach((subArray) => {
             if (typeof subArray !== 'object'
-              || !subArray.isArray()
+              || !Array.isArray(subArray)
               || !subArray.length) throw new Error('spell damages array must be an array of arrays');
             subArray.forEach((spellDamage) => {
               if (typeof spellDamage !== 'object') throw new Error('spell damages array must be an array of arrays of objects');
+
               const objectKeys = Object.keys(spellDamage);
+
               if (objectKeys.length !== 4
                 || !objectKeys.includes('caster')
-                || typeof spellDamage.caster !== 'number'
-                || spellDamage.caster < 0
-                || spellDamage.caster > 20
                 || !objectKeys.includes('damage')
-                || typeof spellDamage.damage !== 'object'
                 || !objectKeys.includes('effect')
-                || typeof spellDamage.effect !== 'string'
-                || !spellDamage.effect.length
-                || spellDamage.effect.length > MAX_INFORMATION
-                || !objectKeys.includes('slot')
-              ) throw new Error(`spellDamage object ${JSON.stringify(spellDamage)} failed validation`);
+                || !objectKeys.includes('slot')) throw new Error('spellDamage object must have keys: caster, damage, effect, and slot');
+
+              if (typeof spellDamage.caster !== 'number'
+                || spellDamage.caster < 0
+                || spellDamage.caster > 20) throw new Error('spellDamage.caster must be a number between 0 and 20');
+
+              if (typeof spellDamage.damage !== 'object') throw new Error('spellDamage.damage must be an object');
               isDamageObject(spellDamage.damage);
+
+              if (typeof spellDamage.effect !== 'string'
+                || spellDamage.effect.length > MAX_INFORMATION) throw new Error('spellDamage.effect must be a string');
             });
           });
         },
