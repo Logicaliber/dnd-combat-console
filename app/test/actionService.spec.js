@@ -2,6 +2,7 @@ const { assert } = require('chai');
 const actionService = require('../services/actionService');
 const {
   generateDummyWeapon,
+  generateDummyActionPattern,
 } = require('./helpers/dummyModelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
@@ -47,6 +48,20 @@ describe('Action Service', () => {
       // Check that one action was created
       assert.lengthOf((await Action.findAll()), expectedActions);
     });
+
+    it('Should not allow creating an action with an actionPattern already chosen', async () => {
+      action = await actionService.createAction({
+        index: 1,
+        weaponId,
+        actionPatternId: 1,
+      });
+      expectedActions += 1;
+      // Check that one action was created
+      assert.lengthOf((await Action.findAll()), expectedActions);
+      // Check that the action has no actionPattern
+      assert.isNull(action.dataValues.actionPatternId);
+      assert.isNull(await action.getActionPattern());
+    });
   });
 
   describe('getAction', () => {
@@ -83,6 +98,26 @@ describe('Action Service', () => {
       // Check that the action was updated
       await action.reload();
       assert.equal(action.dataValues.times, 2);
+    });
+  });
+
+  describe('attachActionsToActionPattern', () => {
+    it('Should throw an error if the indicated actionPattern doesn\'t exist', async () => {
+      try {
+        if ((await actionService.attachActionsToActionPattern([action.dataValues.id], 99999))) {
+          throw new Error('attachActionsToActionPattern should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'attachActions failed, no actionPattern found with ID: 99999');
+      }
+    });
+
+    it('Should update the indicated actions if given valid arguments', async () => {
+      const actionPatternId = (await generateDummyActionPattern()).dataValues.id;
+      await actionService.attachActionsToActionPattern([action.dataValues.id], actionPatternId);
+      // Check that the action was updated
+      await action.reload();
+      assert.equal(action.dataValues.actionPatternId, actionPatternId);
     });
   });
 

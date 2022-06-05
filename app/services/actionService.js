@@ -1,7 +1,9 @@
+const { Op } = require('sequelize');
 const {
   Weapon,
   Spell,
   Action,
+  ActionPattern,
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
@@ -64,6 +66,23 @@ module.exports = {
     }
     // Update the action
     return Action.update(updateFields, { where: { id: actionId } });
+  },
+
+  /**
+   * Given an array of actionIds and actionPatternId, should
+   * update each action to point to the indicated actionPattern.
+   * @param {Action} action
+   * @param {ActionPattern} actionPattern
+   * @returns {Action} the updated action
+   */
+  attachActionsToActionPattern: async (actionIds, actionPatternId) => {
+    // Check that the indicated actionPattern exists
+    if (!(await ActionPattern.findByPk(actionPatternId))) {
+      throw new Error(`attachActions failed, no actionPattern found with ID: ${actionPatternId}`);
+    }
+    return Action.update({ actionPatternId }, {
+      where: { id: { [Op.in]: actionIds } },
+    });
   },
 
   /**

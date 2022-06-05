@@ -2,6 +2,8 @@ const {
   Armor,
   Weapon,
   Spell,
+  Action,
+  ActionPattern,
   Creature,
   CreatureType,
 } = require('../../models');
@@ -84,6 +86,45 @@ module.exports = {
       saveStillHalf,
       description,
       damages,
+    });
+  },
+  generateDummyAction: async (
+    index = null,
+    weaponId = null,
+    times = null,
+    actionPatternId = null,
+  ) => {
+    if (index === null) index = 0;
+    if (!weaponId) weaponId = (await module.exports.generateDummyWeapon()).dataValues.id;
+    if (!times) times = 1;
+    const actionExists = await Action.findOne({
+      where: {
+        index,
+        weaponId,
+        times,
+        actionPatternId,
+      },
+    });
+    if (actionExists) return actionExists;
+    return Action.create({
+      index,
+      weaponId,
+      times,
+      actionPatternId,
+    });
+  },
+  generateDummyActionPattern: async (priority = null, creatureTypeId = null) => {
+    if (priority === null) priority = 0;
+    const actionPatternExists = await ActionPattern.findOne({
+      where: {
+        priority,
+        creatureTypeId,
+      },
+    });
+    if (actionPatternExists) return actionPatternExists;
+    return ActionPattern.create({
+      priority,
+      creatureTypeId,
     });
   },
   generateDummyCreatureType: async (

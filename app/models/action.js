@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Action.belongsTo(models.Weapon, { foreignKey: 'weaponId', as: 'weapon' });
       Action.belongsTo(models.Spell, { foreignKey: 'spellId', as: 'spell' });
-      Action.belongsTo(models.ActionPattern, { foreignKey: 'actionPatternId', as: 'actionPatterns' });
+      Action.belongsTo(models.ActionPattern, { foreignKey: 'actionPatternId', as: 'actionPattern' });
     }
 
     static optionsSchema = {
@@ -31,7 +31,8 @@ module.exports = (sequelize, DataTypes) => {
       other: sequelize.modelOptsObject(false, true, true),
     };
 
-    static allowedParams = Object.keys(this.optionsSchema);
+    static allowedParams = Object.keys(this.optionsSchema)
+      .filter((key) => key !== 'actionPatternId');
 
     static requiredParams = Object.keys(this.optionsSchema)
       .filter((key) => this.optionsSchema[key].required);
