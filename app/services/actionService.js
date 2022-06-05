@@ -18,14 +18,21 @@ module.exports = {
     // Check for missing required params
     const missingParams = missingRequiredParams(actionObject, Action.requiredParams);
     if (missingParams.length) throw new Error(`Action creation failed, fields missing: ${missingParams.join()}`);
+    // Don't allow actions to have both a weapon and a spell
+    if (actionObject.weaponId && actionObject.spellId) {
+      throw new Error('Action creation failed, cannot be both a weapon and spell action');
+    }
+    // An action with neither a weapon or a spell must have an 'other' field
+    if (!actionObject.weaponId && !actionObject.spellId && !actionObject.other) {
+      throw new Error('Action creation failed, action must be one of weapon, spell, or other');
+    }
     // Check that the indicated weapon exists
     if (actionObject.weaponId) {
       if (!(await Weapon.findOne({ where: { id: actionObject.weaponId } }))) {
         throw new Error(`Action creation failed, no weapon found with ID: ${actionObject.weaponId}`);
       }
-    }
     // Check that the indicated spell exists
-    if (actionObject.spellId) {
+    } else if (actionObject.spellId) {
       if (!(await Spell.findOne({ where: { id: actionObject.spellId } }))) {
         throw new Error(`Action creation failed, no spell found with ID: ${actionObject.spellId}`);
       }

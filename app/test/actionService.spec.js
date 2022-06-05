@@ -39,6 +39,28 @@ describe('Action Service', () => {
       }
     });
 
+    it('Should throw an error if both a weaponId and spellId are passed', async () => {
+      try {
+        if ((await actionService.createAction({
+          index: 0,
+          weaponId,
+          spellId: 1,
+        }))) throw new Error('createAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action creation failed, cannot be both a weapon and spell action');
+      }
+    });
+
+    it('Should throw an error if none of weaponId, spellId, or other are passed', async () => {
+      try {
+        if ((await actionService.createAction({
+          index: 0,
+        }))) throw new Error('createAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action creation failed, action must be one of weapon, spell, or other');
+      }
+    });
+
     it('Should create a action if all valid fields are passed', async () => {
       action = await actionService.createAction({
         index: 0,
@@ -49,7 +71,7 @@ describe('Action Service', () => {
       assert.lengthOf((await Action.findAll()), expectedActions);
     });
 
-    it('Should not allow creating an action with an actionPattern already chosen', async () => {
+    it('Should not allow creating an action with an actionPatternId', async () => {
       action = await actionService.createAction({
         index: 1,
         weaponId,
