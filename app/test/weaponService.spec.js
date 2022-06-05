@@ -6,13 +6,11 @@ const { syncModels } = require('./helpers/modelSync');
 
 const {
   CreatureType,
-  CreatureTypeWeapon,
   Weapon,
 } = require('../models');
 
 const relevantModels = [
   CreatureType,
-  CreatureTypeWeapon,
   Weapon,
 ];
 

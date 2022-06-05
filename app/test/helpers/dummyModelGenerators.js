@@ -4,8 +4,6 @@ const {
   Spell,
   Creature,
   CreatureType,
-  CreatureTypeWeapon,
-  CreatureTypeSpell,
 } = require('../../models');
 const { acidSplash } = require('./fixtures');
 
@@ -119,18 +117,6 @@ module.exports = {
       armorId,
       actionPatterns,
     });
-    if (weaponId) {
-      await CreatureTypeWeapon.create({
-        creatureTypeId: creatureType.dataValues.id,
-        weaponId,
-      });
-    }
-    if (spellId) {
-      await CreatureTypeSpell.create({
-        creatureTypeId: creatureType.dataValues.id,
-        spellId,
-      });
-    }
     return creatureType;
   },
   generateDummyCreature: async (name = null, creatureTypeId = null, maxHP = null) => {

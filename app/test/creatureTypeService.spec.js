@@ -13,8 +13,6 @@ const {
   Weapon,
   Spell,
   CreatureType,
-  CreatureTypeSpell,
-  CreatureTypeWeapon,
   Creature,
 } = require('../models');
 
@@ -23,8 +21,6 @@ const relevantModels = [
   Weapon,
   Spell,
   CreatureType,
-  CreatureTypeSpell,
-  CreatureTypeWeapon,
   Creature,
 ];
 
@@ -34,8 +30,6 @@ let spellId;
 let validActionPatterns;
 let creatureType = null;
 let expectedCreatureTypes = 0;
-let expectedCreatureTypeWeapons = 0;
-let expectedCreatureTypeSpells = 0;
 let expectedCreatures = 0;
 
 describe('CreatureType Service', () => {
@@ -134,14 +128,8 @@ describe('CreatureType Service', () => {
         actionPatterns: validActionPatterns,
       }, [biteId], [spellId]);
       expectedCreatureTypes += 1;
-      expectedCreatureTypeWeapons += 1;
-      expectedCreatureTypeSpells += 1;
       // Check that one creatureType was created
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
-      // Check that one creatureTypeWeapon was created
-      assert.lengthOf((await CreatureTypeWeapon.findAll()), expectedCreatureTypeWeapons);
-      // Check that one creatureTypeSpell was created
-      assert.lengthOf((await CreatureTypeSpell.findAll()), expectedCreatureTypeSpells);
       // Check that the creatureType has the correct armor
       assert.equal(creatureType.dataValues.armor.dataValues.id, armorId);
       assert.equal(creatureType.dataValues.armor.dataValues.name, 'fur');
@@ -248,19 +236,13 @@ describe('CreatureType Service', () => {
       }
     });
 
-    it('Should delete the creatureType with the given id, as well as all related creatures, and all creatureTypeWeapon and creatureTypeSpell associations', async () => {
+    it('Should delete the creatureType with the given id, as well as all related creatures', async () => {
       await creatureTypeService.deleteCreatureType(creatureType.dataValues.id);
       expectedCreatureTypes -= 1;
-      expectedCreatureTypeSpells -= 1;
-      expectedCreatureTypeWeapons -= 1;
       expectedCreatures -= 1;
       // Check that one creatureType was deleted
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
-      // Check that one creatureTypeWeapon was deleted
-      assert.lengthOf((await CreatureTypeWeapon.findAll()), expectedCreatureTypeWeapons);
-      // Check that one creatureTypeSpell was deleted
-      assert.lengthOf((await CreatureTypeSpell.findAll()), expectedCreatureTypeSpells);
-      // Check that one creatureType was deleted
+      // Check that one creature was deleted
       assert.lengthOf((await Creature.findAll()), expectedCreatures);
     });
   });

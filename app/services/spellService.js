@@ -1,8 +1,5 @@
-const { Op } = require('sequelize');
 const {
   Spell,
-  CreatureType,
-  CreatureTypeSpell,
 } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
@@ -54,21 +51,8 @@ module.exports = {
    */
   deleteSpell: async (spellId) => {
     // Check that the indicated spell exists
-    const spell = await Spell.findByPk(spellId, {
-      include: [{
-        model: CreatureType,
-        as: 'creatureTypes',
-        attributes: ['id'],
-      }],
-    });
+    const spell = await Spell.findByPk(spellId);
     if (!spell) throw new Error(`Spell deletion failed, no spell found with ID: ${spellId}`);
-    // Delete all relevant CreatureType - Spell associations
-    await CreatureTypeSpell.destroy({
-      where: {
-        creatureTypeId: { [Op.in]: spell.dataValues.creatureTypes.map((ct) => ct.dataValues.id) },
-        spellId: spell.dataValues.id,
-      },
-    });
     // Delete the spell
     return spell.destroy();
   },

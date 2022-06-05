@@ -7,13 +7,11 @@ const { syncModels } = require('./helpers/modelSync');
 const {
   Spell,
   CreatureType,
-  CreatureTypeSpell,
 } = require('../models');
 
 const relevantModels = [
   Spell,
   CreatureType,
-  CreatureTypeSpell,
 ];
 
 let expectedSpells = 0;

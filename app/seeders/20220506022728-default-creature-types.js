@@ -40,25 +40,9 @@ module.exports = {
     }]);
 
     await queryInterface.bulkInsert('CreatureTypes', creatureTypes, {});
-
-    const goblin = (await queryInterface.sequelize.query('SELECT id from "CreatureTypes" WHERE name = ? ', {
-      replacements: ['goblin'],
-      type: queryInterface.sequelize.QueryTypes.SELECT,
-    }))[0];
-
-    const creatureTypeWeapons = withTs([{
-      creatureTypeId: goblin.id,
-      weaponId: scimitar.id,
-    }, {
-      creatureTypeId: goblin.id,
-      weaponId: shortbow.id,
-    }]);
-
-    await queryInterface.bulkInsert('CreatureTypeWeapons', creatureTypeWeapons, {});
   },
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.bulkDelete('CreatureTypes', null, {});
-    await queryInterface.bulkDelete('CreatureTypeWeapons', null, {});
   },
 };
