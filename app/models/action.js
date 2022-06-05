@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       Action.belongsTo(models.Weapon, { foreignKey: 'weaponId', as: 'weapon' });
       Action.belongsTo(models.Spell, { foreignKey: 'spellId', as: 'spell' });
-      Action.belongsTo(models.ActionPattern, { foreignKey: 'actionId', as: 'actionPatterns' });
+      Action.belongsTo(models.ActionPattern, { foreignKey: 'actionPatternId', as: 'actionPatterns' });
     }
 
     static optionsSchema = {
