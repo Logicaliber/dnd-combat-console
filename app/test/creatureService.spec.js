@@ -1,8 +1,8 @@
 const { assert } = require('chai');
 const creatureService = require('../services/creatureService');
 const {
-  generateDummyCreatureType,
-} = require('./helpers/dummyModelGenerators');
+  generateCreatureType,
+} = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
@@ -22,7 +22,7 @@ let creatureTypeId = null;
 describe('Creature Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    creatureTypeId = (await generateDummyCreatureType('dog', null, null, null, null)).dataValues.id;
+    creatureTypeId = (await generateCreatureType('dog', null, null, null, null)).dataValues.id;
   });
 
   after(async () => {

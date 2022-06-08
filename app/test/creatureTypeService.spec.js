@@ -1,9 +1,9 @@
 const { assert } = require('chai');
 const creatureTypeService = require('../services/creatureTypeService');
 const {
-  generateDummyArmor,
-  generateDummyCreature,
-} = require('./helpers/dummyModelGenerators');
+  generateArmor,
+  generateCreature,
+} = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
@@ -30,7 +30,7 @@ let expectedCreatures = 0;
 describe('CreatureType Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    armorId = (await generateDummyArmor('fur', 'natural', 9)).dataValues.id;
+    armorId = (await generateArmor('fur', 'natural', 9)).dataValues.id;
   });
 
   after(async () => {
@@ -94,7 +94,7 @@ describe('CreatureType Service', () => {
       assert.equal(creatureType.dataValues.armor.dataValues.name, 'fur');
 
       // Create a creature that is this creatureType, for use in the deleteCreatureType tests
-      await generateDummyCreature(null, creatureType.dataValues.id);
+      await generateCreature(null, creatureType.dataValues.id);
       expectedCreatures += 1;
     });
 

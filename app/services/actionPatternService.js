@@ -5,8 +5,13 @@ const {
   CreatureType,
   ActionPattern,
 } = require('../models');
-const actionService = require('./actionService');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
+
+const creationFailed = 'ActionPattern creation failed,';
+const updateFailed = 'ActionPattern update failed,';
+const deleteFailed = 'ActionPattern deletion failed,';
+const noCreatureTypeFound = 'no creatureType found for the given ID';
+const noActionPatternFound = 'no actionPattern found for the given ID';
 
 const actionPatternDefaultIncludes = [{
   model: Action,
@@ -24,35 +29,32 @@ const actionPatternDefaultIncludes = [{
 module.exports = {
   /**
    * @param {Object} actionPatternObject
-   * @returns {Promise<ActionPattern>} the new actionPattern, with its creatureType included
+   * @returns {Promise<ActionPattern>} the new actionPattern
    */
-  createActionPattern: async (actionPatternObject, actionIds = null) => {
+  createActionPattern: async (actionPatternObject) => {
     // Filter out disallowed params
     actionPatternObject = stripInvalidParams(actionPatternObject, ActionPattern.allowedParams);
     // Check for missing required params
     const missingParams = missingRequiredParams(actionPatternObject, ActionPattern.requiredParams);
-    if (missingParams.length) throw new Error(`ActionPattern creation failed, fields missing: ${missingParams.join()}`);
+    if (missingParams.length) throw new Error(`${creationFailed} fields missing: ${missingParams.join()}`);
     // Check that the indicated creatureType exists
-    if (actionPatternObject.creatureTypeId) {
-      if (!(await CreatureType.findOne({ where: { id: actionPatternObject.creatureTypeId } }))) {
-        throw new Error(`ActionPattern creation failed, no creatureType found with ID: ${actionPatternObject.creatureTypeId}`);
-      }
+    const creatureTypeId = parseInt(actionPatternObject.creatureTypeId, 10);
+    if (Number.isNaN(creatureTypeId)
+        || !(await CreatureType.findOne({ where: { id: creatureTypeId } }))) {
+      throw new Error(`${creationFailed} ${noCreatureTypeFound}`);
     }
+    actionPatternObject.creatureTypeId = creatureTypeId;
     // Create the actionPattern
-    const actionPatternId = (await ActionPattern.create(actionPatternObject)).dataValues.id;
-    // Attach the indicated actions to it
-    if (actionIds) await actionService.attachActionsToActionPattern(actionIds, actionPatternId);
-    // Return the actionPattern with its actions attached
-    return ActionPattern.findByPk(actionPatternId, {
-      include: actionPatternDefaultIncludes,
-    });
+    return ActionPattern.create(actionPatternObject);
   },
 
   /**
    * @param {Integer} actionPatternId
-   * @returns {Promise<ActionPattern>} the actionPattern
+   * @returns {Promise<ActionPattern>} the actionPattern with its actions, weapons, and spells
    */
   getActionPattern: async (actionPatternId) => {
+    actionPatternId = parseInt(actionPatternId, 10);
+    if (Number.isNaN(actionPatternId)) return null;
     return ActionPattern.findByPk(actionPatternId, {
       include: actionPatternDefaultIncludes,
     });
@@ -61,30 +63,37 @@ module.exports = {
   /**
    * @param {Integer} actionPatternId
    * @param {Object} updateFields
-   * @returns {ActionPattern} the updated actionPattern
+   * @returns {Promise<ActionPattern>} the updated actionPattern
    */
   updateActionPattern: async (actionPatternId, updateFields) => {
     // Filter out disallowed params
     updateFields = stripInvalidParams(updateFields, ActionPattern.updateableParams);
-    if (!Object.keys(updateFields).length) throw new Error('ActionPattern update failed, no valid update fields found');
+    if (!Object.keys(updateFields).length) throw new Error(`${updateFailed} no valid update fields found`);
+
     // Check that the indicated actionPattern exists
-    if (!(await ActionPattern.findByPk(actionPatternId))) {
-      throw new Error(`ActionPattern update failed, no actionPattern found with ID: ${actionPatternId}`);
-    }
+    actionPatternId = parseInt(actionPatternId, 10);
+    if (Number.isNaN(actionPatternId)) throw new Error(`${updateFailed} ${noActionPatternFound}`);
+    const actionPattern = await ActionPattern.findByPk(actionPatternId);
+    if (!actionPattern) throw new Error(`${updateFailed} ${noActionPatternFound}`);
+
     // Update the actionPattern
-    return ActionPattern.update(updateFields, { where: { id: actionPatternId } });
+    actionPattern.set(updateFields);
+    return actionPattern.save();
   },
 
   /**
+   * Deletes the indicated actionPattern, and any actions attached to it
    * @param {Integer} actionPatternId
-   * @returns {Promise<1|0>} if the actionPattern was deleted
+   * @returns {Promise<0 | 1>} 1 if the actionPattern was deleted
    */
   deleteActionPattern: async (actionPatternId) => {
+    actionPatternId = parseInt(actionPatternId, 10);
+    if (Number.isNaN(actionPatternId)) throw new Error(`${deleteFailed} ${noActionPatternFound}`);
     // Check that the indicated actionPattern exists
     const actionPattern = await ActionPattern.findByPk(actionPatternId);
-    if (!actionPattern) throw new Error(`ActionPattern deletion failed, no actionPattern found with ID: ${actionPatternId}`);
-    // Update the associated actions to have actionPatternId: null
-    await Action.update({ actionPatternId: null }, { where: { actionPatternId } });
+    if (!actionPattern) throw new Error(`${deleteFailed} ${noActionPatternFound}`);
+    // Delete all actions belonging to this actionPattern
+    await Action.destroy({ where: { actionPatternId } });
     // Delete the actionPattern
     return actionPattern.destroy();
   },

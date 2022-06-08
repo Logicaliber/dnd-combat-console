@@ -1,6 +1,6 @@
 const { assert } = require('chai');
 const armorService = require('../services/armorService');
-const { generateDummyCreatureType } = require('./helpers/dummyModelGenerators');
+const { generateCreatureType } = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
@@ -63,7 +63,7 @@ describe('Armor Service', () => {
       assert.lengthOf((await Armor.findAll()), expectedArmors);
 
       // Create a creatureType that uses this armor, for use in a later test
-      creatureType = await generateDummyCreatureType(
+      creatureType = await generateCreatureType(
         null, null, null, null, armor.dataValues.id, null, null, 0,
       );
     });

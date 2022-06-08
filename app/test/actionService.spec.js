@@ -1,9 +1,8 @@
 const { assert } = require('chai');
 const actionService = require('../services/actionService');
 const {
-  generateDummyWeapon,
-  generateDummyActionPattern,
-} = require('./helpers/dummyModelGenerators');
+  generateWeapon,
+} = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
@@ -23,7 +22,7 @@ let weaponId = null;
 describe('Action Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    weaponId = (await generateDummyWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
+    weaponId = (await generateWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
   });
 
   after(async () => {
@@ -130,26 +129,6 @@ describe('Action Service', () => {
       } catch (error) {
         assert.equal(error.message, 'Action update failed, no valid update fields found');
       }
-    });
-  });
-
-  describe('attachActionsToActionPattern', () => {
-    it('Should throw an error if the indicated actionPattern doesn\'t exist', async () => {
-      try {
-        if ((await actionService.attachActionsToActionPattern([action.dataValues.id], 99999))) {
-          throw new Error('attachActionsToActionPattern should have thrown an error');
-        }
-      } catch (error) {
-        assert.equal(error.message, 'attachActions failed, no actionPattern found with ID: 99999');
-      }
-    });
-
-    it('Should update the indicated actions if given valid arguments', async () => {
-      const actionPatternId = (await generateDummyActionPattern()).dataValues.id;
-      await actionService.attachActionsToActionPattern([action.dataValues.id], actionPatternId);
-      // Check that the action was updated
-      await action.reload();
-      assert.equal(action.dataValues.actionPatternId, actionPatternId);
     });
   });
 

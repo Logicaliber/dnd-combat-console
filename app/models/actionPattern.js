@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
 
     static optionsSchema = {
       // required, searchable, updateable
-      creatureTypeId: sequelize.modelOptsObject(false, true, false),
+      creatureTypeId: sequelize.modelOptsObject(true, true, false),
       priority: sequelize.modelOptsObject(true, true, true),
     };
 
@@ -30,7 +30,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   ActionPattern.init({
     creatureTypeId: {
-      allowNull: true,
+      allowNull: false,
       type: DataTypes.INTEGER,
     },
     priority: {
