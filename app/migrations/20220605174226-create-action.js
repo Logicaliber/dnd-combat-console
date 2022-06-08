@@ -8,7 +8,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       actionPatternId: {
-        allowNull: true,
+        allowNull: false,
         type: Sequelize.INTEGER,
       },
       index: {

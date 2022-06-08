@@ -13,7 +13,7 @@ const deleteFailed = 'ActionPattern deletion failed,';
 const noCreatureTypeFound = 'no creatureType found for the given ID';
 const noActionPatternFound = 'no actionPattern found for the given ID';
 
-const actionPatternDefaultIncludes = [{
+const defaultActionPatternIncludes = [{
   model: Action,
   as: 'actions',
   order: [['index', 'ASC']],
@@ -56,7 +56,7 @@ module.exports = {
     actionPatternId = parseInt(actionPatternId, 10);
     if (Number.isNaN(actionPatternId)) return null;
     return ActionPattern.findByPk(actionPatternId, {
-      include: actionPatternDefaultIncludes,
+      include: defaultActionPatternIncludes,
     });
   },
 

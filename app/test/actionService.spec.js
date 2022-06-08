@@ -1,7 +1,11 @@
 const { assert } = require('chai');
+const {
+  wd, // Weapon Damages
+} = require('../seeders/helpers/seederHelpers');
 const actionService = require('../services/actionService');
 const {
   generateWeapon,
+  generateActionPattern,
 } = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
@@ -15,14 +19,16 @@ const relevantModels = [
   Action,
 ];
 
-let expectedActions = 0;
-let action = null;
 let weaponId = null;
+let actionPatternId = null;
+let action = null;
+let expectedActions = 0;
 
 describe('Action Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    weaponId = (await generateWeapon('bite', '[{"num":1,"die":4,"bonus":0,"type":"piercing","effect":""}]')).dataValues.id;
+    weaponId = (await generateWeapon('bite', wd.d4.piercing)).dataValues.id;
+    actionPatternId = (await generateActionPattern()).dataValues.id;
   });
 
   after(async () => {
@@ -34,13 +40,14 @@ describe('Action Service', () => {
       try {
         if ((await actionService.createAction({}))) throw new Error('createAction should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Action creation failed, fields missing: index');
+        assert.equal(error.message, 'Action creation failed, fields missing: actionPatternId,index');
       }
     });
 
     it('Should throw an error if both a weaponId and spellId are passed', async () => {
       try {
         if ((await actionService.createAction({
+          actionPatternId,
           index: 0,
           weaponId,
           spellId: 1,
@@ -53,6 +60,7 @@ describe('Action Service', () => {
     it('Should throw an error if none of weaponId, spellId, or other are passed', async () => {
       try {
         if ((await actionService.createAction({
+          actionPatternId,
           index: 0,
         }))) throw new Error('createAction should have thrown an error');
       } catch (error) {
@@ -62,26 +70,13 @@ describe('Action Service', () => {
 
     it('Should create an action if all valid fields are passed', async () => {
       action = await actionService.createAction({
+        actionPatternId,
         index: 0,
         weaponId,
       });
       expectedActions += 1;
       // Check that one action was created
       assert.lengthOf((await Action.findAll()), expectedActions);
-    });
-
-    it('Should not allow creating an action with an actionPatternId', async () => {
-      action = await actionService.createAction({
-        index: 1,
-        weaponId,
-        actionPatternId: 1,
-      });
-      expectedActions += 1;
-      // Check that one action was created
-      assert.lengthOf((await Action.findAll()), expectedActions);
-      // Check that the action has no actionPattern
-      assert.isNull(action.dataValues.actionPatternId);
-      assert.isNull(await action.getActionPattern());
     });
   });
 

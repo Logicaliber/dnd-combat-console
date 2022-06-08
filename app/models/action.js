@@ -22,7 +22,7 @@ module.exports = (sequelize, DataTypes) => {
 
     static optionsSchema = {
       // required, searchable, updateable
-      actionPatternId: sequelize.modelOptsObject(false, true, false),
+      actionPatternId: sequelize.modelOptsObject(true, true, false),
       index: sequelize.modelOptsObject(true, true, true),
       weaponId: sequelize.modelOptsObject(false, true, true),
       times: sequelize.modelOptsObject(false, true, true),
@@ -31,8 +31,7 @@ module.exports = (sequelize, DataTypes) => {
       other: sequelize.modelOptsObject(false, true, true),
     };
 
-    static allowedParams = Object.keys(this.optionsSchema)
-      .filter((key) => key !== 'actionPatternId');
+    static allowedParams = Object.keys(this.optionsSchema);
 
     static requiredParams = Object.keys(this.optionsSchema)
       .filter((key) => this.optionsSchema[key].required);
@@ -42,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Action.init({
     actionPatternId: {
-      allowNull: true,
+      allowNull: false,
       type: DataTypes.INTEGER,
     },
     index: {

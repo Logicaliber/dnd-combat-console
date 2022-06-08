@@ -5,6 +5,15 @@ const {
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
+const createFailed = 'Action creation failed,';
+const updateFailed = 'Action update failed,';
+const deleteFailed = 'Action deletion failed,';
+const noActionPatternFound = 'no actionPattern found for the given ID';
+const weaponSpellOrOther = 'action must be one of weapon, spell, or other';
+const noActionFound = 'no action found for the given ID';
+const noWeaponFound = 'no weapon found for the given ID';
+const noSpellFound = 'no spell found for the given ID';
+
 const defaultActionIncludes = [{
   model: Weapon,
   as: 'weapon',
@@ -23,31 +32,30 @@ module.exports = {
     actionObject = stripInvalidParams(actionObject, Action.allowedParams);
     // Check for missing required params
     const missingParams = missingRequiredParams(actionObject, Action.requiredParams);
-    if (missingParams.length) throw new Error(`Action creation failed, fields missing: ${missingParams.join()}`);
-    // Don't allow actions to have both a weapon and a spell
+    if (missingParams.length) throw new Error(`${createFailed} fields missing: ${missingParams.join()}`);
+    // An action must be one of weapon, spell, or other
     if (actionObject.weaponId && actionObject.spellId) {
-      throw new Error('Action creation failed, cannot be both a weapon and spell action');
+      throw new Error(`${createFailed} ${weaponSpellOrOther}`);
     }
     // An action with neither a weapon or a spell must have an 'other' field
     if (!actionObject.weaponId && !actionObject.spellId && !actionObject.other) {
-      throw new Error('Action creation failed, action must be one of weapon, spell, or other');
+      throw new Error(`${createFailed} ${weaponSpellOrOther}`);
     }
     // Check that the indicated weapon exists
     if (actionObject.weaponId) {
       if (!(await Weapon.findOne({ where: { id: actionObject.weaponId } }))) {
-        throw new Error(`Action creation failed, no weapon found with ID: ${actionObject.weaponId}`);
+        throw new Error(`${createFailed} ${noWeaponFound}`);
       }
     // Check that the indicated spell exists
     } else if (actionObject.spellId) {
       if (!(await Spell.findOne({ where: { id: actionObject.spellId } }))) {
-        throw new Error(`Action creation failed, no spell found with ID: ${actionObject.spellId}`);
+        throw new Error(`${createFailed} ${noSpellFound}`);
       }
     }
     // Create the action, then return it with its weapon and/or spell included
-    const actionId = (await Action.create(actionObject)).dataValues.id;
-    return Action.findByPk(actionId, {
-      include: defaultActionIncludes,
-    });
+    const action = await Action.create(actionObject);
+    if (!action) throw new Error(`${createFailed} (database error)`);
+    return action.reload({ include: defaultActionIncludes });
   },
 
   /**
@@ -55,6 +63,8 @@ module.exports = {
    * @returns {Promise<Action>} the action
    */
   getAction: async (actionId) => {
+    actionId = parseInt(actionId, 10);
+    if (Number.isNaN(actionId)) return null;
     return Action.findByPk(actionId, {
       include: defaultActionIncludes,
     });
