@@ -115,6 +115,7 @@ module.exports = {
   },
   generateActionPattern: async (priority = null, creatureTypeId = null) => {
     if (priority === null) priority = 0;
+    if (!creatureTypeId) creatureTypeId = (await module.exports.generateCreatureType()).id;
     const actionPatternExists = await ActionPattern.findOne({
       where: {
         priority,

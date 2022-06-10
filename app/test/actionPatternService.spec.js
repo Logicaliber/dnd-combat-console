@@ -26,6 +26,7 @@ const relevantModels = [
 
 let expectedActions = 0;
 let expectedActionPatterns = 0;
+let biteId = null;
 let creatureTypeId = null;
 let actionPattern = null;
 let action = null;
@@ -33,7 +34,8 @@ let action = null;
 describe('ActionPattern Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    creatureTypeId = (await generateCreatureType('dog')).dataValues.id;
+    creatureTypeId = (await generateCreatureType('dog')).id;
+    biteId = (await generateWeapon('bite', wd.d4.piercing)).id;
   });
 
   after(async () => {
@@ -99,9 +101,8 @@ describe('ActionPattern Service', () => {
       // Check that one actionPattern was created
       assert.lengthOf((await ActionPattern.findAll()), expectedActionPatterns);
 
-      // Create an action for this actionPattern, for use in the deleteActionPattern test
-      const biteId = (await generateWeapon('bite', wd.d4.piercing)).dataValues.id;
-      action = await generateAction(0, biteId, 1, actionPattern.dataValues.id);
+      // Create an action for this actionPattern, for use in other tests
+      action = await generateAction(0, biteId, 1, actionPattern.id);
       expectedActions += 1;
     });
   });
@@ -109,24 +110,21 @@ describe('ActionPattern Service', () => {
   describe('getActionPattern', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull((await actionPatternService.getActionPattern('invalid')));
-    });
-
-    it('Should return null if a non-existant id is passed', async () => {
       assert.isNull((await actionPatternService.getActionPattern(99999)));
     });
 
-    it('Should return the correct actionPattern for the given id, with its actions', async () => {
-      const result = await actionPatternService.getActionPattern(actionPattern.dataValues.id);
+    it('Should return the correct actionPattern instance for the given id, with its actions, weapons, and spells', async () => {
+      const result = await actionPatternService.getActionPattern(actionPattern.id);
       assert.hasAnyKeys(result, 'dataValues');
-      const { dataValues } = result;
-      assert.hasAllKeys(dataValues, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
-      assert.equal(dataValues.id, actionPattern.dataValues.id);
-      assert.equal(dataValues.creatureTypeId, actionPattern.dataValues.creatureTypeId);
-      assert.equal(dataValues.priority, actionPattern.dataValues.priority);
-      const { actions } = dataValues;
+      assert.hasAllKeys(result.dataValues, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
+      assert.equal(result.dataValues.id, actionPattern.id);
+      assert.equal(result.dataValues.creatureTypeId, actionPattern.creatureTypeId);
+      assert.equal(result.dataValues.priority, actionPattern.priority);
+      const { actions } = result.dataValues;
       assert.lengthOf(actions, expectedActions);
       assert.hasAnyKeys(actions[0], 'dataValues');
-      assert.equal(actions[0].dataValues.id, action.dataValues.id);
+      assert.hasAllKeys(actions[0].dataValues, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
+      assert.equal(actions[0].id, action.id);
     });
   });
 
@@ -157,7 +155,7 @@ describe('ActionPattern Service', () => {
 
     it('Should throw an error if a negative priority is passed', async () => {
       try {
-        if ((await actionPatternService.updateActionPattern(actionPattern.dataValues.id, {
+        if ((await actionPatternService.updateActionPattern(actionPattern.id, {
           priority: -1,
         }))) {
           throw new Error('updateActionPattern should have thrown an error');
@@ -168,12 +166,12 @@ describe('ActionPattern Service', () => {
     });
 
     it('Should update an actionPattern if all valid fields are passed', async () => {
-      await actionPatternService.updateActionPattern(actionPattern.dataValues.id, {
+      await actionPatternService.updateActionPattern(actionPattern.id, {
         priority: 1,
       });
       // Check that the actionPattern was updated
       await actionPattern.reload();
-      assert.equal(actionPattern.dataValues.priority, 1);
+      assert.equal(actionPattern.priority, 1);
     });
   });
 
@@ -199,7 +197,7 @@ describe('ActionPattern Service', () => {
     });
 
     it('Should delete the actionPattern with the given id, as well as its actions', async () => {
-      await actionPatternService.deleteActionPattern(actionPattern.dataValues.id);
+      await actionPatternService.deleteActionPattern(actionPattern.id);
       expectedActions -= 1;
       expectedActionPatterns -= 1;
       // Check that one actionPattern was deleted
