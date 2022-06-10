@@ -91,7 +91,7 @@ module.exports = {
   /**
    * @param {Integer} actionId
    * @param {Object} updateFields
-   * @returns {Action} the updated action, with its weapon or spell included
+   * @returns {Promise<Action>} the updated action, with its weapon or spell included
    */
   updateAction: async (actionId, updateFields) => {
     // Filter out disallowed params
@@ -117,13 +117,11 @@ module.exports = {
     if (weaponId && !(await Weapon.count({ where: { id: weaponId } }))) {
       throw new Error(`${UPDATE_FAIL} ${NO_WEAPON}`);
     }
-    if ((spellId && !(await Spell.count({ where: { id: spellId } })))) {
+    if (spellId && !(await Spell.count({ where: { id: spellId } }))) {
       throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     }
     return action.set(updateFields).save()
-      .then((instance) => {
-        return instance.reload({ include: defaultActionIncludes });
-      });
+      .then((instance) => instance.reload({ include: defaultActionIncludes }));
   },
 
   /**
