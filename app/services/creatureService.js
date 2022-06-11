@@ -4,6 +4,12 @@ const {
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
+const CREATE_FAIL = 'Creature creation failed,';
+const UPDATE_FAIL = 'Creature update failed,';
+const DELETE_FAIL = 'Creature deletion failed,';
+const NO_CREATURE = 'no creature found for the given ID';
+const NO_TYPE = 'no creatureType found for the given ID';
+
 module.exports = {
   /**
    * @param {Object} creatureObject
@@ -14,48 +20,51 @@ module.exports = {
     creatureObject = stripInvalidParams(creatureObject, Creature.allowedParams);
     // Check for missing required params
     const missingParams = missingRequiredParams(creatureObject, Creature.requiredParams);
-    if (missingParams.length) throw new Error(`Creature creation failed, fields missing: ${missingParams.join()}`);
+    if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the indicated creatureType exists
-    if (!(await CreatureType.findOne({ where: { id: creatureObject.creatureTypeId } }))) {
-      throw new Error(`Creature creation failed, no creatureType found with ID: ${creatureObject.creatureTypeId}`);
+    if (!(await CreatureType.count({ where: { id: creatureObject.creatureTypeId } }))) {
+      throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
     }
     // Check that the provided creature name is unique
-    if ((await Creature.findAll({ where: { name: creatureObject.name } })).length) {
+    if (await Creature.count({ where: { name: creatureObject.name } })) {
       throw new Error(`Creature with name ${creatureObject.name} already exists`);
     }
-    // Create the creature
-    const creatureId = (await Creature.create(creatureObject)).dataValues.id;
-    return Creature.findByPk(creatureId, {
-      include: [{
-        model: CreatureType,
-        as: 'creatureType',
-      }],
-    });
+    // Create the creature, returning it with its creatureType
+    return Creature.create(creatureObject)
+      .then((creature) => creature.reload({
+        include: [{ model: CreatureType, as: 'creatureType' }],
+      }));
   },
 
   /**
    * @param {Integer} creatureId
-   * @returns {Promise<Creature>} the creature
+   * @returns {Promise<Creature>} the creature with its creatureType
    */
   getCreature: async (creatureId) => {
-    return Creature.findByPk(creatureId);
+    creatureId = parseInt(creatureId, 10);
+    if (Number.isNaN(creatureId)) return null;
+    return Creature.findByPk(creatureId, { include: [{ model: CreatureType, as: 'creatureType' }] });
   },
 
   /**
    * @param {Integer} creatureId
    * @param {Object} updateFields
-   * @returns {Creature} the updated creature
+   * @returns {Creature} the updated creature, with its creatureType
    */
   updateCreature: async (creatureId, updateFields) => {
+    creatureId = parseInt(creatureId, 10);
+    if (Number.isNaN(creatureId)) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE}`);
     // Filter out disallowed params
     updateFields = stripInvalidParams(updateFields, Creature.updateableParams);
-    if (!Object.keys(updateFields).length) throw new Error('Creature update failed, no valid update fields found');
+    if (!Object.keys(updateFields).length) throw new Error(`${UPDATE_FAIL} no valid update fields found`);
     // Check that the indicated creature exists
-    if (!(await Creature.findByPk(creatureId))) {
-      throw new Error(`Creature update failed, no creature found with ID: ${creatureId}`);
-    }
-    // Update the creature
-    return Creature.update(updateFields, { where: { id: creatureId } });
+    const creature = await Creature.findByPk(creatureId);
+    if (!creature) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE}`);
+    // Update the creature, returning it with its creatureType
+    return creature.set(updateFields).save()
+      .then(() => creature.reload({
+        include: [{ model: CreatureType, as: 'creatureType' }],
+      }));
   },
 
   /**
@@ -63,9 +72,11 @@ module.exports = {
    * @returns {Promise<1|0>} if the creature was deleted
    */
   deleteCreature: async (creatureId) => {
+    creatureId = parseInt(creatureId, 10);
+    if (Number.isNaN(creatureId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Check that the indicated creature exists
     const creature = await Creature.findByPk(creatureId);
-    if (!creature) throw new Error(`Creature deletion failed, no creature found with ID: ${creatureId}`);
+    if (!creature) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Delete the creature
     return creature.destroy();
   },

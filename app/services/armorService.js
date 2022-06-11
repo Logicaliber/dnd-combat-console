@@ -4,6 +4,12 @@ const {
 } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
+const CREATE_FAIL = 'Armor creation failed,';
+const UPDATE_FAIL = 'Armor update failed,';
+const DELETE_FAIL = 'Armor deletion failed,';
+const NAME_EXISTS = 'an armor with the given name already exists';
+const NO_ARMOR = 'no armor found for the given ID';
+
 module.exports = {
   /**
    * @param {Object} armorObject
@@ -14,10 +20,10 @@ module.exports = {
     armorObject = stripInvalidParams(armorObject, Armor.allowedParams);
     // Check for missing required params
     const missingParams = missingRequiredParams(armorObject, Armor.requiredParams);
-    if (missingParams.length) throw new Error(`Armor creation failed, fields missing: ${missingParams.join()}`);
+    if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the armor name is unique
-    if ((await Armor.findAll({ where: { name: armorObject.name } })).length) {
-      throw new Error(`Armor with name ${armorObject.name} already exists`);
+    if (await Armor.count({ where: { name: armorObject.name } })) {
+      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the armor
     return Armor.create(armorObject);
@@ -28,6 +34,8 @@ module.exports = {
    * @returns {Promise<Armor>} the armor
    */
   getArmor: async (armorId) => {
+    armorId = parseInt(armorId, 10);
+    if (Number.isNaN(armorId)) return null;
     return Armor.findByPk(armorId);
   },
 
@@ -37,23 +45,28 @@ module.exports = {
    * @returns {Promise<Armor>} the updated armor
    */
   updateArmor: async (armorId, updateFields) => {
+    armorId = parseInt(armorId, 10);
+    if (Number.isNaN(armorId)) throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Armor.updateableParams);
-    if (!Object.keys(updateFields).length) throw new Error('Armor update failed, no valid update fields found');
+    if (!Object.keys(updateFields).length) throw new Error(`${UPDATE_FAIL} no valid update fields found`);
     // Check that the indicated armor exists
-    if (!(await Armor.findByPk(armorId))) throw new Error(`Armor update failed, no armor found with ID: ${armorId}`);
+    const armor = await Armor.findByPk(armorId);
+    if (!armor) throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     // Update the armor
-    return Armor.update(updateFields, { where: { id: armorId } });
+    return armor.set(updateFields).save();
   },
 
   /**
    * @param {Integer} armorId
-   * @returns {Promise<1|0>} if the armor was deleted
+   * @returns {Promise<0 | 1>} 1 if the armor was deleted
    */
   deleteArmor: async (armorId) => {
+    armorId = parseInt(armorId, 10);
+    if (Number.isNaN(armorId)) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // Check that the armor exists
     const armor = await Armor.findByPk(armorId);
-    if (!armor) throw new Error(`Armor deletion failed, no armor found with ID: ${armorId}`);
+    if (!armor) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // For each creatureType that uses this armor, set its armorId to null
     await CreatureType.update({ armorId: null }, { where: { armorId } });
     // Delete the armor

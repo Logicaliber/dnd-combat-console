@@ -71,9 +71,8 @@ module.exports = {
       }
     }
     // Create the action, then return it with its weapon or spell included
-    const action = await Action.create(actionObject);
-    if (!action) throw new Error(`${CREATE_FAIL} (database error)`);
-    return action.reload({ include: defaultActionIncludes });
+    return Action.create(actionObject)
+      .then((action) => action.reload({ include: defaultActionIncludes }));
   },
 
   /**
@@ -83,9 +82,7 @@ module.exports = {
   getAction: async (actionId) => {
     actionId = parseInt(actionId, 10);
     if (Number.isNaN(actionId)) return null;
-    return Action.findByPk(actionId, {
-      include: defaultActionIncludes,
-    });
+    return Action.findByPk(actionId, { include: defaultActionIncludes });
   },
 
   /**
@@ -94,6 +91,8 @@ module.exports = {
    * @returns {Promise<Action>} the updated action, with its weapon or spell included
    */
   updateAction: async (actionId, updateFields) => {
+    actionId = parseInt(actionId, 10);
+    if (Number.isNaN(actionId)) throw new Error(`${UPDATE_FAIL} ${NO_ACTION}`);
     // Filter out disallowed params
     updateFields = stripInvalidParams(updateFields, Action.updateableParams);
     if (!Object.keys(updateFields).length) throw new Error(`${UPDATE_FAIL} no valid update fields found`);
@@ -110,7 +109,9 @@ module.exports = {
     const proposedOther = ((other === undefined) ? action.other : other);
     if (normalize(proposedWeaponId)
       + normalize(proposedSpellId)
-      + normalize(proposedOther && typeof proposedOther === 'string' ? proposedOther.length : 0)
+      + normalize(proposedOther && typeof proposedOther === 'string'
+        ? proposedOther.length
+        : 0)
       !== 1) {
       throw new Error(`${UPDATE_FAIL} ${WEAPON_SPELL_OTHER}`);
     }
@@ -121,7 +122,7 @@ module.exports = {
       throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     }
     return action.set(updateFields).save()
-      .then((instance) => instance.reload({ include: defaultActionIncludes }));
+      .then(() => action.reload({ include: defaultActionIncludes }));
   },
 
   /**
