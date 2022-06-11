@@ -14,9 +14,9 @@ const {
   Weapon,
   Spell,
   CreatureType,
+  Creature,
   ActionPattern,
   Action,
-  Creature,
 } = require('../models');
 
 const relevantModels = [
@@ -24,13 +24,15 @@ const relevantModels = [
   Weapon,
   Spell,
   CreatureType,
+  Creature,
   ActionPattern,
   Action,
-  Creature,
 ];
 
 let armorId;
 let creatureType = null;
+let expectedActionPatterns = 0;
+let expectedActions = 0;
 let expectedCreatureTypes = 0;
 let expectedCreatures = 0;
 
@@ -47,9 +49,9 @@ describe('CreatureType Service', () => {
   describe('createCreatureType', () => {
     it('Should throw an error if required fields are missing', async () => {
       try {
-        if ((await creatureTypeService.createCreatureType({
+        if (await creatureTypeService.createCreatureType({
           name: 'dog',
-        }))) throw new Error('createCreatureType should have thrown an error');
+        })) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation failed, fields missing: hitDie,numDice,maxHP');
       }
@@ -57,13 +59,13 @@ describe('CreatureType Service', () => {
 
     it('Should throw an error if an invalid size is passed', async () => {
       try {
-        if ((await creatureTypeService.createCreatureType({
+        if (await creatureTypeService.createCreatureType({
           name: 'name',
           size: 'invalid',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
-        }))) throw new Error('createCreatureType should have thrown an error');
+        })) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: creatureType size must be one of tiny, small, medium, large, huge, or gargantuan');
       }
@@ -71,14 +73,14 @@ describe('CreatureType Service', () => {
 
     it('Should throw an error if an invalid armorId is passed', async () => {
       try {
-        if ((await creatureTypeService.createCreatureType({
+        if (await creatureTypeService.createCreatureType({
           name: 'name',
           size: 'medium',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
           armorId: 1234,
-        }))) throw new Error('createCreatureType should have thrown an error');
+        })) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation failed, no armor found for the given ID');
       }
@@ -95,7 +97,7 @@ describe('CreatureType Service', () => {
       });
       expectedCreatureTypes += 1;
       // Check that one creatureType was created
-      assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
+      assert.lengthOf(await CreatureType.findAll(), expectedCreatureTypes);
       // Check that the creatureType has the correct armor
       assert.equal(creatureType.armor.id, armorId);
       assert.equal(creatureType.armor.name, 'fur');
@@ -105,19 +107,21 @@ describe('CreatureType Service', () => {
       expectedCreatures += 1;
       // Create an actionPattern for this creatureType, for use in other tests
       const actionPatternId = (await generateActionPattern(0, creatureType.id)).id;
+      expectedActionPatterns += 1;
       const weaponId = (await generateWeapon()).id;
       await generateAction(0, weaponId, 1, actionPatternId);
+      expectedActions += 1;
     });
 
     it('Should throw an error if a duplicate creatureType name is used', async () => {
       try {
-        if ((await creatureTypeService.createCreatureType({
+        if (await creatureTypeService.createCreatureType({
           name: 'dog',
           size: 'medium',
           hitDie: 6,
           numDice: 1,
           maxHP: 4,
-        }))) throw new Error('createCreatureType should have thrown an error');
+        })) throw new Error('createCreatureType should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'CreatureType creation failed, a creatureType with the given name already exists');
       }
@@ -126,8 +130,8 @@ describe('CreatureType Service', () => {
 
   describe('getCreatureType', () => {
     it('Should return null if an invalid id is passed', async () => {
-      assert.isNull((await creatureTypeService.getCreatureType('invalid')));
-      assert.isNull((await creatureTypeService.getCreatureType(99999)));
+      assert.isNull(await creatureTypeService.getCreatureType('invalid'));
+      assert.isNull(await creatureTypeService.getCreatureType(99999));
     });
 
     it('Should return the correct creatureType for the given id, with its armor, actionPatterns, actions, weapons, and spells', async () => {
@@ -185,15 +189,12 @@ describe('CreatureType Service', () => {
   describe('deleteCreatureType', () => {
     it('Should throw an error if an invalid id is passed', async () => {
       try {
-        if ((await creatureTypeService.deleteCreatureType('invalid'))) {
+        if (await creatureTypeService.deleteCreatureType('invalid')) {
           throw new Error('deleteCreatureType should have thrown an error');
         }
       } catch (error) {
         assert.equal(error.message, 'CreatureType deletion failed, no creatureType found for the given ID');
       }
-    });
-
-    it('Should throw an error if the id is non-existant', async () => {
       try {
         if (await creatureTypeService.deleteCreatureType(99999)) {
           throw new Error('deleteCreatureType should have thrown an error');
@@ -203,14 +204,20 @@ describe('CreatureType Service', () => {
       }
     });
 
-    it('Should delete the creatureType with the given id, as well as all related creatures', async () => {
+    it('Should delete the creatureType with the given id, as well as all related creatures, actionPatterns, and actions', async () => {
       await creatureTypeService.deleteCreatureType(creatureType.id);
       expectedCreatureTypes -= 1;
       expectedCreatures -= 1;
+      expectedActions -= 1;
+      expectedActionPatterns -= 1;
       // Check that one creatureType was deleted
       assert.lengthOf((await CreatureType.findAll()), expectedCreatureTypes);
       // Check that one creature was deleted
       assert.lengthOf((await Creature.findAll()), expectedCreatures);
+      // Check that one action was deleted
+      assert.lengthOf((await Action.findAll()), expectedActions);
+      // Check that one creature was deleted
+      assert.lengthOf((await ActionPattern.findAll()), expectedActionPatterns);
     });
   });
 });

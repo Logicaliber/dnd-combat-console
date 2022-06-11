@@ -68,7 +68,7 @@ module.exports = {
     userId = parseInt(userId, 10);
     if (Number.isNaN(userId)) throw new Error(`${DELETE_FAIL} ${NO_USER}`);
     // Check that the indicated user exists
-    const user = await User.findByPk(userId);
+    const user = await User.unscoped().findByPk(userId);
     if (!user) throw new Error(`${DELETE_FAIL} ${NO_USER}`);
     // Delete the user
     return user.destroy();

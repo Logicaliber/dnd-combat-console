@@ -25,7 +25,7 @@ describe('User Service', () => {
   describe('createUser', () => {
     it('Should throw an error if fields are missing', async () => {
       try {
-        if ((await userService.createUser({}))) throw new Error('createUser should have thrown an error');
+        if (await userService.createUser({})) throw new Error('createUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User creation failed, fields missing: email,password');
       }
@@ -33,10 +33,10 @@ describe('User Service', () => {
 
     it('Should throw an error if an invalid password is passed', async () => {
       try {
-        if ((await userService.createUser({
+        if (await userService.createUser({
           email: validEmail,
           password: 'invalid',
-        }))) throw new Error('createUser should have thrown an error');
+        })) throw new Error('createUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'password must contain at least one number, lowercase letter, uppercase letter, one symbol, and be at least eight characters long');
       }
@@ -44,10 +44,10 @@ describe('User Service', () => {
 
     it('Should throw an error if an invalid email is passed', async () => {
       try {
-        if ((await userService.createUser({
+        if (await userService.createUser({
           email: 'email',
           password: validPassword,
-        }))) throw new Error('createUser should have thrown an error');
+        })) throw new Error('createUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation is on email failed');
       }
@@ -60,18 +60,18 @@ describe('User Service', () => {
       });
       expectedUsers += 1;
       // Check that one user was created
-      assert.lengthOf((await User.findAll()), expectedUsers);
+      assert.lengthOf(await User.findAll(), expectedUsers);
       // Check that the password was hashed before creation
-      assert.notEqual(user.dataValues.password, validPassword);
-      assert(bcrypt.compareSync(validPassword, user.dataValues.password));
+      assert.notEqual(user.password, validPassword);
+      assert(bcrypt.compareSync(validPassword, user.password));
     });
 
     it('Should throw an error if a duplicate user name is used', async () => {
       try {
-        if ((await userService.createUser({
+        if (await userService.createUser({
           email: validEmail,
           password: validPassword,
-        }))) throw new Error('createUser should have thrown an error');
+        })) throw new Error('createUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User creation failed, a user with the given email already exists');
       }
@@ -79,25 +79,17 @@ describe('User Service', () => {
   });
 
   describe('getUser', () => {
-    it('Should throw an error if an invalid id is passed', async () => {
-      try {
-        if ((await userService.getUser('invalid'))) throw new Error('getUser should have thrown an error');
-      } catch (error) {
-        assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
-      }
-    });
-
-    it('Should return null if a non-existant id is passed', async () => {
+    it('Should return null if an invalid id is passed', async () => {
+      assert.isNull(await userService.getUser('invalid'));
       assert.isNull(await userService.getUser(99999));
     });
 
     it('Should return the correct user for the given id', async () => {
-      const result = await userService.getUser(user.dataValues.id);
+      const result = await userService.getUser(user.id);
       assert.hasAnyKeys(result, 'dataValues');
-      assert.hasAllKeys(result.dataValues, ['id', 'email', 'password', 'createdAt', 'updatedAt']);
-      assert.equal(result.dataValues.id, user.dataValues.id);
-      assert.equal(result.dataValues.email, user.dataValues.email);
-      assert.equal(result.dataValues.password, user.dataValues.password);
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'email', 'createdAt', 'updatedAt']);
+      assert.equal(values.id, user.id);
     });
   });
 

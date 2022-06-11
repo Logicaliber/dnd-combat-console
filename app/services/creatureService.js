@@ -1,4 +1,9 @@
 const {
+  Armor,
+  Weapon,
+  Spell,
+  ActionPattern,
+  Action,
   CreatureType,
   Creature,
 } = require('../models');
@@ -11,10 +16,34 @@ const NAME_EXISTS = 'a creature with the given name already exists';
 const NO_CREATURE = 'no creature found for the given ID';
 const NO_TYPE = 'no creatureType found for the given ID';
 
+const defaultCreatureIncludes = [{
+  model: CreatureType,
+  as: 'creatureType',
+  include: [{
+    model: ActionPattern,
+    as: 'actionPatterns',
+    include: [{
+      model: Action,
+      as: 'actions',
+      include: [{
+        model: Weapon,
+        as: 'weapon',
+      }, {
+        model: Spell,
+        as: 'spell',
+      }],
+    }],
+  }, {
+    model: Armor,
+    as: 'armor',
+  }],
+}];
+
 module.exports = {
   /**
    * @param {Object} creatureObject
-   * @returns {Promise<Creature>} the new creature, with its creatureType included
+   * @returns {Promise<Creature>} the new creature, with its creatureType,
+   * armor, actionPatterns, actions, weapons, and spells
    */
   createCreature: async (creatureObject) => {
     // Filter out disallowed params
@@ -33,24 +62,26 @@ module.exports = {
     // Create the creature, returning it with its creatureType
     return Creature.create(creatureObject)
       .then((creature) => creature.reload({
-        include: [{ model: CreatureType, as: 'creatureType' }],
+        include: defaultCreatureIncludes,
       }));
   },
 
   /**
    * @param {Integer} creatureId
-   * @returns {Promise<Creature>} the creature with its creatureType
+   * @returns {Promise<Creature>} the creature, with its creatureType,
+   * armor, actionPatterns, actions, weapons, and spells
    */
   getCreature: async (creatureId) => {
     creatureId = parseInt(creatureId, 10);
     if (Number.isNaN(creatureId)) return null;
-    return Creature.findByPk(creatureId, { include: [{ model: CreatureType, as: 'creatureType' }] });
+    return Creature.findByPk(creatureId, { include: defaultCreatureIncludes });
   },
 
   /**
    * @param {Integer} creatureId
    * @param {Object} updateFields
-   * @returns {Creature} the updated creature, with its creatureType
+   * @returns {Creature} the updated creature, with its creatureType,
+   * armor, actionPatterns, actions, weapons, and spells
    */
   updateCreature: async (creatureId, updateFields) => {
     creatureId = parseInt(creatureId, 10);
@@ -61,10 +92,11 @@ module.exports = {
     // Check that the indicated creature exists
     const creature = await Creature.findByPk(creatureId);
     if (!creature) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE}`);
-    // Update the creature, returning it with its creatureType
+    // Update the creature, returning it with its creatureType,
+    // armor, actionPatterns, actions, weapons, and spells
     return creature.set(updateFields).save()
       .then(() => creature.reload({
-        include: [{ model: CreatureType, as: 'creatureType' }],
+        include: defaultCreatureIncludes,
       }));
   },
 

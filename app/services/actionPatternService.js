@@ -29,7 +29,7 @@ const defaultActionPatternIncludes = [{
 module.exports = {
   /**
    * @param {Object} actionPatternObject
-   * @returns {Promise<ActionPattern>} the new actionPattern
+   * @returns {Promise<ActionPattern>} the new actionPattern with actions, weapons, and spells
    */
   createActionPattern: async (actionPatternObject) => {
     // Filter out disallowed params
@@ -50,7 +50,7 @@ module.exports = {
 
   /**
    * @param {Integer} actionPatternId
-   * @returns {Promise<ActionPattern>} the actionPattern with its actions, weapons, and spells
+   * @returns {Promise<ActionPattern>} the actionPattern with actions, weapons, and spells
    */
   getActionPattern: async (actionPatternId) => {
     actionPatternId = parseInt(actionPatternId, 10);
@@ -63,19 +63,17 @@ module.exports = {
   /**
    * @param {Integer} actionPatternId
    * @param {Object} updateFields
-   * @returns {Promise<ActionPattern>} the updated actionPattern
+   * @returns {Promise<ActionPattern>} the updated actionPattern, with actions, weapons, and spells
    */
   updateActionPattern: async (actionPatternId, updateFields) => {
+    actionPatternId = parseInt(actionPatternId, 10);
+    if (Number.isNaN(actionPatternId)) throw new Error(`${UPDATE_FAIL} ${NO_ACTION_PATTERN}`);
     // Filter out disallowed params
     updateFields = stripInvalidParams(updateFields, ActionPattern.updateableParams);
     if (!Object.keys(updateFields).length) throw new Error(`${UPDATE_FAIL} no valid update fields found`);
-
     // Check that the indicated actionPattern exists
-    actionPatternId = parseInt(actionPatternId, 10);
-    if (Number.isNaN(actionPatternId)) throw new Error(`${UPDATE_FAIL} ${NO_ACTION_PATTERN}`);
     const actionPattern = await ActionPattern.findByPk(actionPatternId);
     if (!actionPattern) throw new Error(`${UPDATE_FAIL} ${NO_ACTION_PATTERN}`);
-
     // Update the actionPattern and return it with its actions, weapons, and spells
     return actionPattern.set(updateFields).save()
       .then((instance) => instance.reload({ include: defaultActionPatternIncludes }));

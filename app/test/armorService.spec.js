@@ -29,11 +29,11 @@ describe('Armor Service', () => {
   describe('createArmor', () => {
     it('Should throw an error if an invalid type is passed', async () => {
       try {
-        if ((await armorService.createArmor({
+        if (await armorService.createArmor({
           name: 'name',
           type: 'invalid',
           baseAC: 12,
-        }))) throw new Error('createArmor should have thrown an error');
+        })) throw new Error('createArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: armor type must be one of: light, medium, heavy, or natural');
       }
@@ -41,11 +41,11 @@ describe('Armor Service', () => {
 
     it('Should throw an error if a negative baseAC is passed', async () => {
       try {
-        if ((await armorService.createArmor({
+        if (await armorService.createArmor({
           name: 'name',
           type: 'light',
           baseAC: -1,
-        }))) throw new Error('createArmor should have thrown an error');
+        })) throw new Error('createArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation min on baseAC failed');
       }
@@ -60,7 +60,7 @@ describe('Armor Service', () => {
       });
       expectedArmors += 1;
 
-      assert.lengthOf((await Armor.findAll()), expectedArmors);
+      assert.lengthOf(await Armor.findAll(), expectedArmors);
 
       // Create a creatureType that uses this armor, for use in a later test
       creatureType = await generateCreatureType(null, null, null, null, armor.id, null, null, 0);
@@ -68,11 +68,11 @@ describe('Armor Service', () => {
 
     it('Should throw an error if a duplicate armor name is used', async () => {
       try {
-        if ((await armorService.createArmor({
+        if (await armorService.createArmor({
           name: armor.name,
           type: 'light',
           baseAC: 12,
-        }))) throw new Error('createArmor should have thrown an error');
+        })) throw new Error('createArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Armor creation failed, an armor with the given name already exists');
       }
@@ -100,11 +100,11 @@ describe('Armor Service', () => {
   describe('updateArmor', () => {
     it('Should throw an error if an invalid type is passed', async () => {
       try {
-        if ((await armorService.updateArmor(armor.id, {
+        if (await armorService.updateArmor(armor.id, {
           name: 'Super Extreme Plate',
           type: 'still invalid',
           baseAC: 22,
-        }))) throw new Error('updateArmor should have thrown an error');
+        })) throw new Error('updateArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: armor type must be one of: light, medium, heavy, or natural');
       }
@@ -112,11 +112,11 @@ describe('Armor Service', () => {
 
     it('Should throw an error if a negative baseAC is passed', async () => {
       try {
-        if ((await armorService.updateArmor(armor.id, {
+        if (await armorService.updateArmor(armor.id, {
           name: 'name',
           type: 'light',
           baseAC: -1,
-        }))) throw new Error('updateArmor should have thrown an error');
+        })) throw new Error('updateArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation min on baseAC failed');
       }
@@ -131,7 +131,7 @@ describe('Armor Service', () => {
       });
 
       // Check that the number of armors hasn't changed
-      assert.lengthOf((await Armor.findAll()), expectedArmors);
+      assert.lengthOf(await Armor.findAll(), expectedArmors);
 
       // Check that the armor was updated
       await armor.reload();
@@ -164,7 +164,7 @@ describe('Armor Service', () => {
       await armorService.deleteArmor(armor.id);
       expectedArmors -= 1;
       // Check that one armor was deleted
-      assert.lengthOf((await Armor.findAll()), expectedArmors);
+      assert.lengthOf(await Armor.findAll(), expectedArmors);
       // Check that the creatureType using this armor now has no armor
       await creatureType.reload();
       assert.isNull(creatureType.armorId);

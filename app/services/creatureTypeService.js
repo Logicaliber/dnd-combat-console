@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const {
   Armor,
   Weapon,
@@ -16,7 +17,7 @@ const NAME_EXISTS = 'a creatureType with the given name already exists';
 const NO_ARMOR = 'no armor found for the given ID';
 const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
 
-const defaulltCreatureTypeIncludes = [{
+const defaultCreatureTypeIncludes = [{
   model: ActionPattern,
   as: 'actionPatterns',
   include: [{
@@ -64,7 +65,7 @@ module.exports = {
     }
     // Create the creatureType, returning it with its armor
     return CreatureType.create(creatureTypeObject)
-      .then((creatureType) => creatureType.reload({ include: defaulltCreatureTypeIncludes }));
+      .then((creatureType) => creatureType.reload({ include: defaultCreatureTypeIncludes }));
   },
 
   /**
@@ -74,7 +75,7 @@ module.exports = {
   getCreatureType: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) return null;
-    return CreatureType.findByPk(creatureTypeId, { include: defaulltCreatureTypeIncludes });
+    return CreatureType.findByPk(creatureTypeId, { include: defaultCreatureTypeIncludes });
   },
 
   /**
@@ -93,7 +94,7 @@ module.exports = {
     if (!creatureType) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE_TYPE}`);
     // Update the creatureType
     return creatureType.set(updateFields).save()
-      .then(() => creatureType.reload({ include: defaulltCreatureTypeIncludes }));
+      .then(() => creatureType.reload({ include: defaultCreatureTypeIncludes }));
   },
 
   /**
@@ -104,11 +105,24 @@ module.exports = {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Check that the indicated creatureType exists
-    const creatureType = await CreatureType.findByPk(creatureTypeId);
+    const creatureType = await CreatureType.findByPk(creatureTypeId, {
+      include: [{ model: ActionPattern, as: 'actionPatterns', attributes: ['id'] }],
+    });
     if (!creatureType) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Delete all associated Creatures
     await Creature.destroy({ where: { creatureTypeId } });
-    // TODO Delete all actionPatterns and actions
+    // Delete all associated Actions
+    await Action.destroy({
+      where: {
+        actionPatternId: {
+          [Op.in]: creatureType.actionPatterns.map((actionPattern) => actionPattern.id),
+        },
+      },
+    });
+    // Delete all associated ActionPatterns
+    await ActionPattern.destroy({
+      where: { creatureTypeId },
+    });
     // Delete the CreatureType
     return creatureType.destroy();
   },

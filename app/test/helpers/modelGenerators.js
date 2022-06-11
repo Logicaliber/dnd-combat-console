@@ -141,7 +141,6 @@ module.exports = {
     if (!hitDie) hitDie = 6;
     if (!numDice) numDice = 1;
     if (!maxHP) maxHP = 4;
-    if (!armorId) armorId = (await module.exports.generateArmor()).dataValues.id;
     const creatureType = await CreatureType.create({
       name,
       hitDie,

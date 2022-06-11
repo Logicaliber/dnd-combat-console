@@ -45,7 +45,7 @@ describe('ActionPattern Service', () => {
   describe('createActionPattern', () => {
     it('Should throw an error if required fields are missing', async () => {
       try {
-        if ((await actionPatternService.createActionPattern({}))) {
+        if (await actionPatternService.createActionPattern({})) {
           throw new Error('createActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -55,10 +55,10 @@ describe('ActionPattern Service', () => {
 
     it('Should throw an error if an invalid creatureTypeId is passed', async () => {
       try {
-        if ((await actionPatternService.createActionPattern({
+        if (await actionPatternService.createActionPattern({
           priority: 0,
           creatureTypeId: 'invalid',
-        }))) {
+        })) {
           throw new Error('createActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -68,10 +68,10 @@ describe('ActionPattern Service', () => {
 
     it('Should throw an error if a non-existant creatureTypeId is passed', async () => {
       try {
-        if ((await actionPatternService.createActionPattern({
+        if (await actionPatternService.createActionPattern({
           priority: 0,
           creatureTypeId: 9999,
-        }))) {
+        })) {
           throw new Error('createActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -81,10 +81,10 @@ describe('ActionPattern Service', () => {
 
     it('Should throw an error if a negative priority is passed', async () => {
       try {
-        if ((await actionPatternService.createActionPattern({
+        if (await actionPatternService.createActionPattern({
           priority: -1,
           creatureTypeId,
-        }))) {
+        })) {
           throw new Error('createActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -99,7 +99,7 @@ describe('ActionPattern Service', () => {
       });
       expectedActionPatterns += 1;
       // Check that one actionPattern was created
-      assert.lengthOf((await ActionPattern.findAll()), expectedActionPatterns);
+      assert.lengthOf(await ActionPattern.findAll(), expectedActionPatterns);
 
       // Create an action for this actionPattern, for use in other tests
       action = await generateAction(0, biteId, 1, actionPattern.id);
@@ -109,43 +109,48 @@ describe('ActionPattern Service', () => {
 
   describe('getActionPattern', () => {
     it('Should return null if an invalid id is passed', async () => {
-      assert.isNull((await actionPatternService.getActionPattern('invalid')));
-      assert.isNull((await actionPatternService.getActionPattern(99999)));
+      assert.isNull(await actionPatternService.getActionPattern('invalid'));
+      assert.isNull(await actionPatternService.getActionPattern(99999));
     });
 
     it('Should return the correct actionPattern instance for the given id, with its actions, weapons, and spells', async () => {
       const result = await actionPatternService.getActionPattern(actionPattern.id);
       assert.hasAnyKeys(result, 'dataValues');
-      assert.hasAllKeys(result.dataValues, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
-      assert.equal(result.dataValues.id, actionPattern.id);
-      assert.equal(result.dataValues.creatureTypeId, actionPattern.creatureTypeId);
-      assert.equal(result.dataValues.priority, actionPattern.priority);
-      const { actions } = result.dataValues;
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
+      assert.equal(values.id, actionPattern.id);
+      assert.equal(values.creatureTypeId, actionPattern.creatureTypeId);
+      assert.equal(values.priority, actionPattern.priority);
+      const { actions } = values;
       assert.lengthOf(actions, expectedActions);
       assert.hasAnyKeys(actions[0], 'dataValues');
-      assert.hasAllKeys(actions[0].dataValues, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
-      assert.equal(actions[0].id, action.id);
+      const actionValues = actions[0].dataValues;
+      assert.hasAllKeys(actionValues, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
+      assert.equal(actionValues.id, action.id);
+      assert.isNull(actionValues.spell);
+      const { weapon } = actionValues;
+      assert.hasAnyKeys(weapon, 'dataValues');
+      const weaponValues = weapon.dataValues;
+      assert.hasAllKeys(weaponValues, ['id', 'name', 'damages', 'properties', 'normalRange', 'longRange', 'attackShape', 'save', 'saveType', 'saveStillHalf', 'createdAt', 'updatedAt']);
+      assert.equal(weaponValues.id, biteId);
     });
   });
 
   describe('updateActionPattern', () => {
     it('Should throw an error if an invalid id is passed', async () => {
       try {
-        if ((await actionPatternService.updateActionPattern('invalid', {
+        if (await actionPatternService.updateActionPattern('invalid', {
           priority: 10,
-        }))) {
+        })) {
           throw new Error('updateActionPattern should have thrown an error');
         }
       } catch (error) {
         assert.equal(error.message, 'ActionPattern update failed, no actionPattern found for the given ID');
       }
-    });
-
-    it('Should throw an error if a non-existant id is passed', async () => {
       try {
-        if ((await actionPatternService.updateActionPattern(9999, {
+        if (await actionPatternService.updateActionPattern(9999, {
           priority: 10,
-        }))) {
+        })) {
           throw new Error('updateActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -155,9 +160,9 @@ describe('ActionPattern Service', () => {
 
     it('Should throw an error if a negative priority is passed', async () => {
       try {
-        if ((await actionPatternService.updateActionPattern(actionPattern.id, {
+        if (await actionPatternService.updateActionPattern(actionPattern.id, {
           priority: -1,
-        }))) {
+        })) {
           throw new Error('updateActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -178,7 +183,7 @@ describe('ActionPattern Service', () => {
   describe('deleteActionPattern', () => {
     it('Should throw an error if an invalid id is passed', async () => {
       try {
-        if ((await actionPatternService.deleteActionPattern('invalid'))) {
+        if (await actionPatternService.deleteActionPattern('invalid')) {
           throw new Error('deleteActionPattern should have thrown an error');
         }
       } catch (error) {
@@ -201,9 +206,9 @@ describe('ActionPattern Service', () => {
       expectedActions -= 1;
       expectedActionPatterns -= 1;
       // Check that one actionPattern was deleted
-      assert.lengthOf((await ActionPattern.findAll()), expectedActionPatterns);
+      assert.lengthOf(await ActionPattern.findAll(), expectedActionPatterns);
       // Check that one action was deleted
-      assert.lengthOf((await Action.findAll()), expectedActions);
+      assert.lengthOf(await Action.findAll(), expectedActions);
     });
   });
 });

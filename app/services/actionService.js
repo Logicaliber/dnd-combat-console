@@ -28,6 +28,7 @@ const defaultActionIncludes = [{
  * @returns {0 | 1}
  */
 const normalize = (number) => {
+  if (!number) return 0;
   number = parseInt(number, 10);
   if (Number.isNaN(number)) return 0;
   if (!number) return 0;
@@ -49,7 +50,8 @@ module.exports = {
       actionPatternId, weaponId, spellId, other,
     } = actionObject;
     // Check that the indicated actionPattern exists
-    if (!(await ActionPattern.count({ where: { id: actionPatternId } }))) {
+    if (Number.isNaN(parseInt(actionPatternId, 10))
+        || !(await ActionPattern.count({ where: { id: actionPatternId } }))) {
       throw new Error(`${CREATE_FAIL} ${NO_ACTION_PATTERN}`);
     }
     // An action must be one of weapon, spell, or other
@@ -60,15 +62,15 @@ module.exports = {
       throw new Error(`${CREATE_FAIL} ${WEAPON_SPELL_OTHER}`);
     }
     // Check that the indicated weapon exists
-    if (weaponId) {
-      if (!(await Weapon.count({ where: { id: weaponId } }))) {
-        throw new Error(`${CREATE_FAIL} ${NO_WEAPON}`);
-      }
+    if (weaponId !== undefined && weaponId !== null
+      && (Number.isNaN(parseInt(weaponId, 10))
+        || !(await Weapon.count({ where: { id: weaponId } })))) {
+      throw new Error(`${CREATE_FAIL} ${NO_WEAPON}`);
     // Check that the indicated spell exists
-    } else if (spellId) {
-      if (!(await Spell.count({ where: { id: spellId } }))) {
-        throw new Error(`${CREATE_FAIL} ${NO_SPELL}`);
-      }
+    } else if (spellId !== undefined && spellId !== null
+      && (Number.isNaN(parseInt(spellId, 10))
+          || !(await Spell.count({ where: { id: spellId } })))) {
+      throw new Error(`${CREATE_FAIL} ${NO_SPELL}`);
     }
     // Create the action, then return it with its weapon or spell included
     return Action.create(actionObject)
@@ -98,9 +100,7 @@ module.exports = {
     if (!Object.keys(updateFields).length) throw new Error(`${UPDATE_FAIL} no valid update fields found`);
     // Check that the indicated action exists
     const action = await Action.findByPk(actionId);
-    if (!action) {
-      throw new Error(`${UPDATE_FAIL} ${NO_ACTION}`);
-    }
+    if (!action) throw new Error(`${UPDATE_FAIL} ${NO_ACTION}`);
     // Allow updating weaponId, spellId, or other, just
     // don't allow the final product to have all three
     const { weaponId, spellId, other } = updateFields;
@@ -115,10 +115,14 @@ module.exports = {
       !== 1) {
       throw new Error(`${UPDATE_FAIL} ${WEAPON_SPELL_OTHER}`);
     }
-    if (weaponId && !(await Weapon.count({ where: { id: weaponId } }))) {
+    if (weaponId !== undefined && weaponId !== null
+      && (Number.isNaN(parseInt(weaponId, 10))
+        || !(await Weapon.count({ where: { id: weaponId } })))) {
       throw new Error(`${UPDATE_FAIL} ${NO_WEAPON}`);
     }
-    if (spellId && !(await Spell.count({ where: { id: spellId } }))) {
+    if (spellId !== undefined && spellId !== null
+      && (Number.isNaN(parseInt(spellId, 10))
+        || !(await Spell.count({ where: { id: spellId } })))) {
       throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     }
     return action.set(updateFields).save()
