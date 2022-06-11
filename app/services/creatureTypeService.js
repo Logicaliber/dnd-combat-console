@@ -4,9 +4,9 @@ const {
   Weapon,
   Spell,
   CreatureType,
+  Creature,
   ActionPattern,
   Action,
-  Creature,
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 

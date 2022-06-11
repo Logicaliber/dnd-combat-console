@@ -2,10 +2,10 @@ const {
   Armor,
   Weapon,
   Spell,
-  ActionPattern,
-  Action,
   CreatureType,
   Creature,
+  ActionPattern,
+  Action,
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
@@ -61,11 +61,10 @@ module.exports = {
     if (await Creature.count({ where: { name: creatureObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
-    // Create the creature, returning it with its creatureType
+    // Create the creature, returning it with its creatureType,
+    // armor, actionPatterns, actions, weapons, and spells
     return Creature.create(creatureObject)
-      .then((creature) => creature.reload({
-        include: defaultCreatureIncludes,
-      }));
+      .then((creature) => creature.reload({ include: defaultCreatureIncludes }));
   },
 
   /**
