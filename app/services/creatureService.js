@@ -7,6 +7,7 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 const CREATE_FAIL = 'Creature creation failed,';
 const UPDATE_FAIL = 'Creature update failed,';
 const DELETE_FAIL = 'Creature deletion failed,';
+const NAME_EXISTS = 'a creature with the given name already exists';
 const NO_CREATURE = 'no creature found for the given ID';
 const NO_TYPE = 'no creatureType found for the given ID';
 
@@ -27,7 +28,7 @@ module.exports = {
     }
     // Check that the provided creature name is unique
     if (await Creature.count({ where: { name: creatureObject.name } })) {
-      throw new Error(`Creature with name ${creatureObject.name} already exists`);
+      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the creature, returning it with its creatureType
     return Creature.create(creatureObject)

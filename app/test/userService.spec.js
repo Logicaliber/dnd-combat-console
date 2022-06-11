@@ -73,7 +73,7 @@ describe('User Service', () => {
           password: validPassword,
         }))) throw new Error('createUser should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, `user with email ${validEmail} already exists`);
+        assert.equal(error.message, 'User creation failed, a user with the given email already exists');
       }
     });
   });
@@ -102,13 +102,20 @@ describe('User Service', () => {
   });
 
   describe('updateUser', () => {
-    it('Should throw an error if a non-existant userId is passed', async () => {
+    it('Should throw an error if an invalid userId is passed', async () => {
+      try {
+        if ((await userService.updateUser('invalid', {
+          email: secondValidEmail,
+        }))) throw new Error('updateUser should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'User update failed, no user found for the given ID');
+      }
       try {
         if ((await userService.updateUser(99999, {
           email: secondValidEmail,
         }))) throw new Error('updateUser should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'User update failed, no user found with ID: 99999');
+        assert.equal(error.message, 'User update failed, no user found for the given ID');
       }
     });
 
@@ -149,15 +156,12 @@ describe('User Service', () => {
       try {
         if ((await userService.deleteUser('invalid'))) throw new Error('deleteUser should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
+        assert.equal(error.message, 'User deletion failed, no user found for the given ID');
       }
-    });
-
-    it('Should throw an error if a non-existant user id is passed', async () => {
       try {
         if ((await userService.deleteUser(99999))) throw new Error('deleteUser should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'User deletion failed, no user found with ID: 99999');
+        assert.equal(error.message, 'User deletion failed, no user found for the given ID');
       }
     });
 

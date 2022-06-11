@@ -1,6 +1,10 @@
 const {
   Armor,
+  Weapon,
+  Spell,
   CreatureType,
+  ActionPattern,
+  Action,
   Creature,
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
@@ -11,6 +15,25 @@ const DELETE_FAIL = 'CreatureType deletion failed,';
 const NAME_EXISTS = 'a creatureType with the given name already exists';
 const NO_ARMOR = 'no armor found for the given ID';
 const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
+
+const defaulltCreatureTypeIncludes = [{
+  model: ActionPattern,
+  as: 'actionPatterns',
+  include: [{
+    model: Action,
+    as: 'actions',
+    include: [{
+      model: Weapon,
+      as: 'weapon',
+    }, {
+      model: Spell,
+      as: 'spell',
+    }],
+  }],
+}, {
+  model: Armor,
+  as: 'armor',
+}];
 
 module.exports = {
   /**
@@ -41,7 +64,7 @@ module.exports = {
     }
     // Create the creatureType, returning it with its armor
     return CreatureType.create(creatureTypeObject)
-      .then((creatureType) => creatureType.reload({ include: [{ model: Armor, as: 'armor' }] }));
+      .then((creatureType) => creatureType.reload({ include: defaulltCreatureTypeIncludes }));
   },
 
   /**
@@ -51,7 +74,7 @@ module.exports = {
   getCreatureType: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) return null;
-    return CreatureType.findByPk(creatureTypeId, { include: [{ model: Armor, as: 'armor' }] });
+    return CreatureType.findByPk(creatureTypeId, { include: defaulltCreatureTypeIncludes });
   },
 
   /**
@@ -70,7 +93,7 @@ module.exports = {
     if (!creatureType) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE_TYPE}`);
     // Update the creatureType
     return creatureType.set(updateFields).save()
-      .then(() => creatureType.reload({ include: [{ model: Armor, as: 'armor' }] }));
+      .then(() => creatureType.reload({ include: defaulltCreatureTypeIncludes }));
   },
 
   /**
@@ -82,9 +105,10 @@ module.exports = {
     if (Number.isNaN(creatureTypeId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Check that the indicated creatureType exists
     const creatureType = await CreatureType.findByPk(creatureTypeId);
-    if (!creatureType) throw new Error(`CreatureType deletion failed, no creatureType found with ID: ${creatureTypeId}`);
+    if (!creatureType) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Delete all associated Creatures
     await Creature.destroy({ where: { creatureTypeId } });
+    // TODO Delete all actionPatterns and actions
     // Delete the CreatureType
     return creatureType.destroy();
   },

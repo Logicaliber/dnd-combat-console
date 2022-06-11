@@ -66,7 +66,7 @@ describe('Weapon Service', () => {
           properties: '["finesse"]',
         }))) throw new Error('createWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Weapon with name rubber dagger already exists');
+        assert.equal(error.message, 'Weapon creation failed, a weapon with the given name already exists');
       }
     });
   });
@@ -134,15 +134,12 @@ describe('Weapon Service', () => {
       try {
         if ((await weaponService.deleteWeapon('invalid'))) throw new Error('deleteWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
+        assert.equal(error.message, 'Weapon deletion failed, no weapon found for the given ID');
       }
-    });
-
-    it('Should throw an error if the id is non-existant', async () => {
       try {
         if ((await weaponService.deleteWeapon(99999))) throw new Error('deleteWeapon should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Weapon deletion failed, no weapon found with ID: 99999');
+        assert.equal(error.message, 'Weapon deletion failed, no weapon found for the given ID');
       }
     });
 

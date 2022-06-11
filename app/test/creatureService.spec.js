@@ -22,7 +22,7 @@ let creatureTypeId = null;
 describe('Creature Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    creatureTypeId = (await generateCreatureType('dog', null, null, null, null)).dataValues.id;
+    creatureTypeId = (await generateCreatureType('dog')).id;
   });
 
   after(async () => {
@@ -71,46 +71,37 @@ describe('Creature Service', () => {
           creatureTypeId,
         }))) throw new Error('createCreature should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Creature with name dog already exists');
+        assert.equal(error.message, 'Creature creation failed, a creature with the given name already exists');
       }
     });
   });
 
   describe('getCreature', () => {
-    it('Should throw an error if an invalid id is passed', async () => {
-      try {
-        if ((await creatureService.getCreature('invalid'))) {
-          throw new Error('getCreature should have thrown an error');
-        }
-      } catch (error) {
-        assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
-      }
-    });
-
-    it('Should return null if a non-existant id is passed', async () => {
+    it('Should return null if an invalid id is passed', async () => {
+      assert.isNull((await creatureService.getCreature('invalid')));
       assert.isNull((await creatureService.getCreature(99999)));
     });
 
-    it('Should return the correct creature for the given id', async () => {
-      const result = await creatureService.getCreature(creature.dataValues.id);
+    it('Should return the correct creature for the given id, with its creatureType', async () => {
+      const result = await creatureService.getCreature(creature.id);
       assert.hasAnyKeys(result, 'dataValues');
-      assert.hasAllKeys(result.dataValues, ['id', 'creatureTypeId', 'name', 'maxHP', 'currentHP', 'currentLegendaryResistances', 'slotsFirst', 'slotsSecond', 'slotsThird', 'slotsFourth', 'slotsFifth', 'slotsSixth', 'slotsSeventh', 'slotsEigth', 'slotsNinth', 'createdAt', 'updatedAt']);
-      assert.equal(result.dataValues.id, creature.dataValues.id);
-      assert.equal(result.dataValues.name, creature.dataValues.name);
-      assert.equal(result.dataValues.maxHP, creature.dataValues.maxHP);
+      assert.hasAllKeys(result.dataValues, ['id', 'creatureTypeId', 'name', 'maxHP', 'currentHP', 'currentLegendaryResistances', 'slotsFirst', 'slotsSecond', 'slotsThird', 'slotsFourth', 'slotsFifth', 'slotsSixth', 'slotsSeventh', 'slotsEigth', 'slotsNinth', 'createdAt', 'updatedAt', 'creatureType']);
+      assert.equal(result.id, creature.id);
+      assert.equal(result.name, creature.name);
+      assert.equal(result.maxHP, creature.maxHP);
     });
   });
 
   describe('updateCreature', () => {
     it('Should update a creature if all valid fields are passed', async () => {
-      await creatureService.updateCreature(creature.dataValues.id, {
+      await creatureService.updateCreature(creature.id, {
         name: 'big dog',
         maxHP: 26,
       });
       // Check that the creature was updated
       await creature.reload();
-      assert.equal(creature.dataValues.name, 'big dog');
-      assert.equal(creature.dataValues.maxHP, 26);
+      assert.equal(creature.name, 'big dog');
+      assert.equal(creature.maxHP, 26);
     });
   });
 
@@ -121,22 +112,19 @@ describe('Creature Service', () => {
           throw new Error('createCreature should have thrown an error');
         }
       } catch (error) {
-        assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
+        assert.equal(error.message, 'Creature deletion failed, no creature found for the given ID');
       }
-    });
-
-    it('Should throw an error if the id is non-existant', async () => {
       try {
         if (await creatureService.deleteCreature(99999)) {
           throw new Error('createCreature should have thrown an error');
         }
       } catch (error) {
-        assert.equal(error.message, 'Creature deletion failed, no creature found with ID: 99999');
+        assert.equal(error.message, 'Creature deletion failed, no creature found for the given ID');
       }
     });
 
     it('Should delete the creature with the given id', async () => {
-      await creatureService.deleteCreature(creature.dataValues.id);
+      await creatureService.deleteCreature(creature.id);
       expectedCreatures -= 1;
       // Check that one creature was deleted
       assert.lengthOf((await Creature.findAll()), expectedCreatures);

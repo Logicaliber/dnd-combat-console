@@ -97,7 +97,7 @@ describe('Spell Service', () => {
           description: acidSplash.description,
         }))) throw new Error('createSpell should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, `Spell with name ${spell.dataValues.name} already exists`);
+        assert.equal(error.message, 'Spell creation failed, a spell with the given name already exists');
       }
     });
   });
@@ -155,7 +155,7 @@ describe('Spell Service', () => {
       try {
         if ((await spellService.deleteSpell('invalid'))) throw new Error('deleteSpell should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'invalid input syntax for type integer: "invalid"');
+        assert.equal(error.message, 'Spell deletion failed, no spell found for the given ID');
       }
     });
 
@@ -163,7 +163,7 @@ describe('Spell Service', () => {
       try {
         if ((await spellService.deleteSpell(99999))) throw new Error('deleteSpell should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Spell deletion failed, no spell found with ID: 99999');
+        assert.equal(error.message, 'Spell deletion failed, no spell found for the given ID');
       }
     });
 
