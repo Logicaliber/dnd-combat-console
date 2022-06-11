@@ -10,17 +10,21 @@ const { syncModels } = require('./helpers/modelSync');
 const {
   Weapon,
 } = require('../models');
+const { generateWeapon } = require('./helpers/modelGenerators');
 
 const relevantModels = [
   Weapon,
 ];
 
+let existingWeaponName = null;
 let expectedWeapons = 0;
 let weapon = null;
 
 describe('Weapon Service', () => {
   before(async () => {
     await syncModels(relevantModels);
+    existingWeaponName = (await generateWeapon()).name;
+    expectedWeapons += 1;
   });
 
   after(async () => {
@@ -106,6 +110,16 @@ describe('Weapon Service', () => {
         })) throw new Error('updateWeapon should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Weapon update failed, no weapon found for the given ID');
+      }
+    });
+
+    it('Should throw an error if the new name is not unique', async () => {
+      try {
+        if (await weaponService.updateWeapon(weapon.id, {
+          name: existingWeaponName,
+        })) throw new Error('updateWeapon should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Weapon update failed, a weapon with the given name already exists');
       }
     });
 

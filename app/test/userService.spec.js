@@ -4,9 +4,11 @@ const userService = require('../services/userService');
 const { syncModels } = require('./helpers/modelSync');
 
 const { User } = require('../models');
+const { generateUser } = require('./helpers/modelGenerators');
 
 const relevantModels = [User];
 
+let existingUserEmail = null;
 const validPassword = 'Valid$15Password';
 const validEmail = 'email@email.test';
 const secondValidEmail = 'second@email.test';
@@ -16,6 +18,8 @@ let user = null;
 describe('User Service', () => {
   before(async () => {
     await syncModels(relevantModels);
+    existingUserEmail = (await generateUser()).email;
+    expectedUsers += 1;
   });
 
   after(async () => {
@@ -66,7 +70,7 @@ describe('User Service', () => {
       assert(bcrypt.compareSync(validPassword, user.password));
     });
 
-    it('Should throw an error if a duplicate user name is used', async () => {
+    it('Should throw an error if a duplicate user email is used', async () => {
       try {
         if (await userService.createUser({
           email: validEmail,
@@ -108,6 +112,16 @@ describe('User Service', () => {
         }))) throw new Error('updateUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User update failed, no user found for the given ID');
+      }
+    });
+
+    it('Should throw an error if the new email is not unique', async () => {
+      try {
+        if (await userService.updateUser(user.id, {
+          email: existingUserEmail,
+        })) throw new Error('updateUser should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'User update failed, a user with the given email already exists');
       }
     });
 

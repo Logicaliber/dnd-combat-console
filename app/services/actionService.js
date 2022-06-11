@@ -72,14 +72,14 @@ module.exports = {
           || !(await Spell.count({ where: { id: spellId } })))) {
       throw new Error(`${CREATE_FAIL} ${NO_SPELL}`);
     }
-    // Create the action, then return it with its weapon or spell included
+    // Create the action, then return it with its weapon or spell
     return Action.create(actionObject)
       .then((action) => action.reload({ include: defaultActionIncludes }));
   },
 
   /**
    * @param {Integer} actionId
-   * @returns {Promise<Action>} the action
+   * @returns {Promise<Action>} the action with its weapon or spell
    */
   getAction: async (actionId) => {
     actionId = parseInt(actionId, 10);
@@ -90,7 +90,7 @@ module.exports = {
   /**
    * @param {Integer} actionId
    * @param {Object} updateFields
-   * @returns {Promise<Action>} the updated action, with its weapon or spell included
+   * @returns {Promise<Action>} the updated action, with its weapon or spell
    */
   updateAction: async (actionId, updateFields) => {
     actionId = parseInt(actionId, 10);
@@ -125,6 +125,7 @@ module.exports = {
         || !(await Spell.count({ where: { id: spellId } })))) {
       throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     }
+    // Update the action, returning it with its weapon or spell
     return action.set(updateFields).save()
       .then(() => action.reload({ include: defaultActionIncludes }));
   },

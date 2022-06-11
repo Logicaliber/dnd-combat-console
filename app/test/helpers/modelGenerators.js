@@ -1,4 +1,6 @@
+const bcrypt = require('bcryptjs');
 const {
+  User,
   Armor,
   Weapon,
   Spell,
@@ -10,6 +12,16 @@ const {
 const { acidSplash } = require('./fixtures');
 
 module.exports = {
+  generateUser: async (email = null, password = null) => {
+    if (!email) email = 'valid@email.test';
+    if (!password) password = 'newPass13chars';
+    password = await bcrypt.hash(password, 10);
+    const userExists = await User.findOne({ where: { email } });
+    if (userExists) return userExists;
+    return User.create({
+      email, password,
+    });
+  },
   generateArmor: async (name = null, type = null, baseAC = null, disadvantage = null) => {
     if (!name) name = 'leather';
     if (!type) type = 'light';

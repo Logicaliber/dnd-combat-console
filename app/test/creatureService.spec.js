@@ -3,6 +3,7 @@ const creatureService = require('../services/creatureService');
 const {
   generateWeapon,
   generateCreatureType,
+  generateCreature,
   generateActionPattern,
   generateAction,
 } = require('./helpers/modelGenerators');
@@ -28,6 +29,7 @@ const relevantModels = [
   Action,
 ];
 
+let existingCreatureName = null;
 let expectedCreatures = 0;
 let creature = null;
 let creatureTypeId = null;
@@ -35,6 +37,8 @@ let creatureTypeId = null;
 describe('Creature Service', () => {
   before(async () => {
     await syncModels(relevantModels);
+    existingCreatureName = (await generateCreature()).name;
+    expectedCreatures += 1;
     creatureTypeId = (await generateCreatureType('dog')).id;
     const weaponId = (await generateWeapon()).id;
     const actionPatternId = (await generateActionPattern(0, creatureTypeId)).id;
@@ -133,6 +137,37 @@ describe('Creature Service', () => {
   });
 
   describe('updateCreature', () => {
+    it('Should throw an error if an invalid id is passed', async () => {
+      try {
+        if (await creatureService.updateCreature('invalid', {
+          name: existingCreatureName,
+        })) {
+          throw new Error('createCreature should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'Creature update failed, no creature found for the given ID');
+      }
+      try {
+        if (await creatureService.updateCreature(99999, {
+          name: existingCreatureName,
+        })) {
+          throw new Error('createCreature should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'Creature update failed, no creature found for the given ID');
+      }
+    });
+
+    it('Should throw an error if the new name is not unique', async () => {
+      try {
+        if (await creatureService.updateCreature(creature.id, {
+          name: existingCreatureName,
+        })) throw new Error('updateCreature should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Creature update failed, a creature with the given name already exists');
+      }
+    });
+
     it('Should update a creature if all valid fields are passed', async () => {
       await creatureService.updateCreature(creature.id, {
         name: 'big dog',

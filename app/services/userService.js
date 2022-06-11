@@ -56,6 +56,12 @@ module.exports = {
     // Check that the indicated user exists
     const user = await User.findByPk(userId);
     if (!user) throw new Error(`${UPDATE_FAIL} ${NO_USER}`);
+    // If the email is being updated, check that it is still unique
+    if (updateFields.email !== undefined
+      && updateFields.email !== user.email
+      && await User.count({ where: { email: updateFields.email } })) {
+      throw new Error(`${UPDATE_FAIL} ${EMAIL_EXISTS}`);
+    }
     // Update the user
     return user.set(updateFields).save();
   },

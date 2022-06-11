@@ -52,6 +52,12 @@ module.exports = {
     // Check that the indicated weapon exists
     const weapon = await Weapon.findByPk(weaponId);
     if (!weapon) throw new Error(`${UPDATE_FAIL} ${NO_WEAPON}`);
+    // If the name is being updated, check that it is still unique
+    if (updateFields.name !== undefined
+      && updateFields.name !== weapon.name
+      && await Weapon.count({ where: { name: updateFields.name } })) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the weapon
     return weapon.set(updateFields).save();
   },

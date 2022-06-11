@@ -1,6 +1,9 @@
 const { assert } = require('chai');
 const armorService = require('../services/armorService');
-const { generateCreatureType } = require('./helpers/modelGenerators');
+const {
+  generateArmor,
+  generateCreatureType,
+} = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
@@ -13,6 +16,7 @@ const relevantModels = [
   CreatureType,
 ];
 
+let existingArmorName = null;
 let expectedArmors = 0;
 let armor = null;
 let creatureType = null;
@@ -20,6 +24,8 @@ let creatureType = null;
 describe('Armor Service', () => {
   before(async () => {
     await syncModels(relevantModels);
+    existingArmorName = (await generateArmor()).name;
+    expectedArmors += 1;
   });
 
   after(async () => {
@@ -119,6 +125,16 @@ describe('Armor Service', () => {
         })) throw new Error('updateArmor should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation min on baseAC failed');
+      }
+    });
+
+    it('Should throw an error if the new name is not unique', async () => {
+      try {
+        if (await armorService.updateArmor(armor.id, {
+          name: existingArmorName,
+        })) throw new Error('updateArmor should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Armor update failed, an armor with the given name already exists');
       }
     });
 

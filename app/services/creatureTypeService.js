@@ -20,9 +20,11 @@ const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
 const defaultCreatureTypeIncludes = [{
   model: ActionPattern,
   as: 'actionPatterns',
+  order: [['priority', 'ASC']],
   include: [{
     model: Action,
     as: 'actions',
+    order: [['index', 'ASC']],
     include: [{
       model: Weapon,
       as: 'weapon',
@@ -92,6 +94,12 @@ module.exports = {
     // Check that the indicated creatureType exists
     const creatureType = await CreatureType.findByPk(creatureTypeId);
     if (!creatureType) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE_TYPE}`);
+    // If the name is being updated, check that it is still unique
+    if (updateFields.name !== undefined
+      && updateFields.name !== creatureType.name
+      && await CreatureType.count({ where: { name: updateFields.name } })) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the creatureType
     return creatureType.set(updateFields).save()
       .then(() => creatureType.reload({ include: defaultCreatureTypeIncludes }));

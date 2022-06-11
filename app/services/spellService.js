@@ -52,6 +52,12 @@ module.exports = {
     // Check that the indicated spell exists
     const spell = await Spell.findByPk(spellId);
     if (!spell) throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
+    // If the name is being updated, check that it is still unique
+    if (updateFields.name !== undefined
+      && updateFields.name !== spell.name
+      && await Spell.count({ where: { name: updateFields.name } })) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the spell
     return spell.set(updateFields).save();
   },

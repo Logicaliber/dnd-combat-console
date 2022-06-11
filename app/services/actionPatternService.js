@@ -29,7 +29,7 @@ const defaultActionPatternIncludes = [{
 module.exports = {
   /**
    * @param {Object} actionPatternObject
-   * @returns {Promise<ActionPattern>} the new actionPattern with actions, weapons, and spells
+   * @returns {Promise<ActionPattern>} the new actionPattern
    */
   createActionPattern: async (actionPatternObject) => {
     // Filter out disallowed params

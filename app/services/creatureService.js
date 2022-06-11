@@ -22,9 +22,11 @@ const defaultCreatureIncludes = [{
   include: [{
     model: ActionPattern,
     as: 'actionPatterns',
+    order: [['priority', 'ASC']],
     include: [{
       model: Action,
       as: 'actions',
+      order: [['index', 'ASC']],
       include: [{
         model: Weapon,
         as: 'weapon',
@@ -92,6 +94,12 @@ module.exports = {
     // Check that the indicated creature exists
     const creature = await Creature.findByPk(creatureId);
     if (!creature) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE}`);
+    // If the name is being updated, check that it is still unique
+    if (updateFields.name !== undefined
+      && updateFields.name !== creature.name
+      && await Creature.count({ where: { name: updateFields.name } })) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
     return creature.set(updateFields).save()

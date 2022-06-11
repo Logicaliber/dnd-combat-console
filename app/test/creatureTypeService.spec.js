@@ -2,9 +2,10 @@ const { assert } = require('chai');
 const creatureTypeService = require('../services/creatureTypeService');
 const {
   generateArmor,
+  generateWeapon,
+  generateCreatureType,
   generateCreature,
   generateActionPattern,
-  generateWeapon,
   generateAction,
 } = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
@@ -29,6 +30,7 @@ const relevantModels = [
   Action,
 ];
 
+let existingCreatureTypeName = null;
 let armorId;
 let creatureType = null;
 let expectedActionPatterns = 0;
@@ -40,6 +42,8 @@ describe('CreatureType Service', () => {
   before(async () => {
     await syncModels(relevantModels);
     armorId = (await generateArmor('fur', 'natural', 9)).id;
+    existingCreatureTypeName = (await generateCreatureType('slug')).name;
+    expectedCreatureTypes += 1;
   });
 
   after(async () => {
@@ -135,7 +139,7 @@ describe('CreatureType Service', () => {
     });
 
     it('Should return the correct creatureType for the given id, with its armor, actionPatterns, actions, weapons, and spells', async () => {
-      const result = await creatureTypeService.getCreatureType(creatureType.dataValues.id);
+      const result = await creatureTypeService.getCreatureType(creatureType.id);
       assert.hasAnyKeys(result, 'dataValues');
       const values = result.dataValues;
       assert.hasAllKeys(values, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects', 'createdAt', 'updatedAt', 'actionPatterns', 'armor']);
@@ -168,6 +172,37 @@ describe('CreatureType Service', () => {
   });
 
   describe('updateCreatureType', () => {
+    it('Should throw an error if an invalid id is passed', async () => {
+      try {
+        if (await creatureTypeService.updateCreatureType('invalid', {
+          name: existingCreatureTypeName,
+        })) {
+          throw new Error('createCreature should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType update failed, no creatureType found for the given ID');
+      }
+      try {
+        if (await creatureTypeService.updateCreatureType(99999, {
+          name: existingCreatureTypeName,
+        })) {
+          throw new Error('createCreature should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType update failed, no creatureType found for the given ID');
+      }
+    });
+
+    it('Should throw an error if the new name is not unique', async () => {
+      try {
+        if (await creatureTypeService.updateCreatureType(creatureType.id, {
+          name: existingCreatureTypeName,
+        })) throw new Error('updateCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType update failed, a creatureType with the given name already exists');
+      }
+    });
+
     it('Should update a creatureType if all valid fields are passed', async () => {
       await creatureTypeService.updateCreatureType(creatureType.id, {
         name: 'big dog',

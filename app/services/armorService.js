@@ -13,7 +13,7 @@ const NO_ARMOR = 'no armor found for the given ID';
 module.exports = {
   /**
    * @param {Object} armorObject
-   * @returns {Promise<Armor>} new armor
+   * @returns {Promise<Armor>} the new armor
    */
   createArmor: async (armorObject) => {
     // Remove disallowed params
@@ -53,6 +53,12 @@ module.exports = {
     // Check that the indicated armor exists
     const armor = await Armor.findByPk(armorId);
     if (!armor) throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
+    // If the name is being updated, check that it is still unique
+    if (updateFields.name !== undefined
+      && updateFields.name !== armor.name
+      && await Armor.count({ where: { name: updateFields.name } })) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the armor
     return armor.set(updateFields).save();
   },

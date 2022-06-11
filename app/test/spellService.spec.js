@@ -6,17 +6,21 @@ const { syncModels } = require('./helpers/modelSync');
 const {
   Spell,
 } = require('../models');
+const { generateSpell } = require('./helpers/modelGenerators');
 
 const relevantModels = [
   Spell,
 ];
 
+let existingSpellName = null;
 let expectedSpells = 0;
 let spell = null;
 
 describe('Spell Service', () => {
   before(async () => {
     await syncModels(relevantModels);
+    existingSpellName = (await generateSpell('Magic Missile')).name;
+    expectedSpells += 1;
   });
 
   after(async () => {
@@ -134,6 +138,16 @@ describe('Spell Service', () => {
         })) throw new Error('updateSpell should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Spell update failed, no spell found for the given ID');
+      }
+    });
+
+    it('Should throw an error if the new name is not unique', async () => {
+      try {
+        if (await spellService.updateSpell(spell.id, {
+          name: existingSpellName,
+        })) throw new Error('updateSpell should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Spell update failed, a spell with the given name already exists');
       }
     });
 
