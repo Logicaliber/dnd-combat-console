@@ -1,16 +1,28 @@
+const bcrypt = require('bcryptjs');
 const {
+  User,
   Armor,
   Weapon,
   Spell,
+  Action,
+  ActionPattern,
   Creature,
   CreatureType,
-  CreatureTypeWeapon,
-  CreatureTypeSpell,
 } = require('../../models');
 const { acidSplash } = require('./fixtures');
 
 module.exports = {
-  generateDummyArmor: async (name = null, type = null, baseAC = null, disadvantage = null) => {
+  generateUser: async (email = null, password = null) => {
+    if (!email) email = 'valid@email.test';
+    if (!password) password = 'newPass13chars';
+    password = await bcrypt.hash(password, 10);
+    const userExists = await User.findOne({ where: { email } });
+    if (userExists) return userExists;
+    return User.create({
+      email, password,
+    });
+  },
+  generateArmor: async (name = null, type = null, baseAC = null, disadvantage = null) => {
     if (!name) name = 'leather';
     if (!type) type = 'light';
     if (!baseAC) baseAC = 11;
@@ -21,7 +33,7 @@ module.exports = {
       name, type, baseAC, disadvantage,
     });
   },
-  generateDummyWeapon: async (
+  generateWeapon: async (
     name = null,
     damages = null,
     properties = null,
@@ -48,7 +60,7 @@ module.exports = {
       saveStillHalf,
     });
   },
-  generateDummySpell: async (
+  generateSpell: async (
     name = null,
     level = null,
     school = null,
@@ -88,15 +100,52 @@ module.exports = {
       damages,
     });
   },
-  generateDummyCreatureType: async (
+  generateAction: async (
+    index = null,
+    weaponId = null,
+    times = null,
+    actionPatternId = null,
+  ) => {
+    if (index === null) index = 0;
+    if (!weaponId) weaponId = (await module.exports.generateWeapon()).id;
+    if (!times) times = 1;
+    const actionExists = await Action.findOne({
+      where: {
+        index,
+        weaponId,
+        times,
+        actionPatternId,
+      },
+    });
+    if (actionExists) return actionExists;
+    return Action.create({
+      index,
+      weaponId,
+      times,
+      actionPatternId,
+    });
+  },
+  generateActionPattern: async (priority = null, creatureTypeId = null) => {
+    if (priority === null) priority = 0;
+    if (!creatureTypeId) creatureTypeId = (await module.exports.generateCreatureType()).id;
+    const actionPatternExists = await ActionPattern.findOne({
+      where: {
+        priority,
+        creatureTypeId,
+      },
+    });
+    if (actionPatternExists) return actionPatternExists;
+    return ActionPattern.create({
+      priority,
+      creatureTypeId,
+    });
+  },
+  generateCreatureType: async (
     name = null,
     hitDie = null,
     numDice = null,
     maxHP = null,
     armorId = null,
-    actionPatterns = null,
-    weaponId = 0,
-    spellId = 0,
   ) => {
     if (!name) name = 'dog';
     const creatureTypeExists = await CreatureType.findOne({ where: { name } });
@@ -104,42 +153,22 @@ module.exports = {
     if (!hitDie) hitDie = 6;
     if (!numDice) numDice = 1;
     if (!maxHP) maxHP = 4;
-    if (!armorId) armorId = (await module.exports.generateDummyArmor()).dataValues.id;
-    // If neither weaponId or spellId are passed, just use a weapon
-    if (weaponId === null) weaponId = (await module.exports.generateDummyWeapon()).dataValues.id;
-    else if (spellId === null) spellId = (await module.exports.generateDummySpell()).dataValues.id;
-    if (!actionPatterns) {
-      actionPatterns = `[[{"other":"","restrictions":"","spellId":${spellId},"times":1,"weaponId":${weaponId}}]]`;
-    }
     const creatureType = await CreatureType.create({
       name,
       hitDie,
       numDice,
       maxHP,
       armorId,
-      actionPatterns,
     });
-    if (weaponId) {
-      await CreatureTypeWeapon.create({
-        creatureTypeId: creatureType.dataValues.id,
-        weaponId,
-      });
-    }
-    if (spellId) {
-      await CreatureTypeSpell.create({
-        creatureTypeId: creatureType.dataValues.id,
-        spellId,
-      });
-    }
     return creatureType;
   },
-  generateDummyCreature: async (name = null, creatureTypeId = null, maxHP = null) => {
+  generateCreature: async (name = null, creatureTypeId = null, maxHP = null) => {
     let creatureTypeName;
     let creatureTypeMaxHP;
     if (!creatureTypeId) {
       ({
         id: creatureTypeId, name: creatureTypeName, maxHP: creatureTypeMaxHP,
-      } = (await module.exports.generateDummyCreatureType()));
+      } = (await module.exports.generateCreatureType()));
     }
     if (!name) name = `${creatureTypeName} 1`;
     const creatureExists = await Creature.findOne({
@@ -155,7 +184,7 @@ module.exports = {
       name,
       creatureTypeId,
       maxHP,
-    })).dataValues.id;
+    })).id;
     return Creature.findByPk(creatureId, {
       include: [{
         model: CreatureType,

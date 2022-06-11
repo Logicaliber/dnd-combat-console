@@ -11,7 +11,6 @@ const {
   VALID_HIT_DIE_SIZES,
   MIN_INFORMATION,
   MAX_INFORMATION,
-  MAX_DESCRIPTION,
 } = require('../variables');
 
 module.exports = (sequelize, DataTypes) => {
@@ -25,8 +24,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       CreatureType.hasMany(models.Creature, { foreignKey: 'creatureTypeId', as: 'creatures' });
       CreatureType.belongsTo(models.Armor, { foreignKey: 'armorId', as: 'armor' });
-      CreatureType.belongsToMany(models.Spell, { through: models.CreatureTypeSpell, foreignKey: 'creatureTypeId', as: 'spells' });
-      CreatureType.belongsToMany(models.Weapon, { through: models.CreatureTypeWeapon, foreignKey: 'creatureTypeId', as: 'weapons' });
+      CreatureType.hasMany(models.ActionPattern, { foreignKey: 'creatureTypeId', as: 'actionPatterns' });
     }
 
     static optionsSchema = {
@@ -66,7 +64,6 @@ module.exports = (sequelize, DataTypes) => {
       spellcasting: sequelize.modelOptsObject(false, true, true),
       spellSlots: sequelize.modelOptsObject(false, true, true),
       innateSpells: sequelize.modelOptsObject(false, true, true),
-      actionPatterns: sequelize.modelOptsObject(true, true, true),
       legendaryActions: sequelize.modelOptsObject(false, true, true),
       reactions: sequelize.modelOptsObject(false, true, true),
       lairActions: sequelize.modelOptsObject(false, true, true),
@@ -424,68 +421,6 @@ module.exports = (sequelize, DataTypes) => {
               || typeof innateSpell.restrictions !== 'string'
               || innateSpell.restrictions.length > MAX_INFORMATION
             ) throw new Error('innate spell object must contain a spellId, a perDay, and a restrictions');
-          });
-        },
-      },
-    },
-    actionPatterns: {
-      type: DataTypes.JSON,
-      validate: {
-        /**
-         * actionPatterns: [
-         *   "actionPattern" [ "action" {
-         *     other: string,        // If not '', an action other than a weapon or spell attack
-         *     restrictions: string, // Any restrictions the action has
-         *     spellId: [0-inf],     // id of a spell
-         *     times: [1-9],         // number of times to attack with the weapon
-         *     weaponId: [0-inf],    // id of a weapon
-         *                           // Disallow non-zero spellId and non-zero weaponId
-         *                           // If spellId is non-zero, times should be 1.
-         *   }],
-         * ]
-         */
-        isArrayOfActionPatterns: (array) => {
-          if (typeof array === 'string') {
-            array = JSON.parse(array);
-          }
-          if (!Array.isArray(array)) throw new Error('action patterns array must be an array');
-          if (!array.length) throw new Error('action patterns array should not be length 0');
-          if (array.length > MAX_ARRAY_LENGTH) throw new Error('maximum array length exceeded');
-          array.forEach((actionPattern) => {
-            if (typeof actionPattern !== 'object' || !Array.isArray(actionPattern)) throw new Error('action patterns array must contain arrays');
-            actionPattern.forEach((object) => {
-              if (typeof object !== 'object') throw new Error('action pattern must be an array of action objects');
-              const objectKeys = Object.keys(object);
-              if (
-                objectKeys.length !== 5
-                || !objectKeys.includes('other')
-                || !objectKeys.includes('restrictions')
-                || !objectKeys.includes('spellId')
-                || !objectKeys.includes('times')
-                || !objectKeys.includes('weaponId')
-                || typeof object.other !== 'string'
-                || typeof object.restrictions !== 'string'
-                || typeof object.spellId !== 'number'
-                || typeof object.times !== 'number'
-                || typeof object.weaponId !== 'number'
-              ) {
-                throw new Error('action object must have keys other, restrictions, spellId, times, and weaponId');
-              }
-              if (object.other.length > MAX_DESCRIPTION) throw new Error('max description length exceeded');
-              if (object.restrictions.length > MAX_INFORMATION) throw new Error('max information length exceeded');
-              if (object.other.length === 0 && object.spellId === 0 && object.weaponId === 0) {
-                throw new Error('action must be one of other, spell, or weapon attack');
-              }
-              if (object.spellId !== 0 && object.weaponId !== 0) {
-                throw new Error('action cannot be both a spell and a weapon attack');
-              }
-              if (object.other.length > 0 && (object.spellId !== 0 || object.weaponId !== 0)) {
-                throw new Error('action cannot be both other and a spell or weapon attack');
-              }
-              if (object.spellId !== 0 && object.times !== 1) {
-                throw new Error('spell actions cannot be used multiple times');
-              }
-            });
           });
         },
       },

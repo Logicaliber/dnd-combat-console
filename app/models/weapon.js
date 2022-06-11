@@ -11,7 +11,7 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Weapon.belongsToMany(models.CreatureType, { through: models.CreatureTypeWeapon, foreignKey: 'weaponId', as: 'creatureTypes' });
+      Weapon.hasMany(models.Action, { foreignKey: 'weaponId', as: 'actions' });
     }
 
     static optionsSchema = {

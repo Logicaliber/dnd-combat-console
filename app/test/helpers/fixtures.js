@@ -32,7 +32,6 @@ module.exports = {
         },
       }]]),
   },
-
   waterSplash: {
     description: 'You hurl a bubble of water. Choose one creature you can see within range, or choose two creatures you can see within range that are within 5 feet of each other. A target must succeed on a Dexterity saving throw or become wet.',
     damages: JSON.stringify([

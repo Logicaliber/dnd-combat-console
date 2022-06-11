@@ -1,10 +1,13 @@
-const { Op } = require('sequelize');
 const {
   Spell,
-  CreatureType,
-  CreatureTypeSpell,
 } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
+
+const CREATE_FAIL = 'Spell creation failed,';
+const UPDATE_FAIL = 'Spell update failed,';
+const DELETE_FAIL = 'Spell deletion failed,';
+const NAME_EXISTS = 'a spell with the given name already exists';
+const NO_SPELL = 'no spell found for the given ID';
 
 module.exports = {
   /**
@@ -16,10 +19,10 @@ module.exports = {
     spellObject = stripInvalidParams(spellObject, Spell.allowedParams);
     // Check for missing required params
     const missingParams = missingRequiredParams(spellObject, Spell.requiredParams);
-    if (missingParams.length) throw new Error(`Spell creation failed, fields missing: ${missingParams.join()}`);
+    if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the spell name is unique
-    if ((await Spell.findAll({ where: { name: spellObject.name } })).length) {
-      throw new Error(`Spell with name ${spellObject.name} already exists`);
+    if (await Spell.count({ where: { name: spellObject.name } })) {
+      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the spell
     return Spell.create(spellObject);
@@ -30,6 +33,8 @@ module.exports = {
    * @returns {Promise<Spell>} the spell
    */
   getSpell: async (spellId) => {
+    spellId = parseInt(spellId, 10);
+    if (Number.isNaN(spellId)) return null;
     return Spell.findByPk(spellId);
   },
 
@@ -39,36 +44,34 @@ module.exports = {
    * @returns {Promise<Spell>} the updated spell
    */
   updateSpell: async (spellId, updateFields) => {
+    spellId = parseInt(spellId, 10);
+    if (Number.isNaN(spellId)) throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     // Remove non-updateable params
     updateFields = stripInvalidParams(updateFields, Spell.updateableParams);
-    if (!Object.keys(updateFields).length) throw new Error('Spell update failed, no valid update fields found');
+    if (!Object.keys(updateFields).length) throw new Error(`${UPDATE_FAIL} no valid update fields found`);
     // Check that the indicated spell exists
-    if (!(await Spell.findByPk(spellId))) throw new Error(`Spell update failed, no spell found with ID: ${spellId}`);
+    const spell = await Spell.findByPk(spellId);
+    if (!spell) throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
+    // If the name is being updated, check that it is still unique
+    if (updateFields.name !== undefined
+      && updateFields.name !== spell.name
+      && await Spell.count({ where: { name: updateFields.name } })) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the spell
-    return Spell.update(updateFields, { where: { id: spellId } });
+    return spell.set(updateFields).save();
   },
 
   /**
    * @param {Integer} spellId
-   * @returns {Promise<1|0>} if the spell was deleted
+   * @returns {Promise<1|0>} 1 if the spell was deleted
    */
   deleteSpell: async (spellId) => {
+    spellId = parseInt(spellId, 10);
+    if (Number.isNaN(spellId)) throw new Error(`${DELETE_FAIL} ${NO_SPELL}`);
     // Check that the indicated spell exists
-    const spell = await Spell.findByPk(spellId, {
-      include: [{
-        model: CreatureType,
-        as: 'creatureTypes',
-        attributes: ['id'],
-      }],
-    });
-    if (!spell) throw new Error(`Spell deletion failed, no spell found with ID: ${spellId}`);
-    // Delete all relevant CreatureType - Spell associations
-    await CreatureTypeSpell.destroy({
-      where: {
-        creatureTypeId: { [Op.in]: spell.dataValues.creatureTypes.map((ct) => ct.dataValues.id) },
-        spellId: spell.dataValues.id,
-      },
-    });
+    const spell = await Spell.findByPk(spellId);
+    if (!spell) throw new Error(`${DELETE_FAIL} ${NO_SPELL}`);
     // Delete the spell
     return spell.destroy();
   },

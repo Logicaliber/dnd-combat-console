@@ -1,6 +1,6 @@
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('CreatureTypeWeapons', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable('ActionPatterns', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -11,8 +11,7 @@ module.exports = {
         allowNull: false,
         type: Sequelize.INTEGER,
       },
-      weaponId: {
-        allowNull: false,
+      priority: {
         type: Sequelize.INTEGER,
       },
       createdAt: {
@@ -25,7 +24,7 @@ module.exports = {
       },
     });
   },
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('CreatureTypeWeapons');
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable('ActionPatterns');
   },
 };

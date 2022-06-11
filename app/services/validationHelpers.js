@@ -98,6 +98,7 @@ module.exports = {
   },
 
   /**
+   * isDamageObject
    * @param {Object|String} damage {
    *    num: [0,i],                 // if 0, damage is 0.
    *    die: [1,2,...,12],          // Size of dice to roll
