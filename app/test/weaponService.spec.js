@@ -5,12 +5,12 @@ const {
 } = require('../seeders/helpers/seederHelpers');
 const weaponService = require('../services/weaponService');
 const { MIN_INFORMATION, MAX_INFORMATION } = require('../variables');
+const { generateWeapon } = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
   Weapon,
 } = require('../models');
-const { generateWeapon } = require('./helpers/modelGenerators');
 
 const relevantModels = [
   Weapon,

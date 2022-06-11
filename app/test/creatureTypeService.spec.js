@@ -193,6 +193,23 @@ describe('CreatureType Service', () => {
       }
     });
 
+    it('Should throw an error if an invalid armorId is passed', async () => {
+      try {
+        if (await creatureTypeService.updateCreatureType(creatureType.id, {
+          armorId: 'invalid',
+        })) throw new Error('updateCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType update failed, no armor found for the given ID');
+      }
+      try {
+        if (await creatureTypeService.updateCreatureType(creatureType.id, {
+          armorId: 9999,
+        })) throw new Error('updateCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType update failed, no armor found for the given ID');
+      }
+    });
+
     it('Should throw an error if the new name is not unique', async () => {
       try {
         if (await creatureTypeService.updateCreatureType(creatureType.id, {

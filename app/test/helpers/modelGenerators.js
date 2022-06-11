@@ -107,7 +107,7 @@ module.exports = {
     actionPatternId = null,
   ) => {
     if (index === null) index = 0;
-    if (!weaponId) weaponId = (await module.exports.generateWeapon()).dataValues.id;
+    if (!weaponId) weaponId = (await module.exports.generateWeapon()).id;
     if (!times) times = 1;
     const actionExists = await Action.findOne({
       where: {
@@ -184,7 +184,7 @@ module.exports = {
       name,
       creatureTypeId,
       maxHP,
-    })).dataValues.id;
+    })).id;
     return Creature.findByPk(creatureId, {
       include: [{
         model: CreatureType,

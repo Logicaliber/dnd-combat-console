@@ -1,10 +1,10 @@
 const { assert } = require('chai');
 const bcrypt = require('bcryptjs');
 const userService = require('../services/userService');
+const { generateUser } = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const { User } = require('../models');
-const { generateUser } = require('./helpers/modelGenerators');
 
 const relevantModels = [User];
 
@@ -100,16 +100,16 @@ describe('User Service', () => {
   describe('updateUser', () => {
     it('Should throw an error if an invalid userId is passed', async () => {
       try {
-        if ((await userService.updateUser('invalid', {
+        if (await userService.updateUser('invalid', {
           email: secondValidEmail,
-        }))) throw new Error('updateUser should have thrown an error');
+        })) throw new Error('updateUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User update failed, no user found for the given ID');
       }
       try {
-        if ((await userService.updateUser(99999, {
+        if (await userService.updateUser(99999, {
           email: secondValidEmail,
-        }))) throw new Error('updateUser should have thrown an error');
+        })) throw new Error('updateUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User update failed, no user found for the given ID');
       }
@@ -127,9 +127,9 @@ describe('User Service', () => {
 
     it('Should throw an error if an invalid email is passed', async () => {
       try {
-        if ((await userService.updateUser(user.dataValues.id, {
+        if (await userService.updateUser(user.id, {
           email: 'invalid email',
-        }))) throw new Error('updateUser should have thrown an error');
+        })) throw new Error('updateUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Validation error: Validation is on email failed');
       }
@@ -137,42 +137,42 @@ describe('User Service', () => {
 
     it('Should not allow updating the password by this method', async () => {
       try {
-        if ((await userService.updateUser(user.dataValues.id, {
+        if (await userService.updateUser(user.id, {
           password: validPassword,
-        }))) throw new Error('updateUser should have thrown an error');
+        })) throw new Error('updateUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User update failed, no valid update fields found');
       }
     });
 
     it('Should update a user if all valid fields are passed', async () => {
-      await userService.updateUser(user.dataValues.id, {
+      await userService.updateUser(user.id, {
         email: secondValidEmail,
       });
       // Check that the number of users hasn't changed
       assert.lengthOf((await User.findAll()), expectedUsers);
       // Check that the user was updated
       await user.reload();
-      assert.equal(user.dataValues.email, secondValidEmail);
+      assert.equal(user.email, secondValidEmail);
     });
   });
 
   describe('deleteUser', () => {
     it('Should throw an error if an invalid id is passed', async () => {
       try {
-        if ((await userService.deleteUser('invalid'))) throw new Error('deleteUser should have thrown an error');
+        if (await userService.deleteUser('invalid')) throw new Error('deleteUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User deletion failed, no user found for the given ID');
       }
       try {
-        if ((await userService.deleteUser(99999))) throw new Error('deleteUser should have thrown an error');
+        if (await userService.deleteUser(99999)) throw new Error('deleteUser should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'User deletion failed, no user found for the given ID');
       }
     });
 
     it('Should delete the user with the given id', async () => {
-      await userService.deleteUser(user.dataValues.id);
+      await userService.deleteUser(user.id);
       expectedUsers -= 1;
       // Check that one user was deleted
       assert.lengthOf((await User.findAll()), expectedUsers);

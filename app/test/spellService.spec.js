@@ -1,12 +1,12 @@
 const { assert } = require('chai');
 const spellService = require('../services/spellService');
 const { acidSplash, waterSplash } = require('./helpers/fixtures');
+const { generateSpell } = require('./helpers/modelGenerators');
 const { syncModels } = require('./helpers/modelSync');
 
 const {
   Spell,
 } = require('../models');
-const { generateSpell } = require('./helpers/modelGenerators');
 
 const relevantModels = [
   Spell,

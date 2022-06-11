@@ -40,15 +40,8 @@ const defaultCreatureTypeIncludes = [{
 
 module.exports = {
   /**
-   * Given the parameters for a CreatureType object, creates a new CreatureType after checking
-   * for the following conditions:
-   *   1. No required parameters are missing
-   *   2. The provided name is unique
-   *   3. The indicated armorId points to an existing Armor
-   * All other input validations happen during the `create` operation, see `models/creaturetype.js`.
-   *
    * @param {Object} creatureTypeObject
-   * @returns {Promise<CreatureType>} new creatureType, with its armor included
+   * @returns {Promise<CreatureType>} the new creatureType, with its armor included
    */
   createCreatureType: async (creatureTypeObject) => {
     // Filter out disallowed params
@@ -94,10 +87,17 @@ module.exports = {
     // Check that the indicated creatureType exists
     const creatureType = await CreatureType.findByPk(creatureTypeId);
     if (!creatureType) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE_TYPE}`);
+    // If the armorId is being updated, check that the new indicated armor exists
+    const { armorId, name } = updateFields;
+    if (armorId !== undefined && armorId !== null
+      && (Number.isNaN(parseInt(armorId, 10))
+        || !(await Armor.count({ where: { id: armorId } })))) {
+      throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
+    }
     // If the name is being updated, check that it is still unique
-    if (updateFields.name !== undefined
-      && updateFields.name !== creatureType.name
-      && await CreatureType.count({ where: { name: updateFields.name } })) {
+    if (name !== undefined
+      && name !== creatureType.name
+      && await CreatureType.count({ where: { name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creatureType
@@ -120,17 +120,10 @@ module.exports = {
     // Delete all associated Creatures
     await Creature.destroy({ where: { creatureTypeId } });
     // Delete all associated Actions
-    await Action.destroy({
-      where: {
-        actionPatternId: {
-          [Op.in]: creatureType.actionPatterns.map((actionPattern) => actionPattern.id),
-        },
-      },
-    });
+    const actionPatternIds = creatureType.actionPatterns.map((ap) => ap.id);
+    await Action.destroy({ where: { actionPatternId: { [Op.in]: actionPatternIds } } });
     // Delete all associated ActionPatterns
-    await ActionPattern.destroy({
-      where: { creatureTypeId },
-    });
+    await ActionPattern.destroy({ where: { creatureTypeId } });
     // Delete the CreatureType
     return creatureType.destroy();
   },

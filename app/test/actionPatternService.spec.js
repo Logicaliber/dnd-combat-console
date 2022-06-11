@@ -12,16 +12,16 @@ const { syncModels } = require('./helpers/modelSync');
 
 const {
   Weapon,
-  Action,
   CreatureType,
   ActionPattern,
+  Action,
 } = require('../models');
 
 const relevantModels = [
   Weapon,
-  Action,
   CreatureType,
   ActionPattern,
+  Action,
 ];
 
 let expectedActions = 0;
@@ -64,9 +64,6 @@ describe('ActionPattern Service', () => {
       } catch (error) {
         assert.equal(error.message, 'ActionPattern creation failed, no creatureType found for the given ID');
       }
-    });
-
-    it('Should throw an error if a non-existant creatureTypeId is passed', async () => {
       try {
         if (await actionPatternService.createActionPattern({
           priority: 0,
@@ -189,9 +186,6 @@ describe('ActionPattern Service', () => {
       } catch (error) {
         assert.equal(error.message, 'ActionPattern deletion failed, no actionPattern found for the given ID');
       }
-    });
-
-    it('Should throw an error if the id is non-existant', async () => {
       try {
         if (await actionPatternService.deleteActionPattern(99999)) {
           throw new Error('deleteActionPattern should have thrown an error');

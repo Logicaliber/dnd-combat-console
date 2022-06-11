@@ -103,9 +103,7 @@ module.exports = {
     // Update the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
     return creature.set(updateFields).save()
-      .then(() => creature.reload({
-        include: defaultCreatureIncludes,
-      }));
+      .then(() => creature.reload({ include: defaultCreatureIncludes }));
   },
 
   /**

@@ -116,7 +116,7 @@ describe('Action Service', () => {
       }
     });
 
-    it('Should throw an error if a non-existant weaponId is passed', async () => {
+    it('Should throw an error if an invalid weaponId is passed', async () => {
       try {
         if (await actionService.createAction({
           actionPatternId,
@@ -128,7 +128,7 @@ describe('Action Service', () => {
       }
     });
 
-    it('Should throw an error if a non-existant spellId is passed', async () => {
+    it('Should throw an error if an invalid spellId is passed', async () => {
       try {
         if (await actionService.createAction({
           actionPatternId,
@@ -149,7 +149,7 @@ describe('Action Service', () => {
       });
       expectedActions += 1;
       // Check that one action was created
-      assert.lengthOf((await Action.findAll()), expectedActions);
+      assert.lengthOf(await Action.findAll(), expectedActions);
     });
   });
 
@@ -236,6 +236,50 @@ describe('Action Service', () => {
         })) throw new Error('updateAction should have thrown an error');
       } catch (error) {
         assert.equal(error.message, 'Action update failed, action must be one of weapon, spell, or other');
+      }
+    });
+
+    it('Should throw an error if an invalid weaponId is passed', async () => {
+      try {
+        if (await actionService.updateAction(action.id, {
+          actionPatternId,
+          index: 0,
+          weaponId: 'invalid',
+        })) throw new Error('updateAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action update failed, action must be one of weapon, spell, or other');
+      }
+      try {
+        if (await actionService.updateAction(action.id, {
+          actionPatternId,
+          index: 0,
+          weaponId: 99999,
+        })) throw new Error('updateAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action update failed, no weapon found for the given ID');
+      }
+    });
+
+    it('Should throw an error if an invalid spellId is passed', async () => {
+      try {
+        if (await actionService.updateAction(action.id, {
+          actionPatternId,
+          index: 0,
+          weaponId: null,
+          spellId: 'invalid',
+        })) throw new Error('updateAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action update failed, action must be one of weapon, spell, or other');
+      }
+      try {
+        if (await actionService.updateAction(action.id, {
+          actionPatternId,
+          index: 0,
+          weaponId: null,
+          spellId: 99999,
+        })) throw new Error('updateAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action update failed, no spell found for the given ID');
       }
     });
 
