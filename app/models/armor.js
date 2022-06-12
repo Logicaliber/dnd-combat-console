@@ -53,6 +53,11 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
   }, {
+    scopes: {
+      nameOnly: {
+        attributes: { include: ['name'] },
+      },
+    },
     sequelize,
     modelName: 'Armor',
   });

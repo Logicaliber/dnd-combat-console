@@ -24,11 +24,11 @@ module.exports = {
     const missingParams = missingRequiredParams(creatureObject, Creature.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the indicated creatureType exists
-    if (!(await CreatureType.count({ where: { id: creatureObject.creatureTypeId } }))) {
+    if (!(await CreatureType.scope('idOnly').count({ where: { id: creatureObject.creatureTypeId } }))) {
       throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
     }
     // Check that the provided creature name is unique
-    if (await Creature.count({ where: { name: creatureObject.name } })) {
+    if (await Creature.scope('nameOnly').count({ where: { name: creatureObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the creature, returning it with its creatureType,
@@ -66,7 +66,7 @@ module.exports = {
     // If the name is being updated, check that it is still unique
     if (updateFields.name !== undefined
       && updateFields.name !== creature.name
-      && await Creature.count({ where: { name: updateFields.name } })) {
+      && await Creature.scope('nameOnly').count({ where: { name: updateFields.name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creature, returning it with its creatureType,
@@ -82,7 +82,7 @@ module.exports = {
     creatureId = parseInt(creatureId, 10);
     if (Number.isNaN(creatureId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Check that the indicated creature exists
-    const creature = await Creature.findByPk(creatureId);
+    const creature = await Creature.scope('idOnly').findByPk(creatureId);
     if (!creature) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Delete the creature
     return creature.destroy();

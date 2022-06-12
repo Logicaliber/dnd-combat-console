@@ -22,7 +22,7 @@ module.exports = {
     const missingParams = missingRequiredParams(armorObject, Armor.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the armor name is unique
-    if (await Armor.count({ where: { name: armorObject.name } })) {
+    if (await Armor.scope('nameOnly').count({ where: { name: armorObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the armor
@@ -54,9 +54,9 @@ module.exports = {
     const armor = await Armor.findByPk(armorId);
     if (!armor) throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     // If the name is being updated, check that it is still unique
-    if (updateFields.name !== undefined
-      && updateFields.name !== armor.name
-      && await Armor.count({ where: { name: updateFields.name } })) {
+    const { name } = updateFields;
+    if (name !== undefined && name !== armor.name
+      && await Armor.scope('nameOnly').count({ where: { name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the armor
@@ -71,10 +71,10 @@ module.exports = {
     armorId = parseInt(armorId, 10);
     if (Number.isNaN(armorId)) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // Check that the armor exists
-    const armor = await Armor.findByPk(armorId);
+    const armor = await Armor.scope('idOnly').findByPk(armorId);
     if (!armor) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // For each creatureType that uses this armor, set its armorId to null
-    await CreatureType.update({ armorId: null }, { where: { armorId } });
+    await CreatureType.unscoped().update({ armorId: null }, { where: { armorId } });
     // Delete the armor
     return armor.destroy();
   },

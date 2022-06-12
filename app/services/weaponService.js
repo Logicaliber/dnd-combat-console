@@ -21,7 +21,7 @@ module.exports = {
     const missingParams = missingRequiredParams(weaponObject, Weapon.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the weapon name is unique
-    if (await Weapon.count({ where: { name: weaponObject.name } })) {
+    if (await Weapon.scope('nameOnly').count({ where: { name: weaponObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the weapon
@@ -53,9 +53,9 @@ module.exports = {
     const weapon = await Weapon.findByPk(weaponId);
     if (!weapon) throw new Error(`${UPDATE_FAIL} ${NO_WEAPON}`);
     // If the name is being updated, check that it is still unique
-    if (updateFields.name !== undefined
-      && updateFields.name !== weapon.name
-      && await Weapon.count({ where: { name: updateFields.name } })) {
+    const { name } = updateFields;
+    if (name !== undefined && name !== weapon.name
+      && await Weapon.scope('nameOnly').count({ where: { name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the weapon
@@ -70,7 +70,7 @@ module.exports = {
     weaponId = parseInt(weaponId, 10);
     if (Number.isNaN(weaponId)) throw new Error(`${DELETE_FAIL} ${NO_WEAPON}`);
     // Check that the indicated weapon exists
-    const weapon = await Weapon.findByPk(weaponId);
+    const weapon = await Weapon.scope('idOnly').findByPk(weaponId);
     if (!weapon) throw new Error(`${DELETE_FAIL} ${NO_WEAPON}`);
     // Delete the weapon
     return weapon.destroy();

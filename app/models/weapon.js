@@ -107,6 +107,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
     },
   }, {
+    scopes: {
+      nameOnly: {
+        attributes: { include: ['name'] },
+      },
+    },
     sequelize,
     modelName: 'Weapon',
   });

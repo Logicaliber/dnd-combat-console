@@ -25,7 +25,7 @@ module.exports = {
     // Check that the indicated creatureType exists
     const creatureTypeId = parseInt(actionPatternObject.creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)
-      || !(await CreatureType.count({ where: { id: creatureTypeId } }))) {
+      || !(await CreatureType.scope('idOnly').count({ where: { id: creatureTypeId } }))) {
       throw new Error(`${CREATE_FAIL} ${NO_CREATURE_TYPE}`);
     }
     actionPatternObject.creatureTypeId = creatureTypeId;
@@ -71,10 +71,10 @@ module.exports = {
     actionPatternId = parseInt(actionPatternId, 10);
     if (Number.isNaN(actionPatternId)) throw new Error(`${DELETE_FAIL} ${NO_ACTION_PATTERN}`);
     // Check that the indicated actionPattern exists
-    const actionPattern = await ActionPattern.findByPk(actionPatternId);
+    const actionPattern = await ActionPattern.scope('idOnly').findByPk(actionPatternId);
     if (!actionPattern) throw new Error(`${DELETE_FAIL} ${NO_ACTION_PATTERN}`);
     // Delete all actions belonging to this actionPattern
-    await Action.destroy({ where: { actionPatternId } });
+    await Action.unscoped().destroy({ where: { actionPatternId } });
     // Delete the actionPattern
     return actionPattern.destroy();
   },

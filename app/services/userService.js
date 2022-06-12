@@ -21,7 +21,7 @@ module.exports = {
     const missingParams = missingRequiredParams(userObject, User.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the provided email is unique
-    if (await User.count({ where: { email: userObject.email } })) {
+    if (await User.scope('emailOnly').count({ where: { email: userObject.email } })) {
       throw new Error(`${CREATE_FAIL} ${EMAIL_EXISTS}`);
     }
     // Validate the password
@@ -58,9 +58,10 @@ module.exports = {
     const user = await User.findByPk(userId);
     if (!user) throw new Error(`${UPDATE_FAIL} ${NO_USER}`);
     // If the email is being updated, check that it is still unique
-    if (updateFields.email !== undefined
-      && updateFields.email !== user.email
-      && await User.count({ where: { email: updateFields.email } })) {
+    const { email } = updateFields;
+    if (email !== undefined
+      && email !== user.email
+      && await User.scope('emailOnly').count({ where: { email } })) {
       throw new Error(`${UPDATE_FAIL} ${EMAIL_EXISTS}`);
     }
     // Update the user
@@ -75,7 +76,7 @@ module.exports = {
     userId = parseInt(userId, 10);
     if (Number.isNaN(userId)) throw new Error(`${DELETE_FAIL} ${NO_USER}`);
     // Check that the indicated user exists
-    const user = await User.unscoped().findByPk(userId);
+    const user = await User.scope('idOnly').findByPk(userId);
     if (!user) throw new Error(`${DELETE_FAIL} ${NO_USER}`);
     // Delete the user
     return user.destroy();

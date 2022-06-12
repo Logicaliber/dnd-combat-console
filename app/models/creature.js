@@ -133,6 +133,11 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
   }, {
+    scopes: {
+      nameOnly: {
+        attributes: { include: ['name'] },
+      },
+    },
     sequelize,
     modelName: 'Creature',
   });

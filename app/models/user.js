@@ -55,6 +55,11 @@ module.exports = (sequelize, DataTypes) => {
         exclude: ['password'],
       },
     },
+    scopes: {
+      emailOnly: {
+        attributes: { include: ['email'] },
+      },
+    },
     sequelize,
     modelName: 'User',
   });

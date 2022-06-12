@@ -27,12 +27,12 @@ module.exports = {
     const missingParams = missingRequiredParams(creatureTypeObject, CreatureType.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the provided creatureType name is unique
-    if (await CreatureType.count({ where: { name: creatureTypeObject.name } })) {
+    if (await CreatureType.scope('nameOnly').count({ where: { name: creatureTypeObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Check that the indicated Armor exists
     if (creatureTypeObject.armorId
-      && !(await Armor.count({ where: { id: creatureTypeObject.armorId } }))) {
+      && !(await Armor.scope('idOnly').count({ where: { id: creatureTypeObject.armorId } }))) {
       throw new Error(`${CREATE_FAIL} ${NO_ARMOR}`);
     }
     // Create the creatureType, returning it with its armor
@@ -68,13 +68,13 @@ module.exports = {
     const { armorId, name } = updateFields;
     if (armorId !== undefined && armorId !== null
       && (Number.isNaN(parseInt(armorId, 10))
-        || !(await Armor.count({ where: { id: armorId } })))) {
+        || !(await Armor.scope('idOnly').count({ where: { id: armorId } })))) {
       throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     }
     // If the name is being updated, check that it is still unique
     if (name !== undefined
       && name !== creatureType.name
-      && await CreatureType.count({ where: { name } })) {
+      && await CreatureType.scope('nameOnly').count({ where: { name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creatureType
@@ -89,17 +89,17 @@ module.exports = {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Check that the indicated creatureType exists
-    const creatureType = await CreatureType.findByPk(creatureTypeId, {
-      include: [{ model: ActionPattern, as: 'actionPatterns', attributes: ['id'] }],
+    const creatureType = await CreatureType.scope('idOnly').findByPk(creatureTypeId, {
+      include: [{ model: ActionPattern.scope('idOnly'), as: 'actionPatterns', attributes: ['id'] }],
     });
     if (!creatureType) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Delete all associated Creatures
-    await Creature.destroy({ where: { creatureTypeId } });
+    await Creature.unscoped().destroy({ where: { creatureTypeId } });
     // Delete all associated Actions
     const actionPatternIds = creatureType.actionPatterns.map((ap) => ap.id);
-    await Action.destroy({ where: { actionPatternId: { [Op.in]: actionPatternIds } } });
+    await Action.unscoped().destroy({ where: { actionPatternId: { [Op.in]: actionPatternIds } } });
     // Delete all associated ActionPatterns
-    await ActionPattern.destroy({ where: { creatureTypeId } });
+    await ActionPattern.unscoped().destroy({ where: { creatureTypeId } });
     // Delete the CreatureType
     return creatureType.destroy();
   },
