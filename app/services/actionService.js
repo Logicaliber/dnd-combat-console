@@ -6,6 +6,13 @@ const {
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
+// Declare scoped models
+const WeaponId = Weapon.scope('idOnly');
+const SpellId = Spell.scope('idOnly');
+const ActionPatternId = ActionPattern.scope('idOnly');
+const ActionId = Action.scope('idOnly');
+
+// Error message building blocks
 const CREATE_FAIL = 'Action creation failed,';
 const UPDATE_FAIL = 'Action update failed,';
 const DELETE_FAIL = 'Action deletion failed,';
@@ -43,7 +50,7 @@ module.exports = {
     } = actionObject;
     // Check that the indicated actionPattern exists
     if (Number.isNaN(parseInt(actionPatternId, 10))
-        || !(await ActionPattern.scope('idOnly').count({ where: { id: actionPatternId } }))) {
+        || !(await ActionPatternId.count({ where: { id: actionPatternId } }))) {
       throw new Error(`${CREATE_FAIL} ${NO_ACTION_PATTERN}`);
     }
     // An action must be one of weapon, spell, or other
@@ -56,12 +63,12 @@ module.exports = {
     // Check that the indicated weapon exists
     if (weaponId !== undefined && weaponId !== null
       && (Number.isNaN(parseInt(weaponId, 10))
-        || !(await Weapon.scope('idOnly').count({ where: { id: weaponId } })))) {
+        || !(await WeaponId.count({ where: { id: weaponId } })))) {
       throw new Error(`${CREATE_FAIL} ${NO_WEAPON}`);
     // Check that the indicated spell exists
     } else if (spellId !== undefined && spellId !== null
       && (Number.isNaN(parseInt(spellId, 10))
-          || !(await Spell.scope('idOnly').count({ where: { id: spellId } })))) {
+          || !(await SpellId.count({ where: { id: spellId } })))) {
       throw new Error(`${CREATE_FAIL} ${NO_SPELL}`);
     }
     // Create the action, then return it with its weapon or spell
@@ -109,12 +116,12 @@ module.exports = {
     }
     if (weaponId !== undefined && weaponId !== null
       && (Number.isNaN(parseInt(weaponId, 10))
-        || !(await Weapon.scope('idOnly').count({ where: { id: weaponId } })))) {
+        || !(await WeaponId.count({ where: { id: weaponId } })))) {
       throw new Error(`${UPDATE_FAIL} ${NO_WEAPON}`);
     }
     if (spellId !== undefined && spellId !== null
       && (Number.isNaN(parseInt(spellId, 10))
-        || !(await Spell.scope('idOnly').count({ where: { id: spellId } })))) {
+        || !(await SpellId.count({ where: { id: spellId } })))) {
       throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     }
     // Update the action, returning it with its weapon or spell
@@ -129,7 +136,7 @@ module.exports = {
     actionId = parseInt(actionId, 10);
     if (Number.isNaN(actionId)) throw new Error(`${DELETE_FAIL} ${NO_ACTION}`);
     // Check that the indicated action exists
-    const action = await Action.scope('idOnly').findByPk(actionId);
+    const action = await ActionId.findByPk(actionId);
     if (!action) throw new Error(`${DELETE_FAIL} ${NO_ACTION}`);
     // Delete the action
     return action.destroy();

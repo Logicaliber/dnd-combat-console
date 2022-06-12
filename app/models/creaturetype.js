@@ -36,6 +36,10 @@ module.exports = (sequelize, DataTypes) => {
           as: 'armor',
         }],
       });
+
+      CreatureType.addScope('actionPatternIds', {
+        include: [{ model: ActionPattern.scope('idOnly'), as: 'actionPatterns' }],
+      });
     }
 
     static optionsSchema = {
@@ -464,6 +468,9 @@ module.exports = (sequelize, DataTypes) => {
     scopes: {
       nameOnly: {
         attributes: { include: ['name'] },
+      },
+      armorIdOnly: {
+        attributes: { include: ['armorId'] },
       },
     },
     sequelize,

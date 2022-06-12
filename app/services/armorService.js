@@ -4,6 +4,12 @@ const {
 } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
+// Declare scoped models
+const ArmorId = Armor.scope('idOnly');
+const ArmorName = Armor.scope('nameOnly');
+const CreatureTypeArmorId = CreatureType.scope('armorIdOnly');
+
+// Error message building blocks
 const CREATE_FAIL = 'Armor creation failed,';
 const UPDATE_FAIL = 'Armor update failed,';
 const DELETE_FAIL = 'Armor deletion failed,';
@@ -22,7 +28,7 @@ module.exports = {
     const missingParams = missingRequiredParams(armorObject, Armor.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the armor name is unique
-    if (await Armor.scope('nameOnly').count({ where: { name: armorObject.name } })) {
+    if (await ArmorName.count({ where: { name: armorObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the armor
@@ -56,7 +62,7 @@ module.exports = {
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
     if (name !== undefined && name !== armor.name
-      && await Armor.scope('nameOnly').count({ where: { name } })) {
+      && await ArmorName.count({ where: { name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the armor
@@ -71,10 +77,10 @@ module.exports = {
     armorId = parseInt(armorId, 10);
     if (Number.isNaN(armorId)) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // Check that the armor exists
-    const armor = await Armor.scope('idOnly').findByPk(armorId);
+    const armor = await ArmorId.findByPk(armorId);
     if (!armor) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // For each creatureType that uses this armor, set its armorId to null
-    await CreatureType.unscoped().update({ armorId: null }, { where: { armorId } });
+    await CreatureTypeArmorId.update({ armorId: null }, { where: { armorId } });
     // Delete the armor
     return armor.destroy();
   },

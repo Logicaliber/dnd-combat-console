@@ -3,6 +3,11 @@ const {
 } = require('../models');
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
+// Declare scoped models
+const WeaponId = Weapon.scope('idOnly');
+const WeaponName = Weapon.scope('nameOnly');
+
+// Error message building blocks
 const CREATE_FAIL = 'Weapon creation failed,';
 const UPDATE_FAIL = 'Weapon update failed,';
 const DELETE_FAIL = 'Weapon deletion failed,';
@@ -21,7 +26,7 @@ module.exports = {
     const missingParams = missingRequiredParams(weaponObject, Weapon.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the weapon name is unique
-    if (await Weapon.scope('nameOnly').count({ where: { name: weaponObject.name } })) {
+    if (await WeaponName.count({ where: { name: weaponObject.name } })) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the weapon
@@ -55,7 +60,7 @@ module.exports = {
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
     if (name !== undefined && name !== weapon.name
-      && await Weapon.scope('nameOnly').count({ where: { name } })) {
+      && await WeaponName.count({ where: { name } })) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the weapon
@@ -70,7 +75,7 @@ module.exports = {
     weaponId = parseInt(weaponId, 10);
     if (Number.isNaN(weaponId)) throw new Error(`${DELETE_FAIL} ${NO_WEAPON}`);
     // Check that the indicated weapon exists
-    const weapon = await Weapon.scope('idOnly').findByPk(weaponId);
+    const weapon = await WeaponId.findByPk(weaponId);
     if (!weapon) throw new Error(`${DELETE_FAIL} ${NO_WEAPON}`);
     // Delete the weapon
     return weapon.destroy();
