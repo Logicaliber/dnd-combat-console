@@ -85,13 +85,13 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     scopes: {
-      withActionPatternId(actionPatternId) {
+      actionPatternId(actionPatternId) {
         return {
           attributes: { include: ['actionPatternId'] },
           where: { actionPatternId },
         };
       },
-      withActionPatternIds(actionPatternIds) {
+      actionPatternIds(actionPatternIds) {
         return {
           attributes: { include: ['actionPatternId'] },
           where: { actionPatternId: { [Op.in]: actionPatternIds } },

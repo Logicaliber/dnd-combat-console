@@ -8,22 +8,15 @@ const {
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
 // Declare scoped models
-const ArmorId = Armor.scope('idOnly');
-const CreatureTypeId = CreatureType.scope('idOnly');
-const CreatureTypeActionPatternIds = CreatureTypeId.scope('actionPatternIds');
-
-const CreatureTypeName = (name) => {
-  return CreatureType.scope({ method: ['nameOnly', name] });
-};
-const ActionPatternWithCreatureTypeId = (creatureTypeId) => {
-  return ActionPattern.scope({ method: ['withCreatureTypeId', creatureTypeId] });
-};
-const ActionWithActionPatternIds = (actionPatternIds) => {
-  return Action.scope({ method: ['withActionPatternIds', actionPatternIds] });
-};
-const CreatureWithTypeId = (creatureTypeId) => {
-  return Creature.scope({ method: ['withTypeId', creatureTypeId] });
-};
+const ArmorId = (id) => Armor.scope({ method: ['id', id] });
+const CreatureTypeName = (name) => CreatureType.scope({ method: ['name', name] });
+const CreatureWithTypeId = (creatureTypeId) => Creature.scope({ method: ['creatureTypeId', creatureTypeId] });
+// ActionPattern with creatureTypeId for a given creatureTypeId
+const ActionPatternCreatureTypeId = (creatureTypeId) => ActionPattern.scope({ method: ['creatureTypeId', creatureTypeId] });
+// Action with ActionPattern instances that match a given list of actionPattern IDs
+const ActionWithActionPatternIds = (actionPatternIds) => Action.scope({ method: ['actionPatternIds', actionPatternIds] });
+// CreatureType with ActionPattern instances and their IDs for a given creatureType ID
+const CreatureTypeActionPatternIds = (creatureTypeId) => CreatureType.scope({ method: ['id', creatureTypeId] }, 'actionPatternIds');
 
 // Error message building blocks
 const CREATE_FAIL = 'CreatureType creation failed,';
@@ -50,7 +43,7 @@ module.exports = {
     }
     // Check that the indicated Armor exists
     if (creatureTypeObject.armorId
-      && !(await ArmorId.count({ where: { id: creatureTypeObject.armorId } }))) {
+      && !(await ArmorId(creatureTypeObject.armorId).count())) {
       throw new Error(`${CREATE_FAIL} ${NO_ARMOR}`);
     }
     // Create the creatureType, returning it with its armor
@@ -86,7 +79,7 @@ module.exports = {
     const { armorId, name } = updateFields;
     if (armorId !== undefined && armorId !== null
       && (Number.isNaN(parseInt(armorId, 10))
-        || !(await ArmorId.count({ where: { id: armorId } })))) {
+        || !(await ArmorId(armorId).count()))) {
       throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     }
     // If the name is being updated, check that it is still unique
@@ -105,14 +98,13 @@ module.exports = {
   deleteCreatureType: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
-    // Check that the indicated creatureType exists
-    const creatureType = await CreatureTypeActionPatternIds.findByPk(creatureTypeId);
+    // Check that the indicated creatureType exists, and grab all actionPatterns with their IDs
+    const creatureType = await CreatureTypeActionPatternIds(creatureTypeId).findOne();
     if (!creatureType) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
     // Delete all associated Actions
-    await ActionWithActionPatternIds(creatureType.actionPatterns
-      .map((ap) => ap.id)).destroy();
+    await ActionWithActionPatternIds(creatureType.actionPatterns.map((ap) => ap.id)).destroy();
     // Delete all associated ActionPatterns
-    await ActionPatternWithCreatureTypeId(creatureTypeId).destroy();
+    await ActionPatternCreatureTypeId(creatureTypeId).destroy();
     // Delete all associated Creatures
     await CreatureWithTypeId(creatureTypeId).destroy();
     // Delete the CreatureType

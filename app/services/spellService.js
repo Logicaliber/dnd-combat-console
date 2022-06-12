@@ -4,11 +4,8 @@ const {
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 // Declare scoped models
-const SpellId = Spell.scope('idOnly');
-
-const SpellName = (name) => {
-  return Spell.scope({ method: ['nameOnly', name] });
-};
+const SpellId = (id) => Spell.scope({ method: ['id', id] });
+const SpellName = (name) => Spell.scope({ method: ['name', name] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Spell creation failed,';
@@ -78,7 +75,7 @@ module.exports = {
     spellId = parseInt(spellId, 10);
     if (Number.isNaN(spellId)) throw new Error(`${DELETE_FAIL} ${NO_SPELL}`);
     // Check that the indicated spell exists
-    const spell = await SpellId.findByPk(spellId);
+    const spell = await SpellId(spellId).findOne();
     if (!spell) throw new Error(`${DELETE_FAIL} ${NO_SPELL}`);
     // Delete the spell
     return spell.destroy();

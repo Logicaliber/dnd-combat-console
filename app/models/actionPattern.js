@@ -47,7 +47,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     scopes: {
-      withCreatureTypeId(creatureTypeId) {
+      creatureTypeId(creatureTypeId) {
         return {
           attributes: { include: ['creatureTypeId'] },
           where: { creatureTypeId },

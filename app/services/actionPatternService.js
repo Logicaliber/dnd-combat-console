@@ -6,12 +6,9 @@ const {
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
 // Declare scoped models
-const CreatureTypeId = CreatureType.scope('idOnly');
-const ActionPatternId = ActionPattern.scope('idOnly');
-
-const ActionWithActionPatternId = (actionPatternId) => {
-  return Action.scope({ method: ['withActionPatternId', actionPatternId] });
-};
+const CreatureTypeId = (id) => CreatureType.scope({ method: ['id', id] });
+const ActionPatternId = (id) => ActionPattern.scope({ method: ['id', id] });
+const ActionWithActionPatternId = (actionPatternId) => Action.scope({ method: ['actionPatternId', actionPatternId] });
 
 // Error message building blocks
 const CREATE_FAIL = 'ActionPattern creation failed,';
@@ -33,8 +30,7 @@ module.exports = {
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the indicated creatureType exists
     const creatureTypeId = parseInt(actionPatternObject.creatureTypeId, 10);
-    if (Number.isNaN(creatureTypeId)
-      || !(await CreatureTypeId.count({ where: { id: creatureTypeId } }))) {
+    if (Number.isNaN(creatureTypeId) || !(await CreatureTypeId(creatureTypeId).count())) {
       throw new Error(`${CREATE_FAIL} ${NO_CREATURE_TYPE}`);
     }
     actionPatternObject.creatureTypeId = creatureTypeId;
@@ -80,7 +76,7 @@ module.exports = {
     actionPatternId = parseInt(actionPatternId, 10);
     if (Number.isNaN(actionPatternId)) throw new Error(`${DELETE_FAIL} ${NO_ACTION_PATTERN}`);
     // Check that the indicated actionPattern exists
-    const actionPattern = await ActionPatternId.findByPk(actionPatternId);
+    const actionPattern = await ActionPatternId(actionPatternId).findOne();
     if (!actionPattern) throw new Error(`${DELETE_FAIL} ${NO_ACTION_PATTERN}`);
     // Delete all actions belonging to this actionPattern
     await ActionWithActionPatternId(actionPatternId).destroy();

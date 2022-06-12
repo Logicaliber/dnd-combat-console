@@ -4,10 +4,8 @@ const {
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 // Declare scoped models
-const WeaponId = Weapon.scope('idOnly');
-const WeaponName = (name) => {
-  return Weapon.scope({ method: ['nameOnly', name] });
-};
+const WeaponId = (id) => Weapon.scope({ method: ['id', id] });
+const WeaponName = (name) => Weapon.scope({ method: ['name', name] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Weapon creation failed,';
@@ -28,9 +26,7 @@ module.exports = {
     const missingParams = missingRequiredParams(weaponObject, Weapon.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the weapon name is unique
-    if (await WeaponName(weaponObject.name).count()) {
-      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
-    }
+    if (await WeaponName(weaponObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the weapon
     return Weapon.create(weaponObject);
   },
@@ -75,7 +71,7 @@ module.exports = {
     weaponId = parseInt(weaponId, 10);
     if (Number.isNaN(weaponId)) throw new Error(`${DELETE_FAIL} ${NO_WEAPON}`);
     // Check that the indicated weapon exists
-    const weapon = await WeaponId.findByPk(weaponId);
+    const weapon = await WeaponId(weaponId).findOne();
     if (!weapon) throw new Error(`${DELETE_FAIL} ${NO_WEAPON}`);
     // Delete the weapon
     return weapon.destroy();

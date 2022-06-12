@@ -5,12 +5,9 @@ const {
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
 // Declare scoped models
-const CreatureTypeId = CreatureType.scope('idOnly');
-const CreatureId = Creature.scope('idOnly');
-
-const CreatureName = (name) => {
-  return Creature.scope({ method: ['nameOnly', name] });
-};
+const CreatureTypeId = (id) => CreatureType.scope({ method: ['id', id] });
+const CreatureId = (id) => Creature.scope({ method: ['id', id] });
+const CreatureName = (name) => Creature.scope({ method: ['name', name] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Creature creation failed,';
@@ -33,13 +30,9 @@ module.exports = {
     const missingParams = missingRequiredParams(creatureObject, Creature.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the indicated creatureType exists
-    if (!(await CreatureTypeId.count({ where: { id: creatureObject.creatureTypeId } }))) {
-      throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
-    }
+    if (!(await CreatureTypeId(creatureObject.creatureTypeId).count())) throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
     // Check that the provided creature name is unique
-    if (await CreatureName(creatureObject.name).count()) {
-      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
-    }
+    if (await CreatureName(creatureObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
     return Creature.create(creatureObject)
@@ -74,8 +67,7 @@ module.exports = {
     if (!creature) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE}`);
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
-    if (name !== undefined && name !== creature.name
-      && await CreatureName(name).count()) {
+    if (name !== undefined && name !== creature.name && await CreatureName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creature, returning it with its creatureType,
@@ -91,7 +83,7 @@ module.exports = {
     creatureId = parseInt(creatureId, 10);
     if (Number.isNaN(creatureId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Check that the indicated creature exists
-    const creature = await CreatureId.findByPk(creatureId);
+    const creature = await CreatureId(creatureId).findOne();
     if (!creature) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Delete the creature
     return creature.destroy();

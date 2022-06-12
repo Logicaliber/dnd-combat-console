@@ -38,7 +38,11 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       CreatureType.addScope('actionPatternIds', {
-        include: [{ model: ActionPattern.scope('idOnly'), as: 'actionPatterns' }],
+        include: [{
+          model: ActionPattern.unscoped(),
+          attributes: { include: ['id'] },
+          as: 'actionPatterns',
+        }],
       });
     }
 
@@ -466,14 +470,17 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     scopes: {
-      nameOnly(name) {
+      name(name) {
         return {
           attributes: { include: ['name'] },
           where: { name },
         };
       },
-      armorIdOnly: {
-        attributes: { include: ['armorId'] },
+      armorId(armorId) {
+        return {
+          attributes: { include: ['armorId'] },
+          where: { armorId },
+        };
       },
     },
     sequelize,

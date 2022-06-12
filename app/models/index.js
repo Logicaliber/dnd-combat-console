@@ -36,7 +36,12 @@ fs
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
     db[modelName].associate(db);
-    db[modelName].addScope('idOnly', { attributes: { include: ['id'] } });
+    db[modelName].addScope('id', (id) => {
+      return {
+        where: { id },
+        attributes: { include: ['id'] },
+      };
+    });
   }
 });
 

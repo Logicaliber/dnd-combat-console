@@ -5,12 +5,9 @@ const {
 const { missingRequiredParams, stripInvalidParams } = require('./validationHelpers');
 
 // Declare scoped models
-const ArmorId = Armor.scope('idOnly');
-const CreatureTypeArmorId = CreatureType.scope('armorIdOnly');
-
-const ArmorName = (name) => {
-  return Armor.scope({ method: ['nameOnly', name] });
-};
+const ArmorId = (id) => Armor.scope({ method: ['id', id] });
+const ArmorName = (name) => Armor.scope({ method: ['name', name] });
+const CreatureTypeArmorId = (armorId) => CreatureType.scope({ method: ['armorId', armorId] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Armor creation failed,';
@@ -31,9 +28,7 @@ module.exports = {
     const missingParams = missingRequiredParams(armorObject, Armor.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the armor name is unique
-    if (await ArmorName(armorObject.name).count()) {
-      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
-    }
+    if (await ArmorName(armorObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the armor
     return Armor.create(armorObject);
   },
@@ -64,8 +59,7 @@ module.exports = {
     if (!armor) throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
-    if (name !== undefined && name !== armor.name
-      && await ArmorName(name).count()) {
+    if (name !== undefined && name !== armor.name && await ArmorName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the armor
@@ -80,10 +74,10 @@ module.exports = {
     armorId = parseInt(armorId, 10);
     if (Number.isNaN(armorId)) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // Check that the armor exists
-    const armor = await ArmorId.findByPk(armorId);
+    const armor = await ArmorId(armorId).findOne();
     if (!armor) throw new Error(`${DELETE_FAIL} ${NO_ARMOR}`);
     // For each creatureType that uses this armor, set its armorId to null
-    await CreatureTypeArmorId.update({ armorId: null }, { where: { armorId } });
+    await CreatureTypeArmorId(armorId).update({ armorId: null });
     // Delete the armor
     return armor.destroy();
   },

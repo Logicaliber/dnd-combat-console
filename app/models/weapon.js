@@ -108,7 +108,7 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     scopes: {
-      nameOnly(name) {
+      name(name) {
         return {
           attributes: { include: ['name'] },
           where: { name },

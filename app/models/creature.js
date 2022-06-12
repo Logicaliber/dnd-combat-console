@@ -134,13 +134,13 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     scopes: {
-      nameOnly(name) {
+      name(name) {
         return {
           attributes: { include: ['name'] },
           where: { name },
         };
       },
-      withTypeId(creatureTypeId) {
+      creatureTypeId(creatureTypeId) {
         return {
           attributes: { include: ['creatureTypeId'] },
           where: { creatureTypeId },
