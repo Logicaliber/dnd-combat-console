@@ -28,8 +28,9 @@ module.exports = {
     if (!User.validatePassword(userObject.password)) throw new Error(PASSWORD_REQ);
     // Hash the password
     userObject.password = await bcrypt.hash(userObject.password, 10);
-    // Create the user
-    return User.create(userObject);
+    // Create the user, and return it in its defaultScope
+    return User.create(userObject)
+      .then((user) => user.reload());
   },
 
   /**

@@ -57,15 +57,23 @@ describe('User Service', () => {
       }
     });
 
-    it('Should create a user if all valid fields are passed, hashing the password before creation', async () => {
+    it('Should create a user if all valid fields are passed, hashing the password before creation, and return it without its password', async () => {
       user = await userService.createUser({
         email: validEmail,
         password: validPassword,
       });
       expectedUsers += 1;
+
+      // Check that the returned instance does not have its password
+      assert.hasAnyKeys(user, 'dataValues');
+      const values = user.dataValues;
+      assert.hasAllKeys(values, ['id', 'email', 'createdAt', 'updatedAt']);
+
       // Check that one user was created
       assert.lengthOf(await User.findAll(), expectedUsers);
+
       // Check that the password was hashed before creation
+      user = await User.unscoped().findByPk(user.id);
       assert.notEqual(user.password, validPassword);
       assert(bcrypt.compareSync(validPassword, user.password));
     });
@@ -92,6 +100,7 @@ describe('User Service', () => {
       const result = await userService.getUser(user.id);
       assert.hasAnyKeys(result, 'dataValues');
       const values = result.dataValues;
+      // In particular, the password should not be here
       assert.hasAllKeys(values, ['id', 'email', 'createdAt', 'updatedAt']);
       assert.equal(values.id, user.id);
     });
