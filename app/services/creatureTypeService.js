@@ -1,8 +1,6 @@
 const { Op } = require('sequelize');
 const {
   Armor,
-  Weapon,
-  Spell,
   CreatureType,
   Creature,
   ActionPattern,
@@ -16,27 +14,6 @@ const DELETE_FAIL = 'CreatureType deletion failed,';
 const NAME_EXISTS = 'a creatureType with the given name already exists';
 const NO_ARMOR = 'no armor found for the given ID';
 const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
-
-const defaultCreatureTypeIncludes = [{
-  model: ActionPattern,
-  as: 'actionPatterns',
-  order: [['priority', 'ASC']],
-  include: [{
-    model: Action,
-    as: 'actions',
-    order: [['index', 'ASC']],
-    include: [{
-      model: Weapon,
-      as: 'weapon',
-    }, {
-      model: Spell,
-      as: 'spell',
-    }],
-  }],
-}, {
-  model: Armor,
-  as: 'armor',
-}];
 
 module.exports = {
   /**
@@ -60,7 +37,7 @@ module.exports = {
     }
     // Create the creatureType, returning it with its armor
     return CreatureType.create(creatureTypeObject)
-      .then((creatureType) => creatureType.reload({ include: defaultCreatureTypeIncludes }));
+      .then((creatureType) => creatureType.reload());
   },
 
   /**
@@ -70,7 +47,7 @@ module.exports = {
   getCreatureType: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) return null;
-    return CreatureType.findByPk(creatureTypeId, { include: defaultCreatureTypeIncludes });
+    return CreatureType.findByPk(creatureTypeId);
   },
 
   /**
@@ -101,8 +78,7 @@ module.exports = {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creatureType
-    return creatureType.set(updateFields).save()
-      .then(() => creatureType.reload({ include: defaultCreatureTypeIncludes }));
+    return creatureType.set(updateFields).save();
   },
 
   /**

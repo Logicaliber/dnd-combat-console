@@ -15,14 +15,6 @@ const NO_ACTION = 'no action found for the given ID';
 const NO_WEAPON = 'no weapon found for the given ID';
 const NO_SPELL = 'no spell found for the given ID';
 
-const defaultActionIncludes = [{
-  model: Weapon,
-  as: 'weapon',
-}, {
-  model: Spell,
-  as: 'spell',
-}];
-
 /**
  * @param {*} number
  * @returns {0 | 1}
@@ -74,7 +66,7 @@ module.exports = {
     }
     // Create the action, then return it with its weapon or spell
     return Action.create(actionObject)
-      .then((action) => action.reload({ include: defaultActionIncludes }));
+      .then((actionPattern) => actionPattern.reload());
   },
 
   /**
@@ -84,7 +76,7 @@ module.exports = {
   getAction: async (actionId) => {
     actionId = parseInt(actionId, 10);
     if (Number.isNaN(actionId)) return null;
-    return Action.findByPk(actionId, { include: defaultActionIncludes });
+    return Action.findByPk(actionId);
   },
 
   /**
@@ -126,8 +118,7 @@ module.exports = {
       throw new Error(`${UPDATE_FAIL} ${NO_SPELL}`);
     }
     // Update the action, returning it with its weapon or spell
-    return action.set(updateFields).save()
-      .then(() => action.reload({ include: defaultActionIncludes }));
+    return action.set(updateFields).save();
   },
 
   /**

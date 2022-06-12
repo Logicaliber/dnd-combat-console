@@ -1,11 +1,6 @@
 const {
-  Armor,
-  Weapon,
-  Spell,
   CreatureType,
   Creature,
-  ActionPattern,
-  Action,
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
@@ -15,31 +10,6 @@ const DELETE_FAIL = 'Creature deletion failed,';
 const NAME_EXISTS = 'a creature with the given name already exists';
 const NO_CREATURE = 'no creature found for the given ID';
 const NO_TYPE = 'no creatureType found for the given ID';
-
-const defaultCreatureIncludes = [{
-  model: CreatureType,
-  as: 'creatureType',
-  include: [{
-    model: ActionPattern,
-    as: 'actionPatterns',
-    order: [['priority', 'ASC']],
-    include: [{
-      model: Action,
-      as: 'actions',
-      order: [['index', 'ASC']],
-      include: [{
-        model: Weapon,
-        as: 'weapon',
-      }, {
-        model: Spell,
-        as: 'spell',
-      }],
-    }],
-  }, {
-    model: Armor,
-    as: 'armor',
-  }],
-}];
 
 module.exports = {
   /**
@@ -64,7 +34,7 @@ module.exports = {
     // Create the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
     return Creature.create(creatureObject)
-      .then((creature) => creature.reload({ include: defaultCreatureIncludes }));
+      .then((creature) => creature.reload());
   },
 
   /**
@@ -75,7 +45,7 @@ module.exports = {
   getCreature: async (creatureId) => {
     creatureId = parseInt(creatureId, 10);
     if (Number.isNaN(creatureId)) return null;
-    return Creature.findByPk(creatureId, { include: defaultCreatureIncludes });
+    return Creature.findByPk(creatureId);
   },
 
   /**
@@ -101,8 +71,7 @@ module.exports = {
     }
     // Update the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
-    return creature.set(updateFields).save()
-      .then(() => creature.reload({ include: defaultCreatureIncludes }));
+    return creature.set(updateFields).save();
   },
 
   /**

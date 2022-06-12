@@ -89,12 +89,21 @@ describe('ActionPattern Service', () => {
       }
     });
 
-    it('Should create an actionPattern if all valid fields are passed', async () => {
+    it('Should create an actionPattern if all valid fields are passed, returning it with actions as an empty array', async () => {
       actionPattern = await actionPatternService.createActionPattern({
         priority: 0,
         creatureTypeId,
       });
       expectedActionPatterns += 1;
+
+      // Check that the instance has actions, but its an empty array
+      assert.hasAnyKeys(actionPattern, 'dataValues');
+      const values = actionPattern.dataValues;
+      assert.hasAllKeys(values, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
+      const { actions } = values;
+      assert(Array.isArray(actions));
+      assert.lengthOf(actions, 0);
+
       // Check that one actionPattern was created
       assert.lengthOf(await ActionPattern.findAll(), expectedActionPatterns);
 
@@ -119,6 +128,7 @@ describe('ActionPattern Service', () => {
       assert.equal(values.creatureTypeId, actionPattern.creatureTypeId);
       assert.equal(values.priority, actionPattern.priority);
       const { actions } = values;
+      assert(Array.isArray(actions));
       assert.lengthOf(actions, expectedActions);
       assert.hasAnyKeys(actions[0], 'dataValues');
       const actionValues = actions[0].dataValues;

@@ -140,7 +140,7 @@ describe('Action Service', () => {
       }
     });
 
-    it('Should create an action if all valid fields are passed', async () => {
+    it('Should create an action if all valid fields are passed, returning it with its weapon and spell', async () => {
       action = await actionService.createAction({
         actionPatternId,
         index: 0,
@@ -148,6 +148,23 @@ describe('Action Service', () => {
         times: 2,
       });
       expectedActions += 1;
+
+      // Check that the returned instance has a weapon and a null spell
+      assert.hasAnyKeys(action, 'dataValues');
+      const values = action.dataValues;
+      assert.hasAllKeys(values, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
+      assert.equal(values.id, action.id);
+      assert.equal(values.index, action.index);
+      assert.equal(values.weaponId, action.weaponId);
+      assert.equal(values.times, action.times);
+      assert.isNull(values.spellId);
+      assert.isNull(values.spell);
+      const { weapon } = values;
+      assert.hasAnyKeys(weapon, 'dataValues');
+      const weaponValues = weapon.dataValues;
+      assert.hasAllKeys(weaponValues, ['id', 'name', 'damages', 'properties', 'normalRange', 'longRange', 'attackShape', 'save', 'saveType', 'saveStillHalf', 'createdAt', 'updatedAt']);
+      assert.equal(weaponValues.id, weaponId);
+
       // Check that one action was created
       assert.lengthOf(await Action.findAll(), expectedActions);
     });

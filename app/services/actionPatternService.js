@@ -1,6 +1,4 @@
 const {
-  Weapon,
-  Spell,
   CreatureType,
   ActionPattern,
   Action,
@@ -12,19 +10,6 @@ const UPDATE_FAIL = 'ActionPattern update failed,';
 const DELETE_FAIL = 'ActionPattern deletion failed,';
 const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
 const NO_ACTION_PATTERN = 'no actionPattern found for the given ID';
-
-const defaultActionPatternIncludes = [{
-  model: Action,
-  as: 'actions',
-  order: [['index', 'ASC']],
-  include: [{
-    model: Weapon,
-    as: 'weapon',
-  }, {
-    model: Spell,
-    as: 'spell',
-  }],
-}];
 
 module.exports = {
   /**
@@ -45,7 +30,8 @@ module.exports = {
     }
     actionPatternObject.creatureTypeId = creatureTypeId;
     // Create the actionPattern
-    return ActionPattern.create(actionPatternObject);
+    return ActionPattern.create(actionPatternObject)
+      .then((actionPattern) => actionPattern.reload());
   },
 
   /**
@@ -55,9 +41,7 @@ module.exports = {
   getActionPattern: async (actionPatternId) => {
     actionPatternId = parseInt(actionPatternId, 10);
     if (Number.isNaN(actionPatternId)) return null;
-    return ActionPattern.findByPk(actionPatternId, {
-      include: defaultActionPatternIncludes,
-    });
+    return ActionPattern.findByPk(actionPatternId);
   },
 
   /**
@@ -75,8 +59,7 @@ module.exports = {
     const actionPattern = await ActionPattern.findByPk(actionPatternId);
     if (!actionPattern) throw new Error(`${UPDATE_FAIL} ${NO_ACTION_PATTERN}`);
     // Update the actionPattern and return it with its actions, weapons, and spells
-    return actionPattern.set(updateFields).save()
-      .then((instance) => instance.reload({ include: defaultActionPatternIncludes }));
+    return actionPattern.set(updateFields).save();
   },
 
   /**
