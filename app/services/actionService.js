@@ -73,7 +73,7 @@ module.exports = {
     }
     // Create the action, then return it with its weapon or spell
     return Action.create(actionObject)
-      .then((actionPattern) => actionPattern.reload());
+      .then((action) => action.reload());
   },
 
   /**

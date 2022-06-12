@@ -10,10 +10,10 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 // Declare scoped models
 const ArmorId = (id) => Armor.scope({ method: ['id', id] });
 const CreatureTypeName = (name) => CreatureType.scope({ method: ['name', name] });
-const CreatureWithTypeId = (creatureTypeId) => Creature.scope({ method: ['creatureTypeId', creatureTypeId] });
-// ActionPattern with creatureTypeId for a given creatureTypeId
+const CreatureWithCreatureTypeId = (creatureTypeId) => Creature.scope({ method: ['creatureTypeId', creatureTypeId] });
+// ActionPattern with creatureTypeId for a given creatureType ID
 const ActionPatternCreatureTypeId = (creatureTypeId) => ActionPattern.scope({ method: ['creatureTypeId', creatureTypeId] });
-// Action with ActionPattern instances that match a given list of actionPattern IDs
+// Action instances with actionPatternId for a given list of actionPattern IDs
 const ActionWithActionPatternIds = (actionPatternIds) => Action.scope({ method: ['actionPatternIds', actionPatternIds] });
 // CreatureType with ActionPattern instances and their IDs for a given creatureType ID
 const CreatureTypeActionPatternIds = (creatureTypeId) => CreatureType.scope({ method: ['id', creatureTypeId] }, 'actionPatternIds');
@@ -83,8 +83,7 @@ module.exports = {
       throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     }
     // If the name is being updated, check that it is still unique
-    if (name !== undefined && name !== creatureType.name
-      && await CreatureTypeName(name).count()) {
+    if (name !== undefined && name !== creatureType.name && await CreatureTypeName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creatureType
@@ -106,7 +105,7 @@ module.exports = {
     // Delete all associated ActionPatterns
     await ActionPatternCreatureTypeId(creatureTypeId).destroy();
     // Delete all associated Creatures
-    await CreatureWithTypeId(creatureTypeId).destroy();
+    await CreatureWithCreatureTypeId(creatureTypeId).destroy();
     // Delete the CreatureType
     return creatureType.destroy();
   },

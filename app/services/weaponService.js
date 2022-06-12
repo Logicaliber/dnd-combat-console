@@ -57,8 +57,9 @@ module.exports = {
     if (!weapon) throw new Error(`${UPDATE_FAIL} ${NO_WEAPON}`);
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
-    if (name !== undefined && name !== weapon.name
-      && await WeaponName(name).count()) throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    if (name !== undefined && name !== weapon.name && await WeaponName(name).count()) {
+      throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
+    }
     // Update the weapon
     return weapon.set(updateFields).save();
   },

@@ -40,8 +40,8 @@ module.exports = (sequelize, DataTypes) => {
       CreatureType.addScope('actionPatternIds', {
         include: [{
           model: ActionPattern.unscoped(),
-          attributes: { include: ['id'] },
           as: 'actionPatterns',
+          attributes: { include: ['id'] },
         }],
       });
     }
