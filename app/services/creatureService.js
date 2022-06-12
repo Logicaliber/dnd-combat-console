@@ -1,45 +1,21 @@
 const {
-  Armor,
-  Weapon,
-  Spell,
   CreatureType,
   Creature,
-  ActionPattern,
-  Action,
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
+// Declare scoped models
+const CreatureTypeId = (id) => CreatureType.scope({ method: ['id', id] });
+const CreatureId = (id) => Creature.scope({ method: ['id', id] });
+const CreatureName = (name) => Creature.scope({ method: ['name', name] });
+
+// Error message building blocks
 const CREATE_FAIL = 'Creature creation failed,';
 const UPDATE_FAIL = 'Creature update failed,';
 const DELETE_FAIL = 'Creature deletion failed,';
 const NAME_EXISTS = 'a creature with the given name already exists';
 const NO_CREATURE = 'no creature found for the given ID';
 const NO_TYPE = 'no creatureType found for the given ID';
-
-const defaultCreatureIncludes = [{
-  model: CreatureType,
-  as: 'creatureType',
-  include: [{
-    model: ActionPattern,
-    as: 'actionPatterns',
-    order: [['priority', 'ASC']],
-    include: [{
-      model: Action,
-      as: 'actions',
-      order: [['index', 'ASC']],
-      include: [{
-        model: Weapon,
-        as: 'weapon',
-      }, {
-        model: Spell,
-        as: 'spell',
-      }],
-    }],
-  }, {
-    model: Armor,
-    as: 'armor',
-  }],
-}];
 
 module.exports = {
   /**
@@ -54,17 +30,13 @@ module.exports = {
     const missingParams = missingRequiredParams(creatureObject, Creature.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the indicated creatureType exists
-    if (!(await CreatureType.count({ where: { id: creatureObject.creatureTypeId } }))) {
-      throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
-    }
+    if (!(await CreatureTypeId(creatureObject.creatureTypeId).count())) throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
     // Check that the provided creature name is unique
-    if (await Creature.count({ where: { name: creatureObject.name } })) {
-      throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
-    }
+    if (await CreatureName(creatureObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
     return Creature.create(creatureObject)
-      .then((creature) => creature.reload({ include: defaultCreatureIncludes }));
+      .then((creature) => creature.reload());
   },
 
   /**
@@ -75,7 +47,7 @@ module.exports = {
   getCreature: async (creatureId) => {
     creatureId = parseInt(creatureId, 10);
     if (Number.isNaN(creatureId)) return null;
-    return Creature.findByPk(creatureId, { include: defaultCreatureIncludes });
+    return Creature.findByPk(creatureId);
   },
 
   /**
@@ -94,15 +66,13 @@ module.exports = {
     const creature = await Creature.findByPk(creatureId);
     if (!creature) throw new Error(`${UPDATE_FAIL} ${NO_CREATURE}`);
     // If the name is being updated, check that it is still unique
-    if (updateFields.name !== undefined
-      && updateFields.name !== creature.name
-      && await Creature.count({ where: { name: updateFields.name } })) {
+    const { name } = updateFields;
+    if (name !== undefined && name !== creature.name && await CreatureName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creature, returning it with its creatureType,
     // armor, actionPatterns, actions, weapons, and spells
-    return creature.set(updateFields).save()
-      .then(() => creature.reload({ include: defaultCreatureIncludes }));
+    return creature.set(updateFields).save();
   },
 
   /**
@@ -113,7 +83,7 @@ module.exports = {
     creatureId = parseInt(creatureId, 10);
     if (Number.isNaN(creatureId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Check that the indicated creature exists
-    const creature = await Creature.findByPk(creatureId);
+    const creature = await CreatureId(creatureId).findOne();
     if (!creature) throw new Error(`${DELETE_FAIL} ${NO_CREATURE}`);
     // Delete the creature
     return creature.destroy();

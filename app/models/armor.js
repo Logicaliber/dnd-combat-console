@@ -53,6 +53,14 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: false,
     },
   }, {
+    scopes: {
+      name(name) {
+        return {
+          attributes: { include: ['name'] },
+          where: { name },
+        };
+      },
+    },
     sequelize,
     modelName: 'Armor',
   });

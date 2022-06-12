@@ -9,9 +9,17 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
-      ActionPattern.hasMany(models.Action, { foreignKey: 'actionPatternId', as: 'actions' });
-      ActionPattern.belongsTo(models.CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureType' });
+    static associate({ Action, CreatureType }) {
+      ActionPattern.hasMany(Action, { foreignKey: 'actionPatternId', as: 'actions' });
+      ActionPattern.belongsTo(CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureType' });
+
+      ActionPattern.addScope('defaultScope', {
+        include: [{
+          model: Action,
+          as: 'actions',
+          order: [['index', 'ASC']],
+        }],
+      });
     }
 
     static optionsSchema = {
@@ -38,6 +46,14 @@ module.exports = (sequelize, DataTypes) => {
       validate: { min: 0 },
     },
   }, {
+    scopes: {
+      creatureTypeId(creatureTypeId) {
+        return {
+          attributes: { include: ['creatureTypeId'] },
+          where: { creatureTypeId },
+        };
+      },
+    },
     sequelize,
     modelName: 'ActionPattern',
   });

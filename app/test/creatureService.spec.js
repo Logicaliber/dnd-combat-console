@@ -72,13 +72,46 @@ describe('Creature Service', () => {
       }
     });
 
-    it('Should create a creature if all valid fields are passed', async () => {
+    it('Should create a creature if all valid fields are passed, returning it with its creatureType, armor, actionPatterns, actions, weapons, and spells', async () => {
       creature = await creatureService.createCreature({
         name: 'dog',
         maxHP: 4,
         creatureTypeId,
       });
       expectedCreatures += 1;
+
+      // Check that the returned instance has its creatureType,
+      // armor, actionPatterns, actions, weapons, and spells
+      assert.hasAnyKeys(creature, 'dataValues');
+      const values = creature.dataValues;
+      assert.hasAllKeys(values, ['id', 'creatureTypeId', 'name', 'maxHP', 'currentHP', 'currentLegendaryResistances', 'slotsFirst', 'slotsSecond', 'slotsThird', 'slotsFourth', 'slotsFifth', 'slotsSixth', 'slotsSeventh', 'slotsEigth', 'slotsNinth', 'createdAt', 'updatedAt', 'creatureType']);
+      assert.equal(values.id, creature.id);
+      assert.equal(values.name, creature.name);
+      assert.equal(values.maxHP, creature.maxHP);
+      const { creatureType } = values;
+      assert.hasAnyKeys(creatureType, 'dataValues');
+      const creatureTypeValues = creatureType.dataValues;
+      assert.hasAllKeys(creatureTypeValues, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects', 'createdAt', 'updatedAt', 'actionPatterns', 'armor']);
+      assert.equal(creatureTypeValues.id, creatureTypeId);
+      const { actionPatterns, armor } = creatureTypeValues;
+      assert.isNull(armor);
+      assert(Array.isArray(actionPatterns));
+      assert.lengthOf(actionPatterns, 1);
+      assert.hasAnyKeys(actionPatterns[0], 'dataValues');
+      const actionPatternValues = actionPatterns[0].dataValues;
+      assert.hasAllKeys(actionPatternValues, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
+      const { actions } = actionPatternValues;
+      assert(Array.isArray(actions));
+      assert.lengthOf(actions, 1);
+      assert.hasAnyKeys(actions[0], 'dataValues');
+      const actionValues = actions[0].dataValues;
+      assert.hasAllKeys(actionValues, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
+      const { weapon, spell } = actionValues;
+      assert.isNull(spell);
+      assert.hasAnyKeys(weapon, 'dataValues');
+      const weaponValues = weapon.dataValues;
+      assert.hasAllKeys(weaponValues, ['id', 'name', 'damages', 'properties', 'normalRange', 'longRange', 'attackShape', 'save', 'saveType', 'saveStillHalf', 'createdAt', 'updatedAt']);
+
       // Check that one creature was created
       assert.lengthOf(await Creature.findAll(), expectedCreatures);
     });
@@ -102,7 +135,7 @@ describe('Creature Service', () => {
       assert.isNull(await creatureService.getCreature(99999));
     });
 
-    it('Should return the correct creature for the given id, with its creatureType, armor, actionPatterns, actions, weapons, and spells,', async () => {
+    it('Should return the correct creature for the given id, with its creatureType, armor, actionPatterns, actions, weapons, and spells', async () => {
       const result = await creatureService.getCreature(creature.id);
       assert.hasAnyKeys(result, 'dataValues');
       const values = result.dataValues;

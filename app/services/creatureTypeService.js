@@ -1,8 +1,5 @@
-const { Op } = require('sequelize');
 const {
   Armor,
-  Weapon,
-  Spell,
   CreatureType,
   Creature,
   ActionPattern,
@@ -10,33 +7,24 @@ const {
 } = require('../models');
 const { stripInvalidParams, missingRequiredParams } = require('./validationHelpers');
 
+// Declare scoped models
+const ArmorId = (id) => Armor.scope({ method: ['id', id] });
+const CreatureTypeName = (name) => CreatureType.scope({ method: ['name', name] });
+const CreatureWithCreatureTypeId = (creatureTypeId) => Creature.scope({ method: ['creatureTypeId', creatureTypeId] });
+// ActionPattern with creatureTypeId for a given creatureType ID
+const ActionPatternCreatureTypeId = (creatureTypeId) => ActionPattern.scope({ method: ['creatureTypeId', creatureTypeId] });
+// Action instances with actionPatternId for a given list of actionPattern IDs
+const ActionWithActionPatternIds = (actionPatternIds) => Action.scope({ method: ['actionPatternIds', actionPatternIds] });
+// CreatureType with ActionPattern instances and their IDs for a given creatureType ID
+const CreatureTypeActionPatternIds = (creatureTypeId) => CreatureType.scope({ method: ['id', creatureTypeId] }, 'actionPatternIds');
+
+// Error message building blocks
 const CREATE_FAIL = 'CreatureType creation failed,';
 const UPDATE_FAIL = 'CreatureType update failed,';
 const DELETE_FAIL = 'CreatureType deletion failed,';
 const NAME_EXISTS = 'a creatureType with the given name already exists';
 const NO_ARMOR = 'no armor found for the given ID';
 const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
-
-const defaultCreatureTypeIncludes = [{
-  model: ActionPattern,
-  as: 'actionPatterns',
-  order: [['priority', 'ASC']],
-  include: [{
-    model: Action,
-    as: 'actions',
-    order: [['index', 'ASC']],
-    include: [{
-      model: Weapon,
-      as: 'weapon',
-    }, {
-      model: Spell,
-      as: 'spell',
-    }],
-  }],
-}, {
-  model: Armor,
-  as: 'armor',
-}];
 
 module.exports = {
   /**
@@ -50,17 +38,17 @@ module.exports = {
     const missingParams = missingRequiredParams(creatureTypeObject, CreatureType.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the provided creatureType name is unique
-    if (await CreatureType.count({ where: { name: creatureTypeObject.name } })) {
+    if (await CreatureTypeName(creatureTypeObject.name).count()) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Check that the indicated Armor exists
     if (creatureTypeObject.armorId
-      && !(await Armor.count({ where: { id: creatureTypeObject.armorId } }))) {
+      && !(await ArmorId(creatureTypeObject.armorId).count())) {
       throw new Error(`${CREATE_FAIL} ${NO_ARMOR}`);
     }
     // Create the creatureType, returning it with its armor
     return CreatureType.create(creatureTypeObject)
-      .then((creatureType) => creatureType.reload({ include: defaultCreatureTypeIncludes }));
+      .then((creatureType) => creatureType.reload());
   },
 
   /**
@@ -70,7 +58,7 @@ module.exports = {
   getCreatureType: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) return null;
-    return CreatureType.findByPk(creatureTypeId, { include: defaultCreatureTypeIncludes });
+    return CreatureType.findByPk(creatureTypeId);
   },
 
   /**
@@ -91,18 +79,15 @@ module.exports = {
     const { armorId, name } = updateFields;
     if (armorId !== undefined && armorId !== null
       && (Number.isNaN(parseInt(armorId, 10))
-        || !(await Armor.count({ where: { id: armorId } })))) {
+        || !(await ArmorId(armorId).count()))) {
       throw new Error(`${UPDATE_FAIL} ${NO_ARMOR}`);
     }
     // If the name is being updated, check that it is still unique
-    if (name !== undefined
-      && name !== creatureType.name
-      && await CreatureType.count({ where: { name } })) {
+    if (name !== undefined && name !== creatureType.name && await CreatureTypeName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creatureType
-    return creatureType.set(updateFields).save()
-      .then(() => creatureType.reload({ include: defaultCreatureTypeIncludes }));
+    return creatureType.set(updateFields).save();
   },
 
   /**
@@ -112,18 +97,15 @@ module.exports = {
   deleteCreatureType: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (Number.isNaN(creatureTypeId)) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
-    // Check that the indicated creatureType exists
-    const creatureType = await CreatureType.findByPk(creatureTypeId, {
-      include: [{ model: ActionPattern, as: 'actionPatterns', attributes: ['id'] }],
-    });
+    // Check that the indicated creatureType exists, and grab all actionPatterns with their IDs
+    const creatureType = await CreatureTypeActionPatternIds(creatureTypeId).findOne();
     if (!creatureType) throw new Error(`${DELETE_FAIL} ${NO_CREATURE_TYPE}`);
-    // Delete all associated Creatures
-    await Creature.destroy({ where: { creatureTypeId } });
     // Delete all associated Actions
-    const actionPatternIds = creatureType.actionPatterns.map((ap) => ap.id);
-    await Action.destroy({ where: { actionPatternId: { [Op.in]: actionPatternIds } } });
+    await ActionWithActionPatternIds(creatureType.actionPatterns.map((ap) => ap.id)).destroy();
     // Delete all associated ActionPatterns
-    await ActionPattern.destroy({ where: { creatureTypeId } });
+    await ActionPatternCreatureTypeId(creatureTypeId).destroy();
+    // Delete all associated Creatures
+    await CreatureWithCreatureTypeId(creatureTypeId).destroy();
     // Delete the CreatureType
     return creatureType.destroy();
   },

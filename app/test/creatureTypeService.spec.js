@@ -90,7 +90,7 @@ describe('CreatureType Service', () => {
       }
     });
 
-    it('Should create a creatureType if all valid fields are passed', async () => {
+    it('Should create a creatureType if all valid fields are passed, returning it with its armor, and an empty array of actionPatterns', async () => {
       creatureType = await creatureTypeService.createCreatureType({
         name: 'dog',
         size: 'medium',
@@ -100,11 +100,22 @@ describe('CreatureType Service', () => {
         armorId,
       });
       expectedCreatureTypes += 1;
+
+      // Check that the instance was returned with its armor and actionPatterns as an empty array
+      assert.hasAnyKeys(creatureType, 'dataValues');
+      const values = creatureType.dataValues;
+      assert.hasAllKeys(values, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects', 'createdAt', 'updatedAt', 'actionPatterns', 'armor']);
+      const { actionPatterns, armor } = values;
+      assert.hasAnyKeys(armor, 'dataValues');
+      const armorValues = armor.dataValues;
+      assert.hasAllKeys(armorValues, ['id', 'name', 'type', 'baseAC', 'disadvantage', 'createdAt', 'updatedAt']);
+      assert.equal(armorValues.id, armorId);
+      assert.equal(armorValues.name, 'fur');
+      assert(Array.isArray(actionPatterns));
+      assert.lengthOf(actionPatterns, 0);
+
       // Check that one creatureType was created
       assert.lengthOf(await CreatureType.findAll(), expectedCreatureTypes);
-      // Check that the creatureType has the correct armor
-      assert.equal(creatureType.armor.id, armorId);
-      assert.equal(creatureType.armor.name, 'fur');
 
       // Create a creature that is this creatureType, for use in other tests
       await generateCreature(null, creatureType.id);

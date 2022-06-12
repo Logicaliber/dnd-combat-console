@@ -150,6 +150,14 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
   }, {
+    scopes: {
+      name(name) {
+        return {
+          attributes: { include: ['name'] },
+          where: { name },
+        };
+      },
+    },
     sequelize,
     modelName: 'Spell',
   });

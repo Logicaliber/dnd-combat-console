@@ -20,11 +20,30 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ Armor, ActionPattern, Creature }) {
       // define association here
-      CreatureType.hasMany(models.Creature, { foreignKey: 'creatureTypeId', as: 'creatures' });
-      CreatureType.belongsTo(models.Armor, { foreignKey: 'armorId', as: 'armor' });
-      CreatureType.hasMany(models.ActionPattern, { foreignKey: 'creatureTypeId', as: 'actionPatterns' });
+      CreatureType.hasMany(Creature, { foreignKey: 'creatureTypeId', as: 'creatures' });
+      CreatureType.belongsTo(Armor, { foreignKey: 'armorId', as: 'armor' });
+      CreatureType.hasMany(ActionPattern, { foreignKey: 'creatureTypeId', as: 'actionPatterns' });
+
+      CreatureType.addScope('defaultScope', {
+        include: [{
+          model: ActionPattern,
+          as: 'actionPatterns',
+          order: [['priority', 'ASC']],
+        }, {
+          model: Armor,
+          as: 'armor',
+        }],
+      });
+
+      CreatureType.addScope('actionPatternIds', {
+        include: [{
+          model: ActionPattern.unscoped(),
+          as: 'actionPatterns',
+          attributes: { include: ['id'] },
+        }],
+      });
     }
 
     static optionsSchema = {
@@ -450,6 +469,20 @@ module.exports = (sequelize, DataTypes) => {
       },
     },
   }, {
+    scopes: {
+      name(name) {
+        return {
+          attributes: { include: ['name'] },
+          where: { name },
+        };
+      },
+      armorId(armorId) {
+        return {
+          attributes: { include: ['armorId'] },
+          where: { armorId },
+        };
+      },
+    },
     sequelize,
     modelName: 'CreatureType',
     validate: {
