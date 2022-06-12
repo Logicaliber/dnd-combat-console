@@ -1,4 +1,5 @@
 const {
+  Op,
   Model,
 } = require('sequelize');
 
@@ -83,6 +84,20 @@ module.exports = (sequelize, DataTypes) => {
       validate: { len: [MIN_DESCRIPTION, MAX_DESCRIPTION] },
     },
   }, {
+    scopes: {
+      withActionPatternId(actionPatternId) {
+        return {
+          attributes: { include: ['actionPatternId'] },
+          where: { actionPatternId },
+        };
+      },
+      withActionPatternIds(actionPatternIds) {
+        return {
+          attributes: { include: ['actionPatternId'] },
+          where: { actionPatternId: { [Op.in]: actionPatternIds } },
+        };
+      },
+    },
     sequelize,
     modelName: 'Action',
   });

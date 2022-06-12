@@ -7,7 +7,10 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 // Declare scoped models
 const CreatureTypeId = CreatureType.scope('idOnly');
 const CreatureId = Creature.scope('idOnly');
-const CreatureName = Creature.scope('nameOnly');
+
+const CreatureName = (name) => {
+  return Creature.scope({ method: ['nameOnly', name] });
+};
 
 // Error message building blocks
 const CREATE_FAIL = 'Creature creation failed,';
@@ -34,7 +37,7 @@ module.exports = {
       throw new Error(`${CREATE_FAIL} ${NO_TYPE}`);
     }
     // Check that the provided creature name is unique
-    if (await CreatureName.count({ where: { name: creatureObject.name } })) {
+    if (await CreatureName(creatureObject.name).count()) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the creature, returning it with its creatureType,
@@ -72,7 +75,7 @@ module.exports = {
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
     if (name !== undefined && name !== creature.name
-      && await CreatureName.count({ where: { name } })) {
+      && await CreatureName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the creature, returning it with its creatureType,

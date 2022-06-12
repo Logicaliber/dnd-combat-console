@@ -5,7 +5,10 @@ const { missingRequiredParams, stripInvalidParams } = require('./validationHelpe
 
 // Declare scoped models
 const SpellId = Spell.scope('idOnly');
-const SpellName = Spell.scope('nameOnly');
+
+const SpellName = (name) => {
+  return Spell.scope({ method: ['nameOnly', name] });
+};
 
 // Error message building blocks
 const CREATE_FAIL = 'Spell creation failed,';
@@ -26,7 +29,7 @@ module.exports = {
     const missingParams = missingRequiredParams(spellObject, Spell.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the spell name is unique
-    if (await SpellName.count({ where: { name: spellObject.name } })) {
+    if (await SpellName(spellObject.name).count()) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the spell
@@ -60,7 +63,7 @@ module.exports = {
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
     if (name !== undefined && name !== spell.name
-      && await SpellName.count({ where: { name } })) {
+      && await SpellName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the spell

@@ -9,6 +9,10 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 const CreatureTypeId = CreatureType.scope('idOnly');
 const ActionPatternId = ActionPattern.scope('idOnly');
 
+const ActionWithActionPatternId = (actionPatternId) => {
+  return Action.scope({ method: ['withActionPatternId', actionPatternId] });
+};
+
 // Error message building blocks
 const CREATE_FAIL = 'ActionPattern creation failed,';
 const UPDATE_FAIL = 'ActionPattern update failed,';
@@ -79,7 +83,7 @@ module.exports = {
     const actionPattern = await ActionPatternId.findByPk(actionPatternId);
     if (!actionPattern) throw new Error(`${DELETE_FAIL} ${NO_ACTION_PATTERN}`);
     // Delete all actions belonging to this actionPattern
-    await Action.unscoped().destroy({ where: { actionPatternId } });
+    await ActionWithActionPatternId(actionPatternId).destroy();
     // Delete the actionPattern
     return actionPattern.destroy();
   },

@@ -46,6 +46,14 @@ module.exports = (sequelize, DataTypes) => {
       validate: { min: 0 },
     },
   }, {
+    scopes: {
+      withCreatureTypeId(creatureTypeId) {
+        return {
+          attributes: { include: ['creatureTypeId'] },
+          where: { creatureTypeId },
+        };
+      },
+    },
     sequelize,
     modelName: 'ActionPattern',
   });

@@ -54,8 +54,11 @@ module.exports = (sequelize, DataTypes) => {
     },
   }, {
     scopes: {
-      nameOnly: {
-        attributes: { include: ['name'] },
+      nameOnly(name) {
+        return {
+          attributes: { include: ['name'] },
+          where: { name },
+        };
       },
     },
     sequelize,

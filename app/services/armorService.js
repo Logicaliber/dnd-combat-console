@@ -6,8 +6,11 @@ const { missingRequiredParams, stripInvalidParams } = require('./validationHelpe
 
 // Declare scoped models
 const ArmorId = Armor.scope('idOnly');
-const ArmorName = Armor.scope('nameOnly');
 const CreatureTypeArmorId = CreatureType.scope('armorIdOnly');
+
+const ArmorName = (name) => {
+  return Armor.scope({ method: ['nameOnly', name] });
+};
 
 // Error message building blocks
 const CREATE_FAIL = 'Armor creation failed,';
@@ -28,7 +31,7 @@ module.exports = {
     const missingParams = missingRequiredParams(armorObject, Armor.requiredParams);
     if (missingParams.length) throw new Error(`${CREATE_FAIL} fields missing: ${missingParams.join()}`);
     // Check that the armor name is unique
-    if (await ArmorName.count({ where: { name: armorObject.name } })) {
+    if (await ArmorName(armorObject.name).count()) {
       throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     }
     // Create the armor
@@ -62,7 +65,7 @@ module.exports = {
     // If the name is being updated, check that it is still unique
     const { name } = updateFields;
     if (name !== undefined && name !== armor.name
-      && await ArmorName.count({ where: { name } })) {
+      && await ArmorName(name).count()) {
       throw new Error(`${UPDATE_FAIL} ${NAME_EXISTS}`);
     }
     // Update the armor
