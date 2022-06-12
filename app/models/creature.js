@@ -9,9 +9,16 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
+    static associate({ CreatureType }) {
       // define association here
-      Creature.belongsTo(models.CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureType' });
+      Creature.belongsTo(CreatureType, { foreignKey: 'creatureTypeId', as: 'creatureType' });
+
+      Creature.addScope('defaultScope', {
+        include: [{
+          model: CreatureType,
+          as: 'creatureType',
+        }],
+      });
     }
 
     static optionsSchema = {

@@ -14,10 +14,20 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
-      Action.belongsTo(models.Weapon, { foreignKey: 'weaponId', as: 'weapon' });
-      Action.belongsTo(models.Spell, { foreignKey: 'spellId', as: 'spell' });
-      Action.belongsTo(models.ActionPattern, { foreignKey: 'actionPatternId', as: 'actionPattern' });
+    static associate({ Weapon, Spell, ActionPattern }) {
+      Action.belongsTo(Weapon, { foreignKey: 'weaponId', as: 'weapon' });
+      Action.belongsTo(Spell, { foreignKey: 'spellId', as: 'spell' });
+      Action.belongsTo(ActionPattern, { foreignKey: 'actionPatternId', as: 'actionPattern' });
+
+      Action.addScope('defaultScope', {
+        include: [{
+          model: Weapon,
+          as: 'weapon',
+        }, {
+          model: Spell,
+          as: 'spell',
+        }],
+      });
     }
 
     static optionsSchema = {
