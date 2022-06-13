@@ -34,14 +34,49 @@ fs
   });
 
 Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-    db[modelName].addScope('id', (id) => {
-      return {
-        where: { id },
-        attributes: { include: ['id'] },
-      };
-    });
+  const Model = db[modelName];
+  if (Model.associate) Model.associate(db);
+  Model.addScope('id', (id) => {
+    return {
+      attributes: { include: ['id'] },
+      where: { id },
+    };
+  });
+  if (modelName !== 'User') {
+    /**
+     * @param {Model} instance
+     * @returns {Promise<Model>} a copy of the given instance. If the model has a 'name' field,
+     * increments its trailing number by one, or adds a trailing ' 1'
+     */
+    Model.clone = async (instance) => {
+      delete instance.id;
+
+      // Increment name by 1 (e.g. 'goblin' => 'goblin 1' => 'goblin 2')
+      if ({}.hasOwnProperty.call(instance.dataValues, 'name')) {
+        const { name } = instance.dataValues;
+
+        // If string ends in a number, returns that string and number separated
+        // into non-numeric and numeric parts, with the numeric part incremented by one.
+        const numSuffix = (string, suffix = '') => {
+          const nextToLast = string.length - 1;
+          const lastChar = string.charAt(nextToLast);
+          if (Number.isNaN(parseInt(lastChar, 10))) {
+            return { string, suffix: (parseInt(suffix, 10) || 0) + 1 };
+          }
+          return numSuffix(string.slice(0, nextToLast), `${lastChar}${suffix}`);
+        };
+
+        const { string, suffix } = numSuffix(name);
+        instance.name = `${string} ${suffix}`;
+      }
+
+      // Return a copy of the instance after reloading the original instance in-place
+      return Model.scope('defaultScope').create({ ...instance.dataValues })
+        .then(async (newInstance) => {
+          await instance.reload();
+          return newInstance.reload();
+        });
+    };
   }
 });
 
