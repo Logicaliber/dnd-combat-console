@@ -46,15 +46,14 @@ Object.keys(db).forEach((modelName) => {
     /**
      * @param {Model} instance
      * @returns {Promise<Model>} a copy of the given instance. If the model has a 'name' field,
-     * increments its trailing number by one, or adds a trailing ' 1'
+     * increments its trailing number by one, or adds a trailing ' 1'. If the model has an 'index'
+     * or 'priority' field, sets the value to be the max + 1 over sibling instances.
      */
     Model.clone = async (instance) => {
       delete instance.id;
-
-      // Increment name by 1 (e.g. 'goblin' => 'goblin 1' => 'goblin 2')
+      // Increment name (e.g. 'goblin' => 'goblin 1' => 'goblin 2')
       if ({}.hasOwnProperty.call(instance.dataValues, 'name')) {
         const { name } = instance.dataValues;
-
         // If string ends in a number, returns that string and number separated
         // into non-numeric and numeric parts, with the numeric part incremented by one.
         const numSuffix = (string, suffix = '') => {
@@ -69,7 +68,23 @@ Object.keys(db).forEach((modelName) => {
         const { string, suffix } = numSuffix(name);
         instance.name = `${string} ${suffix}`;
       }
-
+      // Increment priority for actionPatterns
+      if ({}.hasOwnProperty.call(instance.dataValues, 'priority')) {
+        instance.priority = Math.max(...(await Model.findAll({
+          where: { creatureTypeId: instance.creatureTypeId },
+          attributes: { include: ['priority'] },
+        }))
+          .map((ap) => ap.priority))
+          + 1;
+      // Increment index for actions
+      } else if ({}.hasOwnProperty.call(instance.dataValues, 'index')) {
+        instance.index = Math.max(...(await Model.findAll({
+          where: { actionPatternId: instance.actionPatternId },
+          attributes: { include: ['index'] },
+        }))
+          .map((ap) => ap.index))
+          + 1;
+      }
       // Return a copy of the instance after reloading the original instance in-place
       return Model.scope('defaultScope').create({ ...instance.dataValues })
         .then(async (newInstance) => {
