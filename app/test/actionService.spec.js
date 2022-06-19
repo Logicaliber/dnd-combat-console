@@ -57,7 +57,7 @@ describe('Action Service', () => {
       try {
         if (await actionService.createAction({})) throw new Error('createAction should have thrown an error');
       } catch (error) {
-        assert.equal(error.message, 'Action creation failed, fields missing: actionPatternId,index');
+        assert.equal(error.message, 'Action creation failed, fields missing: actionPatternId');
       }
     });
 

@@ -49,7 +49,7 @@ describe('ActionPattern Service', () => {
           throw new Error('createActionPattern should have thrown an error');
         }
       } catch (error) {
-        assert.equal(error.message, 'ActionPattern creation failed, fields missing: creatureTypeId,priority');
+        assert.equal(error.message, 'ActionPattern creation failed, fields missing: creatureTypeId');
       }
     });
 

@@ -1,6 +1,6 @@
 const { Model } = require('sequelize');
-
 const {
+  incrementNumSuffix,
   isArrayOfStrings,
   isArrayOfLabeledDescriptions,
   isValidStat,
@@ -16,6 +16,24 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
     /**
+     * @param {CreatureType} creatureType
+     * @returns {Promise<CreatureType>} a copy of the given creatureType, with
+     * `name` set to be the max + 1 over sibling instances.
+     */
+    static clone = async (creatureType) => {
+      delete creatureType.id;
+
+      creatureType.name = incrementNumSuffix(creatureType.name);
+
+      // Return a copy of the creatureType after reloading the original creatureType in-place
+      return CreatureType.scope('defaultScope').create({ ...creatureType.dataValues })
+        .then(async (newCreatureType) => {
+          await creatureType.reload();
+          return newCreatureType.reload();
+        });
+    };
+
+    /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
@@ -28,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
 
       CreatureType.addScope('defaultScope', {
         include: [{
-          model: ActionPattern,
+          model: ActionPattern.scope('defaultScope'),
           as: 'actionPatterns',
           order: [['priority', 'ASC']],
         }, {

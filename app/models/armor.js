@@ -1,7 +1,26 @@
 const { Model } = require('sequelize');
+const { incrementNumSuffix } = require('../services/validationHelpers');
 
 module.exports = (sequelize, DataTypes) => {
   class Armor extends Model {
+    /**
+     * @param {Armor} armor
+     * @returns {Promise<Armor>} a copy of the given armor, with
+     * `name` set to be the max + 1 over sibling instances.
+     */
+    static clone = async (armor) => {
+      delete armor.id;
+
+      armor.name = incrementNumSuffix(armor.name);
+
+      // Return a copy of the armor after reloading the original armor in-place
+      return Armor.scope('defaultScope').create({ ...armor.dataValues })
+        .then(async (newArmor) => {
+          await armor.reload();
+          return newArmor.reload();
+        });
+    };
+
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.

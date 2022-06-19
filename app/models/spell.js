@@ -1,6 +1,9 @@
 const { Model } = require('sequelize');
 
-const { isDamageObject } = require('../services/validationHelpers');
+const {
+  incrementNumSuffix,
+  isDamageObject,
+} = require('../services/validationHelpers');
 const {
   MIN_INFORMATION,
   MAX_INFORMATION,
@@ -10,6 +13,24 @@ const {
 
 module.exports = (sequelize, DataTypes) => {
   class Spell extends Model {
+    /**
+     * @param {Spell} spell
+     * @returns {Promise<Spell>} a copy of the given spell, with
+     * `name` set to be the max + 1 over sibling instances.
+     */
+    static clone = async (spell) => {
+      delete spell.id;
+
+      spell.name = incrementNumSuffix(spell.name);
+
+      // Return a copy of the spell after reloading the original spell in-place
+      return Spell.scope('defaultScope').create({ ...spell.dataValues })
+        .then(async (newSpell) => {
+          await spell.reload();
+          return newSpell.reload();
+        });
+    };
+
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.

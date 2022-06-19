@@ -10,6 +10,22 @@ const {
 
 module.exports = {
   /**
+   * Given a string that ends in a number, returns that string and number
+   * with the numeric part incremented by one. Otherwise, return that string
+   * contatenated with ' 1'.
+   * @param {String} string
+   * @param {String} suffix
+   * @returns {String}
+   */
+  incrementNumSuffix: (string, suffix = '') => {
+    const nextToLast = string.length - 1;
+    const lastChar = string.charAt(nextToLast);
+    if (Number.isNaN(parseInt(lastChar, 10))) {
+      return `${string} ${(parseInt(suffix, 10) || 0) + 1}`;
+    }
+    return module.exports.incrementNumSuffix(string.slice(0, nextToLast), `${lastChar}${suffix}`);
+  },
+  /**
    * @param {Object} inputObject
    * @param {Array<String>} allowedParams
    * @returns {Object} strippedInputObject

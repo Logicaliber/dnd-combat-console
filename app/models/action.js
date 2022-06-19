@@ -11,6 +11,27 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Action extends Model {
     /**
+     * @param {Action} action
+     * @returns {Promise<Action>} a copy of the given action, with
+     * `index` set to be the max + 1 over sibling instances.
+     */
+    static clone = async (action) => {
+      delete action.id;
+      action.index = Math.max(...(await Action.findAll({
+        where: { actionPatternId: action.actionPatternId },
+        attributes: { include: ['index'] },
+      }))
+        .map((ap) => ap.index))
+        + 1;
+      // Return a copy of the action after reloading the original action in-place
+      return Action.scope('defaultScope').create({ ...action.dataValues })
+        .then(async (newAction) => {
+          await action.reload();
+          return newAction.reload();
+        });
+    };
+
+    /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
@@ -34,7 +55,7 @@ module.exports = (sequelize, DataTypes) => {
     static optionsSchema = {
       // required, searchable, updateable
       actionPatternId: sequelize.modelOptsObject(true, true, false),
-      index: sequelize.modelOptsObject(true, true, true),
+      index: sequelize.modelOptsObject(false, true, true),
       weaponId: sequelize.modelOptsObject(false, true, true),
       times: sequelize.modelOptsObject(false, true, true),
       spellId: sequelize.modelOptsObject(false, true, true),
