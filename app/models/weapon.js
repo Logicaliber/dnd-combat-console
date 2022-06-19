@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
      * @returns {Promise<Weapon>} a copy of the given weapon, with
      * `name` set to be the max + 1 over sibling instances.
      */
-    static clone = async (weapon) => {
+    static async cloneInstance(weapon) {
       delete weapon.id;
 
       weapon.name = incrementNumSuffix(weapon.name);
@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
           await weapon.reload();
           return newWeapon.reload();
         });
-    };
+    }
 
     /**
      * Helper method for defining associations.

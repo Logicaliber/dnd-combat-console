@@ -18,7 +18,7 @@ module.exports = (sequelize, DataTypes) => {
      * @returns {Promise<Spell>} a copy of the given spell, with
      * `name` set to be the max + 1 over sibling instances.
      */
-    static clone = async (spell) => {
+    static async cloneInstance(spell) {
       delete spell.id;
 
       spell.name = incrementNumSuffix(spell.name);
@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
           await spell.reload();
           return newSpell.reload();
         });
-    };
+    }
 
     /**
      * Helper method for defining associations.

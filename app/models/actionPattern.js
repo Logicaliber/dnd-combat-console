@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      * @returns {Promise<ActionPattern>} a copy of the given actionPattern, with
      * `priority` set to be the max + 1 over sibling instances.
      */
-    static clone = async (actionPattern) => {
+    static async cloneInstance(actionPattern) {
       delete actionPattern.id;
       actionPattern.priority = Math.max(...(await ActionPattern.findAll({
         where: { creatureTypeId: actionPattern.creatureTypeId },
@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
           await actionPattern.reload();
           return newActionPattern.reload();
         });
-    };
+    }
 
     /**
      * Helper method for defining associations.

@@ -34,9 +34,8 @@ fs
   });
 
 Object.keys(db).forEach((modelName) => {
-  const Model = db[modelName];
-  if (Model.associate) Model.associate(db);
-  Model.addScope('id', (id) => {
+  if (db[modelName].associate) db[modelName].associate(db);
+  db[modelName].addScope('id', (id) => {
     return {
       attributes: { include: ['id'] },
       where: { id },

@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
      * @returns {Promise<Creature>} a copy of the given creature, with
      * `name` set to be the max + 1 over sibling instances.
      */
-    static clone = async (creature) => {
+    static async cloneInstance(creature) {
       delete creature.id;
 
       creature.name = incrementNumSuffix(creature.name);
@@ -20,7 +20,7 @@ module.exports = (sequelize, DataTypes) => {
           await creature.reload();
           return newCreature.reload();
         });
-    };
+    }
 
     /**
      * Helper method for defining associations.
