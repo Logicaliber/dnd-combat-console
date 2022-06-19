@@ -36,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
 
       ActionPattern.addScope('defaultScope', {
         include: [{
-          model: Action.scope('defaultScope'),
+          model: Action,
           as: 'actions',
           order: [['index', 'ASC']],
         }],

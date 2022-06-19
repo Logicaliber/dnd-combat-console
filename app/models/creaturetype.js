@@ -46,7 +46,7 @@ module.exports = (sequelize, DataTypes) => {
 
       CreatureType.addScope('defaultScope', {
         include: [{
-          model: ActionPattern.scope('defaultScope'),
+          model: ActionPattern,
           as: 'actionPatterns',
           order: [['priority', 'ASC']],
         }, {

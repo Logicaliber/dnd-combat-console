@@ -33,7 +33,7 @@ module.exports = (sequelize, DataTypes) => {
 
       Creature.addScope('defaultScope', {
         include: [{
-          model: CreatureType.scope('defaultScope'),
+          model: CreatureType,
           as: 'creatureType',
         }],
       });
