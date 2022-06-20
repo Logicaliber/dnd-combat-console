@@ -1,7 +1,6 @@
 const { Model } = require('sequelize');
 
 const {
-  incrementNumSuffix,
   isArrayOfStringsAlphabetical,
   isDamageObject,
 } = require('../services/validationHelpers');
@@ -10,14 +9,11 @@ module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {
     /**
      * @param {Weapon} weapon
-     * @returns {Promise<Weapon>} a copy of the given weapon, with
-     * `name` set to be the max + 1 over sibling instances.
+     * @returns {Promise<Weapon>} a copy of the given weapon with `${name} (copy)`
      */
     static async cloneInstance(weapon) {
       delete weapon.id;
-
-      weapon.name = incrementNumSuffix(weapon.name);
-
+      weapon.name = `${weapon.name} (copy)`;
       // Return a copy of the weapon after reloading the original weapon in-place
       return Weapon.scope('defaultScope').create({ ...weapon.dataValues })
         .then(async (newWeapon) => {

@@ -1,6 +1,5 @@
 const { Model } = require('sequelize');
 const {
-  incrementNumSuffix,
   isArrayOfStrings,
   isArrayOfLabeledDescriptions,
   isValidStat,
@@ -17,14 +16,11 @@ module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
     /**
      * @param {CreatureType} creatureType
-     * @returns {Promise<CreatureType>} a copy of the given creatureType, with
-     * `name` set to be the max + 1 over sibling instances.
+     * @returns {Promise<CreatureType>} a copy of creatureType with `${name} (copy)`.
      */
     static async cloneInstance(creatureType) {
       delete creatureType.id;
-
-      creatureType.name = incrementNumSuffix(creatureType.name);
-
+      creatureType.name = `${creatureType.name} (copy)`;
       // Return a copy of the creatureType after reloading the original creatureType in-place
       return CreatureType.scope('defaultScope').create({ ...creatureType.dataValues })
         .then(async (newCreatureType) => {

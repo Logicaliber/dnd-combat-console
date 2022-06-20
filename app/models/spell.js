@@ -1,7 +1,6 @@
 const { Model } = require('sequelize');
 
 const {
-  incrementNumSuffix,
   isDamageObject,
 } = require('../services/validationHelpers');
 const {
@@ -15,14 +14,11 @@ module.exports = (sequelize, DataTypes) => {
   class Spell extends Model {
     /**
      * @param {Spell} spell
-     * @returns {Promise<Spell>} a copy of the given spell, with
-     * `name` set to be the max + 1 over sibling instances.
+     * @returns {Promise<Spell>} a copy of the given spell, with `${name} (copy)`
      */
     static async cloneInstance(spell) {
       delete spell.id;
-
-      spell.name = incrementNumSuffix(spell.name);
-
+      spell.name = `${spell.name} (copy)`;
       // Return a copy of the spell after reloading the original spell in-place
       return Spell.scope('defaultScope').create({ ...spell.dataValues })
         .then(async (newSpell) => {

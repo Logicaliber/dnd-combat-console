@@ -1,27 +1,8 @@
 const { Model } = require('sequelize');
-const { incrementNumSuffix } = require('../services/validationHelpers');
 const { MAX_LEGENDARY_RESISTANCES, MAX_SPELL_SLOTS } = require('../variables');
 
 module.exports = (sequelize, DataTypes) => {
   class Creature extends Model {
-    /**
-     * @param {Creature} creature
-     * @returns {Promise<Creature>} a copy of the given creature, with
-     * `name` set to be the max + 1 over sibling instances.
-     */
-    static async cloneInstance(creature) {
-      delete creature.id;
-
-      creature.name = incrementNumSuffix(creature.name);
-
-      // Return a copy of the creature after reloading the original creature in-place
-      return Creature.scope('defaultScope').create({ ...creature.dataValues })
-        .then(async (newCreature) => {
-          await creature.reload();
-          return newCreature.reload();
-        });
-    }
-
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
