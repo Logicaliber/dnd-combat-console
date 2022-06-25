@@ -11,9 +11,11 @@ const WeaponId = (id) => Weapon.scope({ method: ['id', id] });
 const SpellId = (id) => Spell.scope({ method: ['id', id] });
 const ActionPatternId = (id) => ActionPattern.scope({ method: ['id', id] });
 const ActionId = (id) => Action.scope({ method: ['id', id] });
+const ActionWithActionPatternId = (actionPatternId) => Action.scope({ method: ['actionPatternId', actionPatternId] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Action creation failed,';
+const CLONE_FAIL = 'Action clone failed,';
 const UPDATE_FAIL = 'Action update failed,';
 const DELETE_FAIL = 'Action deletion failed,';
 const WEAPON_SPELL_OTHER = 'action must be one of weapon, spell, or other';
@@ -74,6 +76,29 @@ module.exports = {
     // Create the action, then return it with its weapon or spell
     return Action.create(actionObject)
       .then((action) => action.reload());
+  },
+
+  /**
+   * @param {Action} action
+   * @returns {Promise<Action>} a copy of the given action, with
+   * `index` set to be the max + 1 over sibling instances.
+   */
+  cloneAction: async (id) => {
+    // Check that the indicated action exists
+    id = parseInt(id, 10);
+    if (!id) throw new Error(`${CLONE_FAIL} ${NO_ACTION}`);
+    const action = await Action.unscoped().findByPk(id);
+    if (!action) throw new Error(`${CLONE_FAIL} ${NO_ACTION}`);
+    // Clear the action instance ID, and set the index to be
+    // 1 + the max of index values over sibling instances
+    delete action.id;
+    action.index = Math.max(...(
+      await ActionWithActionPatternId(action.actionPatternId).findAll({
+        attributes: { include: ['index'] },
+      })).map((a) => a.index)) + 1;
+    // Return a copy of the action with its weapons, and spells
+    return Action.scope('defaultScope').create({ ...action.dataValues })
+      .then(async (actionClone) => actionClone.reload());
   },
 
   /**

@@ -8,21 +8,6 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {
     /**
-     * @param {Weapon} weapon
-     * @returns {Promise<Weapon>} a copy of the given weapon with `${name} (copy)`
-     */
-    static async cloneInstance(weapon) {
-      delete weapon.id;
-      weapon.name = `${weapon.name} (copy)`;
-      // Return a copy of the weapon after reloading the original weapon in-place
-      return Weapon.scope('defaultScope').create({ ...weapon.dataValues })
-        .then(async (newWeapon) => {
-          await weapon.reload();
-          return newWeapon.reload();
-        });
-    }
-
-    /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.

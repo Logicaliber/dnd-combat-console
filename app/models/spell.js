@@ -13,21 +13,6 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Spell extends Model {
     /**
-     * @param {Spell} spell
-     * @returns {Promise<Spell>} a copy of the given spell, with `${name} (copy)`
-     */
-    static async cloneInstance(spell) {
-      delete spell.id;
-      spell.name = `${spell.name} (copy)`;
-      // Return a copy of the spell after reloading the original spell in-place
-      return Spell.scope('defaultScope').create({ ...spell.dataValues })
-        .then(async (newSpell) => {
-          await spell.reload();
-          return newSpell.reload();
-        });
-    }
-
-    /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.

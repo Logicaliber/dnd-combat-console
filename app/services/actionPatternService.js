@@ -9,9 +9,12 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 const CreatureTypeId = (id) => CreatureType.scope({ method: ['id', id] });
 const ActionPatternId = (id) => ActionPattern.scope({ method: ['id', id] });
 const ActionWithActionPatternId = (actionPatternId) => Action.scope({ method: ['actionPatternId', actionPatternId] });
+// ActionPattern with creatureTypeId for a given creatureType ID
+const ActionPatternCreatureTypeId = (creatureTypeId) => ActionPattern.scope({ method: ['creatureTypeId', creatureTypeId] });
 
 // Error message building blocks
 const CREATE_FAIL = 'ActionPattern creation failed,';
+const CLONE_FAIL = 'ActionPattern clone failed,';
 const UPDATE_FAIL = 'ActionPattern update failed,';
 const DELETE_FAIL = 'ActionPattern deletion failed,';
 const NO_CREATURE_TYPE = 'no creatureType found for the given ID';
@@ -37,6 +40,24 @@ module.exports = {
     // Create the actionPattern
     return ActionPattern.create(actionPatternObject)
       .then((actionPattern) => actionPattern.reload());
+  },
+
+  cloneActionPattern: async (id) => {
+    // Check that the indicated actionPattern exists
+    id = parseInt(id, 10);
+    if (!id) throw new Error(`${CLONE_FAIL} ${NO_ACTION_PATTERN}`);
+    const actionPattern = await ActionPattern.unscoped().findByPk(id);
+    if (!actionPattern) throw new Error(`${CLONE_FAIL} ${NO_ACTION_PATTERN}`);
+    // Clear the actionPattern instance ID, and set the priority
+    // to be 1 + the max of priorities over sibling instances
+    delete actionPattern.id;
+    actionPattern.priority = Math.max(...(
+      await ActionPatternCreatureTypeId(actionPattern.creatureTypeId).findAll({
+        attributes: { include: ['priority'] },
+      })).map((ap) => ap.priority)) + 1;
+    // Return a copy of the actionPattern with its actions, weapons, and spells
+    return ActionPattern.scope('defaultScope').create({ ...actionPattern.dataValues })
+      .then(async (actionPatternClone) => actionPatternClone.reload());
   },
 
   /**

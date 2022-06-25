@@ -3,21 +3,6 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
   class Armor extends Model {
     /**
-     * @param {Armor} armor
-     * @returns {Promise<Armor>} a copy of the given armor with `${name} (copy)`.
-     */
-    static async cloneInstance(armor) {
-      delete armor.id;
-      armor.name = `${armor.name} (copy)`;
-      // Return a copy of the armor after reloading the original armor in-place
-      return Armor.scope('defaultScope').create({ ...armor.dataValues })
-        .then(async (newArmor) => {
-          await armor.reload();
-          return newArmor.reload();
-        });
-    }
-
-    /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.

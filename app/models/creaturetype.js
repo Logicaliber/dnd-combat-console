@@ -15,21 +15,6 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class CreatureType extends Model {
     /**
-     * @param {CreatureType} creatureType
-     * @returns {Promise<CreatureType>} a copy of creatureType with `${name} (copy)`.
-     */
-    static async cloneInstance(creatureType) {
-      delete creatureType.id;
-      creatureType.name = `${creatureType.name} (copy)`;
-      // Return a copy of the creatureType after reloading the original creatureType in-place
-      return CreatureType.scope('defaultScope').create({ ...creatureType.dataValues })
-        .then(async (newCreatureType) => {
-          await creatureType.reload();
-          return newCreatureType.reload();
-        });
-    }
-
-    /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
