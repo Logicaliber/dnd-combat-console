@@ -43,7 +43,7 @@ module.exports = {
     const weapon = await Weapon.findByPk(id);
     if (!weapon) throw new Error(`${CLONE_FAIL} ${NO_WEAPON}`);
     // Clear the weapon instance ID, and set name to 'name (copy)'
-    delete weapon.id;
+    delete weapon.dataValues.id;
     weapon.name = `${weapon.name} (copy)`;
     // Return a copy of the weapon
     return Weapon.create({ ...weapon.dataValues });

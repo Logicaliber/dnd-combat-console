@@ -45,7 +45,7 @@ module.exports = {
     const armor = await Armor.findByPk(id);
     if (!armor) throw new Error(`${CLONE_FAIL} ${NO_ARMOR}`);
     // Clear the armor instance ID, and set name to 'name (copy)'
-    delete armor.id;
+    delete armor.dataValues.id;
     armor.name = `${armor.name} (copy)`;
     // Return a copy of the armor
     return Armor.create({ ...armor.dataValues });

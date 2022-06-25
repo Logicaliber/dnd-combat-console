@@ -91,7 +91,7 @@ module.exports = {
     if (!action) throw new Error(`${CLONE_FAIL} ${NO_ACTION}`);
     // Clear the action instance ID, and set the index to be
     // 1 + the max of index values over sibling instances
-    delete action.id;
+    delete action.dataValues.id;
     action.index = Math.max(...(
       await ActionWithActionPatternId(action.actionPatternId).findAll({
         attributes: { include: ['index'] },

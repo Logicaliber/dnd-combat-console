@@ -143,6 +143,36 @@ describe('CreatureType Service', () => {
     });
   });
 
+  describe('cloneCreatureType', () => {
+    it('Should throw an error if an invalid ID is passed', async () => {
+      try {
+        await creatureTypeService.cloneCreatureType('invalid');
+        throw new Error('cloneCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType clone failed, no creatureType found for the given ID');
+      }
+      try {
+        await creatureTypeService.cloneCreatureType(9999);
+        throw new Error('cloneCreatureType should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'CreatureType clone failed, no creatureType found for the given ID');
+      }
+    });
+
+    it('Should return a copy of the creatureType with "name (copy)"', async () => {
+      const result = await creatureTypeService.cloneCreatureType(creatureType.id);
+      expectedCreatureTypes += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'name', 'size', 'type', 'tags', 'alignment', 'armorId', 'hasShield', 'hitDie', 'numDice', 'maxHP', 'speed', 'flySpeed', 'swimSpeed', 'climbSpeed', 'burrowSpeed', 'hover', 'str', 'dex', 'con', 'int', 'wis', 'cha', 'savingThrows', 'skills', 'resistances', 'senses', 'passivePerception', 'languages', 'challengeRating', 'proficiencyBonus', 'legendaryResistances', 'specialAbilities', 'spellcasting', 'spellSlots', 'innateSpells', 'legendaryActions', 'reactions', 'lairActions', 'regionalEffects', 'createdAt', 'updatedAt', 'actionPatterns', 'armor']);
+      assert.notEqual(values.id, creatureType.id);
+      assert.equal(values.name, `${creatureType.name} (copy)`);
+
+      // Check that one creatureType was created
+      assert.lengthOf(await CreatureType.findAll(), expectedCreatureTypes);
+    });
+  });
+
   describe('getCreatureType', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull(await creatureTypeService.getCreatureType('invalid'));

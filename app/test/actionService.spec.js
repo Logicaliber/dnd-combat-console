@@ -170,6 +170,37 @@ describe('Action Service', () => {
     });
   });
 
+  describe('cloneAction', () => {
+    it('Should throw an error if an invalid ID is passed', async () => {
+      try {
+        await actionService.cloneAction('invalid');
+        throw new Error('cloneAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action clone failed, no action found for the given ID');
+      }
+      try {
+        await actionService.cloneAction(9999);
+        throw new Error('cloneAction should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Action clone failed, no action found for the given ID');
+      }
+    });
+
+    it('Should return a copy of the action with index 1 + the max of index values over sibling instances', async () => {
+      const result = await actionService.cloneAction(action.id);
+      expectedActions += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'actionPatternId', 'index', 'weaponId', 'times', 'spellId', 'restrictions', 'other', 'createdAt', 'updatedAt', 'weapon', 'spell']);
+      assert.notEqual(values.id, action.id);
+      assert.equal(values.actionPatternId, action.actionPatternId);
+      assert.equal(values.index, action.index + 1);
+
+      // Check that one action was created
+      assert.lengthOf(await Action.findAll(), expectedActions);
+    });
+  });
+
   describe('getAction', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull(await actionService.getAction('invalid'));

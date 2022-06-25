@@ -78,6 +78,36 @@ describe('Weapon Service', () => {
     });
   });
 
+  describe('cloneWeapon', () => {
+    it('Should throw an error if an invalid ID is passed', async () => {
+      try {
+        await weaponService.cloneWeapon('invalid');
+        throw new Error('cloneWeapon should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Weapon clone failed, no weapon found for the given ID');
+      }
+      try {
+        await weaponService.cloneWeapon(9999);
+        throw new Error('cloneWeapon should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Weapon clone failed, no weapon found for the given ID');
+      }
+    });
+
+    it('Should return a copy of the weapon with "name (copy)"', async () => {
+      const result = await weaponService.cloneWeapon(weapon.id);
+      expectedWeapons += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'name', 'damages', 'properties', 'normalRange', 'longRange', 'attackShape', 'save', 'saveType', 'saveStillHalf', 'createdAt', 'updatedAt']);
+      assert.notEqual(values.id, weapon.id);
+      assert.equal(values.name, `${weapon.name} (copy)`);
+
+      // Check that one weapon was created
+      assert.lengthOf(await Weapon.findAll(), expectedWeapons);
+    });
+  });
+
   describe('getWeapon', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull(await weaponService.getWeapon('invalid'));

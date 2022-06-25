@@ -43,7 +43,7 @@ module.exports = {
     const spell = await Spell.findByPk(id);
     if (!spell) throw new Error(`${CLONE_FAIL} ${NO_SPELL}`);
     // Clear the spell instance ID, and set name to 'name (copy)'
-    delete spell.id;
+    delete spell.dataValues.id;
     spell.name = `${spell.name} (copy)`;
     // Return a copy of the spell
     return Spell.create({ ...spell.dataValues });

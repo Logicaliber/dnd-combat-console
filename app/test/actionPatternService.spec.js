@@ -113,6 +113,37 @@ describe('ActionPattern Service', () => {
     });
   });
 
+  describe('cloneActionPattern', () => {
+    it('Should throw an error if an invalid ID is passed', async () => {
+      try {
+        await actionPatternService.cloneActionPattern('invalid');
+        throw new Error('cloneActionPattern should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'ActionPattern clone failed, no actionPattern found for the given ID');
+      }
+      try {
+        await actionPatternService.cloneActionPattern(9999);
+        throw new Error('cloneActionPattern should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'ActionPattern clone failed, no actionPattern found for the given ID');
+      }
+    });
+
+    it('Should return a copy of the actionPattern with priority 1 + the max of priorities over sibling instances', async () => {
+      const result = await actionPatternService.cloneActionPattern(actionPattern.id);
+      expectedActionPatterns += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'creatureTypeId', 'priority', 'createdAt', 'updatedAt', 'actions']);
+      assert.notEqual(values.id, actionPattern.id);
+      assert.equal(values.creatureTypeId, actionPattern.creatureTypeId);
+      assert.equal(values.priority, actionPattern.priority + 1);
+
+      // Check that one actionPattern was created
+      assert.lengthOf(await ActionPattern.findAll(), expectedActionPatterns);
+    });
+  });
+
   describe('getActionPattern', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull(await actionPatternService.getActionPattern('invalid'));

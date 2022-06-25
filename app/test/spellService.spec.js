@@ -106,6 +106,36 @@ describe('Spell Service', () => {
     });
   });
 
+  describe('cloneSpell', () => {
+    it('Should throw an error if an invalid ID is passed', async () => {
+      try {
+        await spellService.cloneSpell('invalid');
+        throw new Error('cloneSpell should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Spell clone failed, no spell found for the given ID');
+      }
+      try {
+        await spellService.cloneSpell(9999);
+        throw new Error('cloneSpell should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Spell clone failed, no spell found for the given ID');
+      }
+    });
+
+    it('Should return a copy of the spell with "name (copy)"', async () => {
+      const result = await spellService.cloneSpell(spell.id);
+      expectedSpells += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'name', 'level', 'school', 'castingTime', 'range', 'components', 'duration', 'saveType', 'saveStillHalf', 'description', 'damages', 'createdAt', 'updatedAt']);
+      assert.notEqual(values.id, spell.id);
+      assert.equal(values.name, `${spell.name} (copy)`);
+
+      // Check that one spell was created
+      assert.lengthOf(await Spell.findAll(), expectedSpells);
+    });
+  });
+
   describe('getSpell', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull(await spellService.getSpell('invalid'));

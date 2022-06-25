@@ -50,7 +50,7 @@ module.exports = {
     if (!actionPattern) throw new Error(`${CLONE_FAIL} ${NO_ACTION_PATTERN}`);
     // Clear the actionPattern instance ID, and set the priority
     // to be 1 + the max of priorities over sibling instances
-    delete actionPattern.id;
+    delete actionPattern.dataValues.id;
     actionPattern.priority = Math.max(...(
       await ActionPatternCreatureTypeId(actionPattern.creatureTypeId).findAll({
         attributes: { include: ['priority'] },

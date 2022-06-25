@@ -61,9 +61,9 @@ module.exports = {
     id = parseInt(id, 10);
     if (!id) throw new Error(`${CLONE_FAIL} ${NO_CREATURE_TYPE}`);
     const creatureType = await CreatureType.findByPk(id);
-    if (!creatureType) throw new Error(`${CLONE_FAIL} ${NO_ARMOR}`);
+    if (!creatureType) throw new Error(`${CLONE_FAIL} ${NO_CREATURE_TYPE}`);
     // Clear the creatureType instance ID, and set name to 'name (copy)'
-    delete creatureType.id;
+    delete creatureType.dataValues.id;
     creatureType.name = `${creatureType.name} (copy)`;
     // Return a copy of the creatureType with its armor,
     // actionPatterns, actions, weapons, and spells
