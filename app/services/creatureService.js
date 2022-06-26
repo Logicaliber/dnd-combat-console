@@ -8,14 +8,23 @@ const { stripInvalidParams, missingRequiredParams } = require('./validationHelpe
 const CreatureTypeId = (id) => CreatureType.scope({ method: ['id', id] });
 const CreatureId = (id) => Creature.scope({ method: ['id', id] });
 const CreatureName = (name) => Creature.scope({ method: ['name', name] });
+const CreatureWithCreatureTypeId = (creatureTypeId) => Creature.scope({ method: ['creatureTypeId', creatureTypeId] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Creature creation failed,';
+const SPAWN_FAIL = 'Creature spawn failed,';
 const UPDATE_FAIL = 'Creature update failed,';
 const DELETE_FAIL = 'Creature deletion failed,';
 const NAME_EXISTS = 'a creature with the given name already exists';
 const NO_CREATURE = 'no creature found for the given ID';
 const NO_TYPE = 'no creatureType found for the given ID';
+
+const numSuffix = (name, suffix = '') => {
+  if (!name.length) return parseInt(suffix, 10) || 0;
+  const lastChar = name.charAt(name.length - 1);
+  if (Number.isNaN(parseInt(lastChar, 10))) return (parseInt(suffix, 10) || 0);
+  return numSuffix(name.slice(0, name.length - 1), `${suffix}${lastChar}`);
+};
 
 module.exports = {
   /**
@@ -37,6 +46,41 @@ module.exports = {
     // armor, actionPatterns, actions, weapons, and spells
     return Creature.create(creatureObject)
       .then((creature) => creature.reload());
+  },
+
+  spawnCreature: async (creatureTypeId) => {
+    creatureTypeId = parseInt(creatureTypeId, 10);
+    if (!creatureTypeId) throw new Error(`${SPAWN_FAIL} ${NO_TYPE}`);
+    const creatureType = await CreatureType.unscoped().findByPk(creatureTypeId);
+    if (!creatureType) throw new Error(`${SPAWN_FAIL} ${NO_TYPE}`);
+
+    const numSuffixes = (await CreatureWithCreatureTypeId(creatureTypeId).findAll({
+      attributes: { include: ['name'] },
+    })).map((creature) => numSuffix(creature.name));
+
+    const newCreatureObject = {
+      name: `${creatureType.name} ${1 + Math.max(0, ...numSuffixes)}`,
+      creatureTypeId,
+      maxHP: creatureType.maxHP,
+      currentHP: creatureType.maxHP,
+    };
+
+    if (creatureType.spellSlots) {
+      [
+        newCreatureObject.slotsZeroeth, // Ignored
+        newCreatureObject.slotsFirst,
+        newCreatureObject.slotsSecond,
+        newCreatureObject.slotsThird,
+        newCreatureObject.slotsFourth,
+        newCreatureObject.slotsFifth,
+        newCreatureObject.slotsSixth,
+        newCreatureObject.slotsSeventh,
+        newCreatureObject.slotsEigth,
+        newCreatureObject.slotsNinth,
+      ] = [...creatureType.spellSlots];
+    }
+
+    return Creature.create(newCreatureObject).then((newCreature) => newCreature.reload());
   },
 
   /**
