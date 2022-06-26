@@ -48,39 +48,47 @@ module.exports = {
       .then((creature) => creature.reload());
   },
 
+  /**
+   * @param {Integer} creatureTypeId
+   * @returns {Promise<Creature>} a new creature, named with a number
+   * suffix 1 + the max of number suffixes over sibling isntances.
+   */
   spawnCreature: async (creatureTypeId) => {
     creatureTypeId = parseInt(creatureTypeId, 10);
     if (!creatureTypeId) throw new Error(`${SPAWN_FAIL} ${NO_TYPE}`);
     const creatureType = await CreatureType.unscoped().findByPk(creatureTypeId);
     if (!creatureType) throw new Error(`${SPAWN_FAIL} ${NO_TYPE}`);
-
-    const numSuffixes = (await CreatureWithCreatureTypeId(creatureTypeId).findAll({
-      attributes: { include: ['name'] },
-    })).map((creature) => numSuffix(creature.name));
-
-    const newCreatureObject = {
-      name: `${creatureType.name} ${1 + Math.max(0, ...numSuffixes)}`,
+    // Give the new creature instance a name with a number suffix 1 + the max of number
+    // suffixes over sibling instances. Also give it the default maxHP and currentHP.
+    const creatureObject = {
       creatureTypeId,
+      name: `${creatureType.name} ${1 + Math.max(0, ...(
+        await CreatureWithCreatureTypeId(creatureTypeId).findAll({
+          attributes: { include: ['name'] },
+        })).map((creature) => numSuffix(creature.name)))}`,
       maxHP: creatureType.maxHP,
       currentHP: creatureType.maxHP,
     };
-
+    // If the creatureType has spells, use its spellSlots array
+    // to instantiate the slots of the new creature instance.
     if (creatureType.spellSlots) {
       [
-        newCreatureObject.slotsZeroeth, // Ignored
-        newCreatureObject.slotsFirst,
-        newCreatureObject.slotsSecond,
-        newCreatureObject.slotsThird,
-        newCreatureObject.slotsFourth,
-        newCreatureObject.slotsFifth,
-        newCreatureObject.slotsSixth,
-        newCreatureObject.slotsSeventh,
-        newCreatureObject.slotsEigth,
-        newCreatureObject.slotsNinth,
+        creatureObject.slotsZeroeth, // Ignored
+        creatureObject.slotsFirst,
+        creatureObject.slotsSecond,
+        creatureObject.slotsThird,
+        creatureObject.slotsFourth,
+        creatureObject.slotsFifth,
+        creatureObject.slotsSixth,
+        creatureObject.slotsSeventh,
+        creatureObject.slotsEigth,
+        creatureObject.slotsNinth,
       ] = [...creatureType.spellSlots];
     }
-
-    return Creature.create(newCreatureObject).then((newCreature) => newCreature.reload());
+    // Return the new creature with its creatureType, armor,
+    // actionPatterns, actions, weapons, and spells.
+    return Creature.create(creatureObject)
+      .then((creature) => creature.reload());
   },
 
   /**

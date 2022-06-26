@@ -53,11 +53,11 @@ module.exports = {
   },
 
   /**
-   * @param {CreatureType} creatureType
-   * @returns {Promise<CreatureType>} a copy of creatureType with `${name} (copy)`.
+   * @param {Integer} id of the creatureType to clone
+   * @returns {Promise<CreatureType>} a copy of the creatureType with `${name} (copy)`.
    */
   cloneCreatureType: async (id) => {
-    // Check that the indicated armor exists
+    // Check that the indicated creatureType exists
     id = parseInt(id, 10);
     if (!id) throw new Error(`${CLONE_FAIL} ${NO_CREATURE_TYPE}`);
     const creatureType = await CreatureType.findByPk(id);
@@ -67,8 +67,8 @@ module.exports = {
     creatureType.name = `${creatureType.name} (copy)`;
     // Return a copy of the creatureType with its armor,
     // actionPatterns, actions, weapons, and spells
-    return CreatureType.scope('defaultScope').create({ ...creatureType.dataValues })
-      .then(async (newCreatureType) => newCreatureType.reload());
+    return CreatureType.create({ ...creatureType.dataValues })
+      .then((newCreatureType) => newCreatureType.reload());
   },
 
   /**

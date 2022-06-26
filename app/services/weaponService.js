@@ -33,8 +33,8 @@ module.exports = {
   },
 
   /**
-   * @param {Weapon} weapon
-   * @returns {Promise<Weapon>} a copy of the given weapon with `${name} (copy)`
+   * @param {Integer} id of the weapon to copy
+   * @returns {Promise<Weapon>} a copy of the weapon with `${name} (copy)`
    */
   async cloneWeapon(id) {
     // Check that the indicated weapon exists

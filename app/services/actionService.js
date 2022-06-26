@@ -79,9 +79,9 @@ module.exports = {
   },
 
   /**
-   * @param {Action} action
-   * @returns {Promise<Action>} a copy of the given action, with
-   * `index` set to be the max + 1 over sibling instances.
+   * @param {Integer} id of the action to clone
+   * @returns {Promise<Action>} a copy of the action,
+   * with index 1 + the max over sibling instances.
    */
   cloneAction: async (id) => {
     // Check that the indicated action exists
@@ -92,13 +92,13 @@ module.exports = {
     // Clear the action instance ID, and set the index to be
     // 1 + the max of index values over sibling instances
     delete action.dataValues.id;
-    action.index = Math.max(...(
+    action.index = 1 + Math.max(...(
       await ActionWithActionPatternId(action.actionPatternId).findAll({
         attributes: { include: ['index'] },
-      })).map((a) => a.index)) + 1;
+      })).map((a) => a.index));
     // Return a copy of the action with its weapons, and spells
-    return Action.scope('defaultScope').create({ ...action.dataValues })
-      .then(async (actionClone) => actionClone.reload());
+    return Action.create({ ...action.dataValues })
+      .then((actionClone) => actionClone.reload());
   },
 
   /**

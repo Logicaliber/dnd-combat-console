@@ -33,8 +33,8 @@ module.exports = {
   },
 
   /**
-   * @param {Spell} spell
-   * @returns {Promise<Spell>} a copy of the given spell, with `${name} (copy)`
+   * @param {Integer} id of the spell to copy
+   * @returns {Promise<Spell>} a copy of the spell, with `${name} (copy)`
    */
   cloneSpell: async (id) => {
     // Check that the indicated spell exists

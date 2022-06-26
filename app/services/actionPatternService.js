@@ -42,6 +42,11 @@ module.exports = {
       .then((actionPattern) => actionPattern.reload());
   },
 
+  /**
+   * @param {Integer} id of the actionPattern to clone
+   * @returns {Promise<ActionPattern>} a copy of the actionPattern,
+   * with priority 1 + the max over sibling instances.
+   */
   cloneActionPattern: async (id) => {
     // Check that the indicated actionPattern exists
     id = parseInt(id, 10);
@@ -51,13 +56,13 @@ module.exports = {
     // Clear the actionPattern instance ID, and set the priority
     // to be 1 + the max of priorities over sibling instances
     delete actionPattern.dataValues.id;
-    actionPattern.priority = Math.max(...(
+    actionPattern.priority = 1 + Math.max(...(
       await ActionPatternCreatureTypeId(actionPattern.creatureTypeId).findAll({
         attributes: { include: ['priority'] },
-      })).map((ap) => ap.priority)) + 1;
+      })).map((ap) => ap.priority));
     // Return a copy of the actionPattern with its actions, weapons, and spells
-    return ActionPattern.scope('defaultScope').create({ ...actionPattern.dataValues })
-      .then(async (actionPatternClone) => actionPatternClone.reload());
+    return ActionPattern.create({ ...actionPattern.dataValues })
+      .then((actionPatternClone) => actionPatternClone.reload());
   },
 
   /**
