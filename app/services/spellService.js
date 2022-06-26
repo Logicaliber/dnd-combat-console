@@ -9,6 +9,7 @@ const SpellName = (name) => Spell.scope({ method: ['name', name] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Spell creation failed,';
+const CLONE_FAIL = 'Spell clone failed,';
 const UPDATE_FAIL = 'Spell update failed,';
 const DELETE_FAIL = 'Spell deletion failed,';
 const NAME_EXISTS = 'a spell with the given name already exists';
@@ -29,6 +30,23 @@ module.exports = {
     if (await SpellName(spellObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the spell
     return Spell.create(spellObject);
+  },
+
+  /**
+   * @param {Integer} id of the spell to copy
+   * @returns {Promise<Spell>} a copy of the spell, with `${name} (copy)`
+   */
+  cloneSpell: async (id) => {
+    // Check that the indicated spell exists
+    id = parseInt(id, 10);
+    if (!id) throw new Error(`${CLONE_FAIL} ${NO_SPELL}`);
+    const spell = await Spell.findByPk(id);
+    if (!spell) throw new Error(`${CLONE_FAIL} ${NO_SPELL}`);
+    // Clear the spell instance ID, and set name to 'name (copy)'
+    delete spell.dataValues.id;
+    spell.name = `${spell.name} (copy)`;
+    // Return a copy of the spell
+    return Spell.create({ ...spell.dataValues });
   },
 
   /**

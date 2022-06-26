@@ -3,7 +3,6 @@ const creatureService = require('../services/creatureService');
 const {
   generateWeapon,
   generateCreatureType,
-  generateCreature,
   generateActionPattern,
   generateAction,
 } = require('./helpers/modelGenerators');
@@ -37,8 +36,6 @@ let creatureTypeId = null;
 describe('Creature Service', () => {
   before(async () => {
     await syncModels(relevantModels);
-    existingCreatureName = (await generateCreature()).name;
-    expectedCreatures += 1;
     creatureTypeId = (await generateCreatureType('dog')).id;
     const weaponId = (await generateWeapon()).id;
     const actionPatternId = (await generateActionPattern(0, creatureTypeId)).id;
@@ -126,6 +123,36 @@ describe('Creature Service', () => {
       } catch (error) {
         assert.equal(error.message, 'Creature creation failed, a creature with the given name already exists');
       }
+    });
+  });
+
+  describe('spawnCreature', () => {
+    it('Should throw an error if an invaid creatureTypeId is passed', async () => {
+      try {
+        if (await creatureService.spawnCreature('invalid')) {
+          throw new Error('spawnCreature should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'Creature spawn failed, no creatureType found for the given ID');
+      }
+      try {
+        if (await creatureService.spawnCreature(99999)) {
+          throw new Error('spawnCreature should have thrown an error');
+        }
+      } catch (error) {
+        assert.equal(error.message, 'Creature spawn failed, no creatureType found for the given ID');
+      }
+    });
+
+    it('Should spawn a creature with name with number suffix 1 plus the max of number suffixes over sibling instances', async () => {
+      const result = await creatureService.spawnCreature(creatureTypeId);
+      expectedCreatures += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'creatureTypeId', 'name', 'maxHP', 'currentHP', 'currentLegendaryResistances', 'slotsFirst', 'slotsSecond', 'slotsThird', 'slotsFourth', 'slotsFifth', 'slotsSixth', 'slotsSeventh', 'slotsEigth', 'slotsNinth', 'createdAt', 'updatedAt', 'creatureType']);
+      assert.notEqual(values.id, creature.id);
+      assert.equal(values.name, `${creature.name} 1`);
+      existingCreatureName = values.name;
     });
   });
 

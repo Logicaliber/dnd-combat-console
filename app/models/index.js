@@ -34,15 +34,13 @@ fs
   });
 
 Object.keys(db).forEach((modelName) => {
-  if (db[modelName].associate) {
-    db[modelName].associate(db);
-    db[modelName].addScope('id', (id) => {
-      return {
-        where: { id },
-        attributes: { include: ['id'] },
-      };
-    });
-  }
+  if (db[modelName].associate) db[modelName].associate(db);
+  db[modelName].addScope('id', (id) => {
+    return {
+      attributes: { include: ['id'] },
+      where: { id },
+    };
+  });
 });
 
 db.sequelize = sequelize;

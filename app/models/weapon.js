@@ -1,6 +1,9 @@
 const { Model } = require('sequelize');
 
-const { isArrayOfStringsAlphabetical, isDamageObject } = require('../services/validationHelpers');
+const {
+  isArrayOfStringsAlphabetical,
+  isDamageObject,
+} = require('../services/validationHelpers');
 
 module.exports = (sequelize, DataTypes) => {
   class Weapon extends Model {

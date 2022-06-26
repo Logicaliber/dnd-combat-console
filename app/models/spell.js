@@ -1,6 +1,8 @@
 const { Model } = require('sequelize');
 
-const { isDamageObject } = require('../services/validationHelpers');
+const {
+  isDamageObject,
+} = require('../services/validationHelpers');
 const {
   MIN_INFORMATION,
   MAX_INFORMATION,

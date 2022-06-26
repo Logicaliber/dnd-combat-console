@@ -20,6 +20,7 @@ const CreatureTypeActionPatternIds = (creatureTypeId) => CreatureType.scope({ me
 
 // Error message building blocks
 const CREATE_FAIL = 'CreatureType creation failed,';
+const CLONE_FAIL = 'CreatureType clone failed,';
 const UPDATE_FAIL = 'CreatureType update failed,';
 const DELETE_FAIL = 'CreatureType deletion failed,';
 const NAME_EXISTS = 'a creatureType with the given name already exists';
@@ -49,6 +50,25 @@ module.exports = {
     // Create the creatureType, returning it with its armor
     return CreatureType.create(creatureTypeObject)
       .then((creatureType) => creatureType.reload());
+  },
+
+  /**
+   * @param {Integer} id of the creatureType to clone
+   * @returns {Promise<CreatureType>} a copy of the creatureType with `${name} (copy)`.
+   */
+  cloneCreatureType: async (id) => {
+    // Check that the indicated creatureType exists
+    id = parseInt(id, 10);
+    if (!id) throw new Error(`${CLONE_FAIL} ${NO_CREATURE_TYPE}`);
+    const creatureType = await CreatureType.findByPk(id);
+    if (!creatureType) throw new Error(`${CLONE_FAIL} ${NO_CREATURE_TYPE}`);
+    // Clear the creatureType instance ID, and set name to 'name (copy)'
+    delete creatureType.dataValues.id;
+    creatureType.name = `${creatureType.name} (copy)`;
+    // Return a copy of the creatureType with its armor,
+    // actionPatterns, actions, weapons, and spells
+    return CreatureType.create({ ...creatureType.dataValues })
+      .then((newCreatureType) => newCreatureType.reload());
   },
 
   /**

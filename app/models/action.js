@@ -34,7 +34,7 @@ module.exports = (sequelize, DataTypes) => {
     static optionsSchema = {
       // required, searchable, updateable
       actionPatternId: sequelize.modelOptsObject(true, true, false),
-      index: sequelize.modelOptsObject(true, true, true),
+      index: sequelize.modelOptsObject(false, true, true),
       weaponId: sequelize.modelOptsObject(false, true, true),
       times: sequelize.modelOptsObject(false, true, true),
       spellId: sequelize.modelOptsObject(false, true, true),

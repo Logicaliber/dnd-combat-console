@@ -9,6 +9,7 @@ const WeaponName = (name) => Weapon.scope({ method: ['name', name] });
 
 // Error message building blocks
 const CREATE_FAIL = 'Weapon creation failed,';
+const CLONE_FAIL = 'Weapon clone failed,';
 const UPDATE_FAIL = 'Weapon update failed,';
 const DELETE_FAIL = 'Weapon deletion failed,';
 const NAME_EXISTS = 'a weapon with the given name already exists';
@@ -29,6 +30,23 @@ module.exports = {
     if (await WeaponName(weaponObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the weapon
     return Weapon.create(weaponObject);
+  },
+
+  /**
+   * @param {Integer} id of the weapon to copy
+   * @returns {Promise<Weapon>} a copy of the weapon with `${name} (copy)`
+   */
+  async cloneWeapon(id) {
+    // Check that the indicated weapon exists
+    id = parseInt(id, 10);
+    if (!id) throw new Error(`${CLONE_FAIL} ${NO_WEAPON}`);
+    const weapon = await Weapon.findByPk(id);
+    if (!weapon) throw new Error(`${CLONE_FAIL} ${NO_WEAPON}`);
+    // Clear the weapon instance ID, and set name to 'name (copy)'
+    delete weapon.dataValues.id;
+    weapon.name = `${weapon.name} (copy)`;
+    // Return a copy of the weapon
+    return Weapon.create({ ...weapon.dataValues });
   },
 
   /**

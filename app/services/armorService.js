@@ -11,6 +11,7 @@ const CreatureTypeArmorId = (armorId) => CreatureType.scope({ method: ['armorId'
 
 // Error message building blocks
 const CREATE_FAIL = 'Armor creation failed,';
+const CLONE_FAIL = 'Armor clone failed,';
 const UPDATE_FAIL = 'Armor update failed,';
 const DELETE_FAIL = 'Armor deletion failed,';
 const NAME_EXISTS = 'an armor with the given name already exists';
@@ -31,6 +32,23 @@ module.exports = {
     if (await ArmorName(armorObject.name).count()) throw new Error(`${CREATE_FAIL} ${NAME_EXISTS}`);
     // Create the armor
     return Armor.create(armorObject);
+  },
+
+  /**
+   * @param {Armor} armor
+   * @returns {Promise<Armor>} a copy of the given armor with `${name} (copy)`.
+   */
+  cloneArmor: async (id) => {
+    // Check that the indicated armor exists
+    id = parseInt(id, 10);
+    if (!id) throw new Error(`${CLONE_FAIL} ${NO_ARMOR}`);
+    const armor = await Armor.findByPk(id);
+    if (!armor) throw new Error(`${CLONE_FAIL} ${NO_ARMOR}`);
+    // Clear the armor instance ID, and set name to 'name (copy)'
+    delete armor.dataValues.id;
+    armor.name = `${armor.name} (copy)`;
+    // Return a copy of the armor
+    return Armor.create({ ...armor.dataValues });
   },
 
   /**

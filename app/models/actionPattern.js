@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     static optionsSchema = {
       // required, searchable, updateable
       creatureTypeId: sequelize.modelOptsObject(true, true, false),
-      priority: sequelize.modelOptsObject(true, true, true),
+      priority: sequelize.modelOptsObject(false, true, true),
     };
 
     static allowedParams = Object.keys(this.optionsSchema);
@@ -42,6 +42,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
     },
     priority: {
+      defaultValue: 0,
       type: DataTypes.INTEGER,
       validate: { min: 0 },
     },

@@ -85,6 +85,36 @@ describe('Armor Service', () => {
     });
   });
 
+  describe('cloneArmor', () => {
+    it('Should throw an error if an invalid ID is passed', async () => {
+      try {
+        await armorService.cloneArmor('invalid');
+        throw new Error('cloneArmor should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Armor clone failed, no armor found for the given ID');
+      }
+      try {
+        await armorService.cloneArmor(9999);
+        throw new Error('cloneArmor should have thrown an error');
+      } catch (error) {
+        assert.equal(error.message, 'Armor clone failed, no armor found for the given ID');
+      }
+    });
+
+    it('Should return a copy of the armor with "name (copy)"', async () => {
+      const result = await armorService.cloneArmor(armor.id);
+      expectedArmors += 1;
+      assert.hasAnyKeys(result, 'dataValues');
+      const values = result.dataValues;
+      assert.hasAllKeys(values, ['id', 'name', 'type', 'baseAC', 'disadvantage', 'createdAt', 'updatedAt']);
+      assert.notEqual(values.id, armor.id);
+      assert.equal(values.name, `${armor.name} (copy)`);
+
+      // Check that one armor was created
+      assert.lengthOf(await Armor.findAll(), expectedArmors);
+    });
+  });
+
   describe('getArmor', () => {
     it('Should return null if an invalid id is passed', async () => {
       assert.isNull(await armorService.getArmor('invalid'));

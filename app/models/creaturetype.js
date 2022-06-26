@@ -1,5 +1,4 @@
 const { Model } = require('sequelize');
-
 const {
   isArrayOfStrings,
   isArrayOfLabeledDescriptions,

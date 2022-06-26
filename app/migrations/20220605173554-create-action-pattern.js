@@ -12,6 +12,7 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       priority: {
+        defaultValue: 0,
         type: Sequelize.INTEGER,
       },
       createdAt: {
